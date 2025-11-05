@@ -1,0 +1,46 @@
+Backup Information (Optimized)
+==============================
+Backup Date: Mon Nov  3 15:08:16 +07 2025
+Backup Name: backup_data_20251103_150815
+System: Self-hosted AI Starter Kit
+Backup Type: Data-only (optimized for size)
+
+Contents:
+---------
+✓ .env configuration file
+✓ shared/ folder (user data)
+✓ n8n demo data (workflows & credentials)
+✓ n8n essential data (excluding cache/temp)
+✓ PostgreSQL database dump (compressed)
+✓ Qdrant vector database
+
+Excluded (can be recreated):
+----------------------------
+⊘ Ollama models (can be re-downloaded)
+⊘ Cache and temporary files
+⊘ Log files
+
+Docker Information:
+-------------------
+Docker version 28.5.1, build e180ab8
+
+Backup Components:
+------------------
+4.0K	./backups/backup_data_20251103_150815/n8n/demo-data/workflows/srOnR8PAY3u4RSwb.json
+1.0K	./backups/backup_data_20251103_150815/n8n/demo-data/credentials/xHuYe0MDGOs9IpBW.json
+512	./backups/backup_data_20251103_150815/volumes/ragketoan_qdrant_storage.tar.gz
+512	./backups/backup_data_20251103_150815/volumes/ragketoan_n8n_storage.tar.gz
+512	./backups/backup_data_20251103_150815/n8n/demo-data/credentials/sFfERYppMeBnFNeA.json
+512	./backups/backup_data_20251103_150815/.env
+0	./backups/backup_data_20251103_150815/backup_info.txt
+
+Total Backup Size:
+------------------
+7.0K
+
+Restore Instructions:
+---------------------
+1. Run: ./restore.sh
+2. Select this backup from the list
+3. Confirm restoration
+4. After restore, Ollama models will be re-downloaded automatically
