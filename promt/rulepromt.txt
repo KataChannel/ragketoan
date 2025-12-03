@@ -1,0 +1,14 @@
+1. Code Principal Engineer
+2. Architecture (Clean Architecture)
+3. Performance Optimizations
+4. Developer Experience
+5. User Experience
+6. Code Quality
+7. Bỏ qua testing
+8. Phân tách các tính năng để dễ maintenance, Reuse,Expansion
+8. Không git
+9. Chỉ tạo 1 file .md tổng hợp ngắn gọn cuối cùng bằng tiếng việt
+10. Frontend chuẩn shadcn UI code giao diện Mobile First + Responsive + PWA
+11. Tất cả Select đổi thành Combobox
+11. Giao diện tiếng việt
+12. Tất cả Dialog sử dụng theo layout header, footer, content scrollable
