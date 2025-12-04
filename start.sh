@@ -22,6 +22,11 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROFILE="cpu"
 SERVICE=""
 
+# Backup settings
+BACKUP_DIR="$SCRIPT_DIR/backups"
+MAX_BACKUPS=5  # Số lượng backup tối đa giữ lại
+COMPRESSION_LEVEL=9  # Mức nén cao nhất cho gzip
+
 # Function to show banner
 show_banner() {
     echo -e "${BLUE}╔═══════════════════════════════════════════════════════════╗${NC}"
@@ -41,7 +46,9 @@ show_menu() {
     echo -e "  ${GREEN}5)${NC} 🔫 Kill ports         (Giải phóng ports)"
     echo -e "  ${GREEN}6)${NC} 📊 Xem trạng thái     (Status)"
     echo -e "  ${GREEN}7)${NC} 📜 Xem logs           (Logs)"
-    echo -e "  ${GREEN}8)${NC} ❌ Thoát"
+    echo -e "  ${GREEN}8)${NC} 💾 Backup dữ liệu     (Backup data)"
+    echo -e "  ${GREEN}9)${NC} 🔄 Restore dữ liệu    (Restore data)"
+    echo -e "  ${GREEN}0)${NC} ❌ Thoát"
     echo ""
 }
 
@@ -155,6 +162,284 @@ start_all() {
     start_ketoan
 }
 
+# Function to get backup size (human readable)
+get_size() {
+    local size=$1
+    if [ $size -ge 1073741824 ]; then
+        echo "$(echo "scale=2; $size/1073741824" | bc)GB"
+    elif [ $size -ge 1048576 ]; then
+        echo "$(echo "scale=2; $size/1048576" | bc)MB"
+    elif [ $size -ge 1024 ]; then
+        echo "$(echo "scale=2; $size/1024" | bc)KB"
+    else
+        echo "${size}B"
+    fi
+}
+
+# Function to cleanup old backups
+cleanup_old_backups() {
+    echo -e "${YELLOW}[INFO] Đang dọn dẹp backup cũ (giữ lại $MAX_BACKUPS backup gần nhất)...${NC}"
+    
+    # Đếm số backup hiện tại
+    local backup_count=$(ls -1 "$BACKUP_DIR"/*.tar.gz 2>/dev/null | wc -l)
+    
+    if [ "$backup_count" -gt "$MAX_BACKUPS" ]; then
+        local to_delete=$((backup_count - MAX_BACKUPS))
+        echo -e "${YELLOW}[INFO] Đang xóa $to_delete backup cũ...${NC}"
+        
+        # Xóa các backup cũ nhất
+        ls -1t "$BACKUP_DIR"/*.tar.gz 2>/dev/null | tail -n $to_delete | while read file; do
+            echo -e "  ${RED}Xóa:${NC} $(basename "$file")"
+            rm -f "$file"
+        done
+    fi
+}
+
+# Function to backup data
+backup_data() {
+    local timestamp=$(date +"%Y%m%d_%H%M%S")
+    local backup_name="ragketoan_backup_${timestamp}"
+    local temp_dir="$BACKUP_DIR/temp_${timestamp}"
+    
+    echo -e "${GREEN}[INFO] Bắt đầu backup dữ liệu...${NC}"
+    echo ""
+    
+    # Tạo thư mục backup nếu chưa tồn tại
+    mkdir -p "$BACKUP_DIR"
+    mkdir -p "$temp_dir"
+    
+    # 1. Backup .env file
+    echo -e "${CYAN}[1/5] Backup file .env...${NC}"
+    if [ -f "$SCRIPT_DIR/.env" ]; then
+        cp "$SCRIPT_DIR/.env" "$temp_dir/"
+        echo -e "  ${GREEN}✓${NC} .env"
+    fi
+    
+    # 2. Backup PostgreSQL database (nén trực tiếp)
+    echo -e "${CYAN}[2/5] Backup PostgreSQL database...${NC}"
+    if docker ps --format '{{.Names}}' | grep -q "postgres"; then
+        # Load env để lấy credentials
+        if [ -f "$SCRIPT_DIR/.env" ]; then
+            source "$SCRIPT_DIR/.env"
+        fi
+        
+        # Sử dụng pg_dump với custom format (-Fc) để tối ưu dung lượng
+        docker exec postgres pg_dump -U "${POSTGRES_USER:-postgres}" \
+            -d "${POSTGRES_DB:-n8n}" \
+            -Fc --compress=9 \
+            > "$temp_dir/postgres_db.dump" 2>/dev/null
+        
+        if [ $? -eq 0 ]; then
+            local db_size=$(stat -f%z "$temp_dir/postgres_db.dump" 2>/dev/null || stat -c%s "$temp_dir/postgres_db.dump" 2>/dev/null)
+            echo -e "  ${GREEN}✓${NC} postgres_db.dump ($(get_size ${db_size:-0}))"
+        else
+            echo -e "  ${YELLOW}⚠${NC} Không thể backup PostgreSQL (container có thể chưa chạy)"
+        fi
+    else
+        echo -e "  ${YELLOW}⚠${NC} PostgreSQL container không chạy, bỏ qua..."
+    fi
+    
+    # 3. Backup N8N data (workflows, credentials đã export)
+    echo -e "${CYAN}[3/5] Backup N8N demo data...${NC}"
+    if [ -d "$SCRIPT_DIR/n8n/demo-data" ]; then
+        cp -r "$SCRIPT_DIR/n8n/demo-data" "$temp_dir/n8n_demo_data"
+        echo -e "  ${GREEN}✓${NC} n8n_demo_data"
+    fi
+    
+    # 4. Backup shared folder
+    echo -e "${CYAN}[4/5] Backup shared data...${NC}"
+    if [ -d "$SCRIPT_DIR/shared" ] && [ "$(ls -A "$SCRIPT_DIR/shared" 2>/dev/null)" ]; then
+        cp -r "$SCRIPT_DIR/shared" "$temp_dir/shared"
+        echo -e "  ${GREEN}✓${NC} shared"
+    else
+        echo -e "  ${YELLOW}⚠${NC} Thư mục shared trống hoặc không tồn tại"
+    fi
+    
+    # 5. Backup Prisma schema và migrations
+    echo -e "${CYAN}[5/5] Backup Prisma schema...${NC}"
+    if [ -d "$SCRIPT_DIR/ketoan/prisma" ]; then
+        mkdir -p "$temp_dir/ketoan_prisma"
+        cp -r "$SCRIPT_DIR/ketoan/prisma/"* "$temp_dir/ketoan_prisma/" 2>/dev/null || true
+        echo -e "  ${GREEN}✓${NC} ketoan_prisma"
+    fi
+    
+    # Tạo file tar.gz với compression tối đa
+    echo ""
+    echo -e "${CYAN}[INFO] Đang nén backup với mức nén tối đa...${NC}"
+    
+    cd "$temp_dir"
+    tar -cf - . | gzip -${COMPRESSION_LEVEL} > "$BACKUP_DIR/${backup_name}.tar.gz"
+    
+    # Cleanup temp
+    rm -rf "$temp_dir"
+    
+    # Lấy kích thước file backup
+    local final_size=$(stat -f%z "$BACKUP_DIR/${backup_name}.tar.gz" 2>/dev/null || stat -c%s "$BACKUP_DIR/${backup_name}.tar.gz" 2>/dev/null)
+    
+    echo ""
+    echo -e "${GREEN}✅ Backup hoàn tất!${NC}"
+    echo -e "  ${CYAN}File:${NC} ${backup_name}.tar.gz"
+    echo -e "  ${CYAN}Kích thước:${NC} $(get_size ${final_size:-0})"
+    echo -e "  ${CYAN}Đường dẫn:${NC} $BACKUP_DIR/${backup_name}.tar.gz"
+    
+    # Cleanup old backups
+    cleanup_old_backups
+}
+
+# Function to list available backups
+list_backups() {
+    echo -e "${CYAN}Danh sách backup có sẵn:${NC}"
+    echo ""
+    
+    local i=1
+    local backups=()
+    
+    if [ -d "$BACKUP_DIR" ]; then
+        while IFS= read -r file; do
+            if [ -n "$file" ]; then
+                backups+=("$file")
+                local filename=$(basename "$file")
+                local filesize=$(stat -f%z "$file" 2>/dev/null || stat -c%s "$file" 2>/dev/null)
+                local filedate=$(stat -f"%Sm" -t"%Y-%m-%d %H:%M" "$file" 2>/dev/null || stat -c"%y" "$file" 2>/dev/null | cut -d'.' -f1)
+                echo -e "  ${GREEN}$i)${NC} $filename ($(get_size ${filesize:-0})) - $filedate"
+                ((i++))
+            fi
+        done < <(ls -1t "$BACKUP_DIR"/*.tar.gz 2>/dev/null)
+    fi
+    
+    if [ ${#backups[@]} -eq 0 ]; then
+        echo -e "  ${YELLOW}Không có backup nào!${NC}"
+        return 1
+    fi
+    
+    echo ""
+    printf '%s\n' "${backups[@]}"
+}
+
+# Function to restore data
+restore_data() {
+    echo -e "${GREEN}[INFO] Khôi phục dữ liệu từ backup${NC}"
+    echo ""
+    
+    # List backups and get selection
+    local backups=()
+    local i=1
+    
+    if [ -d "$BACKUP_DIR" ]; then
+        while IFS= read -r file; do
+            if [ -n "$file" ]; then
+                backups+=("$file")
+                local filename=$(basename "$file")
+                local filesize=$(stat -f%z "$file" 2>/dev/null || stat -c%s "$file" 2>/dev/null)
+                echo -e "  ${GREEN}$i)${NC} $filename ($(get_size ${filesize:-0}))"
+                ((i++))
+            fi
+        done < <(ls -1t "$BACKUP_DIR"/*.tar.gz 2>/dev/null)
+    fi
+    
+    if [ ${#backups[@]} -eq 0 ]; then
+        echo -e "${YELLOW}Không có backup nào để restore!${NC}"
+        return 1
+    fi
+    
+    echo -e "  ${GREEN}0)${NC} Hủy"
+    echo ""
+    
+    read -p "Chọn backup để restore [0-$((${#backups[@]}))]: " selection
+    
+    if [ "$selection" == "0" ] || [ -z "$selection" ]; then
+        echo -e "${YELLOW}Đã hủy restore.${NC}"
+        return 0
+    fi
+    
+    if ! [[ "$selection" =~ ^[0-9]+$ ]] || [ "$selection" -lt 1 ] || [ "$selection" -gt ${#backups[@]} ]; then
+        echo -e "${RED}Lựa chọn không hợp lệ!${NC}"
+        return 1
+    fi
+    
+    local selected_backup="${backups[$((selection-1))]}"
+    local backup_filename=$(basename "$selected_backup")
+    
+    echo ""
+    echo -e "${YELLOW}⚠️  CẢNH BÁO: Restore sẽ ghi đè dữ liệu hiện tại!${NC}"
+    read -p "Bạn có chắc chắn muốn restore từ $backup_filename? (y/N): " confirm
+    
+    if [ "$confirm" != "y" ] && [ "$confirm" != "Y" ]; then
+        echo -e "${YELLOW}Đã hủy restore.${NC}"
+        return 0
+    fi
+    
+    local temp_dir="$BACKUP_DIR/restore_temp_$(date +%s)"
+    mkdir -p "$temp_dir"
+    
+    echo ""
+    echo -e "${CYAN}[1/5] Giải nén backup...${NC}"
+    tar -xzf "$selected_backup" -C "$temp_dir"
+    
+    # Restore .env
+    echo -e "${CYAN}[2/5] Restore file .env...${NC}"
+    if [ -f "$temp_dir/.env" ]; then
+        cp "$temp_dir/.env" "$SCRIPT_DIR/.env"
+        echo -e "  ${GREEN}✓${NC} .env"
+    fi
+    
+    # Restore PostgreSQL
+    echo -e "${CYAN}[3/5] Restore PostgreSQL database...${NC}"
+    if [ -f "$temp_dir/postgres_db.dump" ]; then
+        if docker ps --format '{{.Names}}' | grep -q "postgres"; then
+            # Load env để lấy credentials
+            if [ -f "$SCRIPT_DIR/.env" ]; then
+                source "$SCRIPT_DIR/.env"
+            fi
+            
+            # Restore using pg_restore
+            docker exec -i postgres pg_restore -U "${POSTGRES_USER:-postgres}" \
+                -d "${POSTGRES_DB:-n8n}" \
+                --clean --if-exists \
+                < "$temp_dir/postgres_db.dump" 2>/dev/null
+            
+            if [ $? -eq 0 ]; then
+                echo -e "  ${GREEN}✓${NC} PostgreSQL database restored"
+            else
+                echo -e "  ${YELLOW}⚠${NC} Lỗi khi restore PostgreSQL (có thể do schema conflicts)"
+            fi
+        else
+            echo -e "  ${YELLOW}⚠${NC} PostgreSQL container không chạy. Hãy khởi động trước khi restore."
+        fi
+    else
+        echo -e "  ${YELLOW}⚠${NC} Không có PostgreSQL backup trong file này"
+    fi
+    
+    # Restore N8N demo data
+    echo -e "${CYAN}[4/5] Restore N8N demo data...${NC}"
+    if [ -d "$temp_dir/n8n_demo_data" ]; then
+        rm -rf "$SCRIPT_DIR/n8n/demo-data"
+        cp -r "$temp_dir/n8n_demo_data" "$SCRIPT_DIR/n8n/demo-data"
+        echo -e "  ${GREEN}✓${NC} n8n_demo_data"
+    fi
+    
+    # Restore shared folder
+    echo -e "${CYAN}[5/5] Restore shared data...${NC}"
+    if [ -d "$temp_dir/shared" ]; then
+        cp -r "$temp_dir/shared/"* "$SCRIPT_DIR/shared/" 2>/dev/null || true
+        echo -e "  ${GREEN}✓${NC} shared"
+    fi
+    
+    # Restore Prisma schema
+    if [ -d "$temp_dir/ketoan_prisma" ]; then
+        echo -e "${CYAN}[Bonus] Restore Prisma schema...${NC}"
+        cp -r "$temp_dir/ketoan_prisma/"* "$SCRIPT_DIR/ketoan/prisma/" 2>/dev/null || true
+        echo -e "  ${GREEN}✓${NC} ketoan_prisma"
+    fi
+    
+    # Cleanup temp
+    rm -rf "$temp_dir"
+    
+    echo ""
+    echo -e "${GREEN}✅ Restore hoàn tất từ: $backup_filename${NC}"
+    echo -e "${YELLOW}[TIP] Nếu bạn đã restore PostgreSQL, có thể cần restart các containers.${NC}"
+}
+
 # Parse arguments for non-interactive mode
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -196,11 +481,23 @@ while [[ $# -gt 0 ]]; do
             echo "  --nvidia    Giống --gpu"
             echo "  --amd       Chạy với AMD GPU"
             echo ""
+            echo "Backup/Restore Options:"
+            echo "  --backup    Backup dữ liệu dự án"
+            echo "  --restore   Restore dữ liệu từ backup"
+            echo ""
             echo "Other:"
             echo "  -h, --help  Hiển thị trợ giúp"
             echo ""
             echo "Nếu không có tham số, script sẽ hiển thị menu tương tác."
             exit 0
+            ;;
+        --backup)
+            SERVICE="backup"
+            shift
+            ;;
+        --restore)
+            SERVICE="restore"
+            shift
             ;;
         *)
             echo -e "${RED}Tùy chọn không hợp lệ: $1${NC}"
@@ -225,6 +522,12 @@ if [ -n "$SERVICE" ]; then
             ;;
         all)
             start_all
+            ;;
+        backup)
+            backup_data
+            ;;
+        restore)
+            restore_data
             ;;
     esac
     exit 0
@@ -290,11 +593,21 @@ while true; do
             break
             ;;
         8)
+            # Backup data
+            backup_data
+            echo ""
+            ;;
+        9)
+            # Restore data
+            restore_data
+            echo ""
+            ;;
+        0)
             echo -e "${YELLOW}Tạm biệt! 👋${NC}"
             exit 0
             ;;
         *)
-            echo -e "${RED}Lựa chọn không hợp lệ. Vui lòng chọn 1-8.${NC}"
+            echo -e "${RED}Lựa chọn không hợp lệ. Vui lòng chọn 0-9.${NC}"
             echo ""
             ;;
     esac
@@ -304,3 +617,5 @@ echo ""
 echo -e "${YELLOW}[TIP] Dùng './stop.sh' để dừng tất cả services${NC}"
 echo -e "${YELLOW}[TIP] Dùng './logs.sh' để xem logs${NC}"
 echo -e "${YELLOW}[TIP] Dùng './status.sh' để xem trạng thái${NC}"
+echo -e "${YELLOW}[TIP] Dùng './start.sh --backup' để backup dữ liệu${NC}"
+echo -e "${YELLOW}[TIP] Dùng './start.sh --restore' để restore dữ liệu${NC}"

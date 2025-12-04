@@ -15,6 +15,8 @@ import {
   Search,
   ChevronRight,
   Plus,
+  Pencil,
+  Trash2,
 } from 'lucide-react';
 import { DashboardLayout } from '@/app/components/dashboard-layout';
 import { Button } from '@/app/components/ui/button';
@@ -31,7 +33,7 @@ import {
   DialogDescription,
 } from '@/app/components/ui/dialog';
 import { formatCurrency, formatDate, getDateRange } from '@/app/lib/utils';
-import { Invoice, InvoiceType, SyncProgress, CongTy } from '@/app/types';
+import { Invoice, InvoiceType, SyncProgress, CongTy, ApiConfig } from '@/app/types';
 
 // Mock data for demo - sẽ được thay thế khi có data từ API
 const mockInvoices: Invoice[] = [];
@@ -65,7 +67,10 @@ export default function HoaDonPage() {
   
   // Sync dialog state
   const [showSyncDialog, setShowSyncDialog] = useState(false);
+  const [syncSavedConfigs, setSyncSavedConfigs] = useState<ApiConfig[]>([]);
+  const [syncSelectedConfigId, setSyncSelectedConfigId] = useState<string>('');
   const [syncConfig, setSyncConfig] = useState({
+    configId: '',
     bearerToken: '',
     fromDate: getDateRange(1).fromDate,
     toDate: getDateRange(1).toDate,
@@ -76,7 +81,12 @@ export default function HoaDonPage() {
 
   // Config dialog state
   const [showConfigDialog, setShowConfigDialog] = useState(false);
+  const [savedConfigs, setSavedConfigs] = useState<ApiConfig[]>([]);
+  const [isLoadingConfigs, setIsLoadingConfigs] = useState(false);
+  const [selectedConfigId, setSelectedConfigId] = useState<string>('');
+  const [isEditingConfig, setIsEditingConfig] = useState(false);
   const [apiConfig, setApiConfig] = useState({
+    id: '',
     name: 'thue_dienttu',
     congtyId: '',
     bearerToken: '',
@@ -85,6 +95,7 @@ export default function HoaDonPage() {
     delayBetweenBatches: 3000,
   });
   const [isSavingConfig, setIsSavingConfig] = useState(false);
+  const [isDeletingConfig, setIsDeletingConfig] = useState(false);
 
   // Detail dialog state
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
@@ -92,7 +103,26 @@ export default function HoaDonPage() {
   // Fetch companies on mount
   useEffect(() => {
     fetchCompanies();
+    // Pre-load configs khi page load cho cả 2 dialog
+    fetchAllConfigs();
+    fetchSyncConfigs();
   }, []);
+
+  // Fetch configs when config dialog opens
+  useEffect(() => {
+    if (showConfigDialog) {
+      console.log('Config dialog opened, fetching configs...');
+      fetchAllConfigs();
+    }
+  }, [showConfigDialog]);
+
+  // Fetch configs when sync dialog opens
+  useEffect(() => {
+    if (showSyncDialog) {
+      console.log('Sync dialog opened, fetching sync configs...');
+      fetchSyncConfigs();
+    }
+  }, [showSyncDialog]);
 
   // Fetch invoices when company changes
   useEffect(() => {
@@ -155,8 +185,9 @@ export default function HoaDonPage() {
 
   // Handle sync
   const handleSync = async () => {
-    if (!syncConfig.bearerToken) {
-      toast.warning('Vui lòng nhập Bearer Token');
+    // Kiểm tra phải chọn cấu hình hoặc nhập token
+    if (!syncSelectedConfigId && !syncConfig.bearerToken) {
+      toast.warning('Vui lòng chọn cấu hình API hoặc nhập Bearer Token');
       return;
     }
 
@@ -168,11 +199,13 @@ export default function HoaDonPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          bearerToken: syncConfig.bearerToken,
+          configId: syncSelectedConfigId || undefined,
+          bearerToken: syncConfig.bearerToken || undefined,
           invoiceType,
           fromDate: syncConfig.fromDate,
           toDate: syncConfig.toDate,
           brandname: syncConfig.brandname,
+          congtyId: selectedCompanyId,
         }),
       });
 
@@ -186,6 +219,8 @@ export default function HoaDonPage() {
           percentage: 100,
         });
         
+        toast.success(`Đồng bộ thành công: ${result.data.successCount}/${result.data.totalRecords} hóa đơn`);
+        
         // Refresh invoice list
         fetchInvoices();
       } else {
@@ -195,6 +230,56 @@ export default function HoaDonPage() {
       toast.error(`Lỗi đồng bộ: ${error instanceof Error ? error.message : 'Lỗi không xác định'}`);
     } finally {
       setIsSyncing(false);
+    }
+  };
+
+  // Fetch configs for sync dialog (all active configs)
+  const fetchSyncConfigs = async () => {
+    try {
+      // Fetch TẤT CẢ configs (không filter theo công ty)
+      const response = await fetch('/api/config');
+      const result = await response.json();
+      console.log('Sync configs result:', result);
+      if (result.success) {
+        setSyncSavedConfigs(result.data);
+        // Auto select first config if available
+        if (result.data.length > 0) {
+          setSyncSelectedConfigId(result.data[0].id);
+        } else {
+          setSyncSelectedConfigId('');
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching sync configs:', error);
+    }
+  };
+
+  // Handle select config for sync
+  const handleSelectSyncConfig = async (configId: string) => {
+    setSyncSelectedConfigId(configId);
+    
+    if (configId) {
+      // Fetch full config detail to get brandname
+      try {
+        const response = await fetch(`/api/config/${configId}`);
+        const result = await response.json();
+        if (result.success && result.data) {
+          setSyncConfig(prev => ({
+            ...prev,
+            configId: configId,
+            brandname: result.data.brandname || '',
+          }));
+        }
+      } catch (error) {
+        console.error('Error fetching config detail:', error);
+      }
+    } else {
+      // Clear brandname when no config selected
+      setSyncConfig(prev => ({
+        ...prev,
+        configId: '',
+        brandname: '',
+      }));
     }
   };
 
@@ -221,10 +306,22 @@ export default function HoaDonPage() {
       return;
     }
 
+    // Kiểm tra token không được là giá trị masked
+    if (apiConfig.bearerToken.startsWith('***')) {
+      toast.warning('Bearer Token không hợp lệ. Vui lòng nhập token đầy đủ.');
+      return;
+    }
+
     setIsSavingConfig(true);
     try {
-      const response = await fetch('/api/config', {
-        method: 'POST',
+      // Nếu đang edit thì dùng PUT, ngược lại dùng POST
+      const url = isEditingConfig && apiConfig.id 
+        ? `/api/config/${apiConfig.id}` 
+        : '/api/config';
+      const method = isEditingConfig && apiConfig.id ? 'PUT' : 'POST';
+      
+      const response = await fetch(url, {
+        method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(apiConfig),
       });
@@ -232,8 +329,9 @@ export default function HoaDonPage() {
       const result = await response.json();
 
       if (result.success) {
-        toast.success('Lưu cấu hình thành công!');
-        setShowConfigDialog(false);
+        toast.success(isEditingConfig ? 'Cập nhật cấu hình thành công!' : 'Lưu cấu hình thành công!');
+        await fetchAllConfigs(); // Refresh danh sách configs
+        resetConfigForm();
       } else {
         throw new Error(result.error || 'Không thể lưu cấu hình');
       }
@@ -244,7 +342,104 @@ export default function HoaDonPage() {
     }
   };
 
-  // Fetch API config for selected company
+  // Reset config form
+  const resetConfigForm = () => {
+    setApiConfig({
+      id: '',
+      name: 'thue_dienttu',
+      congtyId: selectedCompanyId,
+      bearerToken: '',
+      baseUrl: 'https://hoadondientu.gdt.gov.vn:30000',
+      batchSize: 3,
+      delayBetweenBatches: 3000,
+    });
+    setSelectedConfigId('');
+    setIsEditingConfig(false);
+  };
+
+  // Fetch all configs
+  const fetchAllConfigs = async () => {
+    setIsLoadingConfigs(true);
+    try {
+      console.log('Fetching all configs...');
+      const response = await fetch('/api/config');
+      const result = await response.json();
+      console.log('Configs result:', result);
+      if (result.success && Array.isArray(result.data)) {
+        setSavedConfigs(result.data);
+        console.log('savedConfigs set to:', result.data.length, 'items');
+      } else {
+        setSavedConfigs([]);
+      }
+    } catch (error) {
+      console.error('Error fetching configs:', error);
+      setSavedConfigs([]);
+    } finally {
+      setIsLoadingConfigs(false);
+    }
+  };
+
+  // Fetch config detail for editing (load full token from API)
+  const fetchConfigDetail = async (configId: string) => {
+    try {
+      const response = await fetch(`/api/config/${configId}`);
+      const result = await response.json();
+      if (result.success && result.data) {
+        const config = result.data;
+        setApiConfig({
+          id: config.id,
+          name: config.name || 'thue_dienttu',
+          congtyId: config.congtyId || '',
+          bearerToken: config.bearerToken || '', // Full token từ API detail
+          baseUrl: config.baseUrl || 'https://hoadondientu.gdt.gov.vn:30000',
+          batchSize: config.batchSize || 3,
+          delayBetweenBatches: config.delayBetweenBatches || 3000,
+        });
+        setIsEditingConfig(true);
+      }
+    } catch (error) {
+      console.error('Error fetching config detail:', error);
+      toast.error('Không thể tải chi tiết cấu hình');
+    }
+  };
+
+  // Handle select config to edit
+  const handleSelectConfig = async (configId: string) => {
+    setSelectedConfigId(configId);
+    if (configId) {
+      await fetchConfigDetail(configId);
+    } else {
+      resetConfigForm();
+    }
+  };
+
+  // Handle delete config
+  const handleDeleteConfig = async () => {
+    if (!selectedConfigId) return;
+    
+    setIsDeletingConfig(true);
+    try {
+      const response = await fetch(`/api/config/${selectedConfigId}`, {
+        method: 'DELETE',
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        toast.success('Đã xóa cấu hình!');
+        await fetchAllConfigs();
+        resetConfigForm();
+      } else {
+        throw new Error(result.error || 'Không thể xóa cấu hình');
+      }
+    } catch (error) {
+      toast.error(`Lỗi xóa cấu hình: ${error instanceof Error ? error.message : 'Lỗi không xác định'}`);
+    } finally {
+      setIsDeletingConfig(false);
+    }
+  };
+
+  // Fetch API config for selected company (old function - updated)
   const fetchApiConfig = async () => {
     if (!selectedCompanyId) return;
     
@@ -254,6 +449,7 @@ export default function HoaDonPage() {
       if (result.success && result.data && result.data.length > 0) {
         const config = result.data[0];
         setApiConfig({
+          id: config.id || '',
           name: config.name || 'thue_dienttu',
           congtyId: config.congtyId || selectedCompanyId,
           bearerToken: config.bearerToken || '',
@@ -264,6 +460,7 @@ export default function HoaDonPage() {
       } else {
         // Reset với công ty hiện tại
         setApiConfig({
+          id: '',
           name: 'thue_dienttu',
           congtyId: selectedCompanyId,
           bearerToken: '',
@@ -573,7 +770,22 @@ export default function HoaDonPage() {
       </div>
 
       {/* Sync Dialog */}
-      <Dialog open={showSyncDialog} onOpenChange={setShowSyncDialog}>
+      <Dialog open={showSyncDialog} onOpenChange={(open) => {
+        setShowSyncDialog(open);
+        if (open) {
+          setSyncProgress(null);
+        } else {
+          // Reset state when closing
+          setSyncSelectedConfigId('');
+          setSyncConfig({
+            configId: '',
+            bearerToken: '',
+            fromDate: getDateRange(1).fromDate,
+            toDate: getDateRange(1).toDate,
+            brandname: '',
+          });
+        }
+      }}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Đồng bộ Hóa đơn</DialogTitle>
@@ -583,21 +795,56 @@ export default function HoaDonPage() {
           </DialogHeader>
           <DialogBody>
             <div className="space-y-4">
+              {/* Chọn cấu hình đã lưu */}
               <div>
-                <Label className="text-sm">Bearer Token *</Label>
-                <Input
-                  type="password"
-                  placeholder="eyJhbGciOiJIUzUxMiJ9..."
-                  value={syncConfig.bearerToken}
-                  onChange={(e) =>
-                    setSyncConfig({ ...syncConfig, bearerToken: e.target.value })
-                  }
-                  className="mt-1.5"
+                <Label className="text-sm font-medium">Chọn cấu hình API</Label>
+                <Combobox
+                  options={[
+                    { value: '', label: 'Nhập token thủ công' },
+                    ...syncSavedConfigs.map((c) => ({
+                      value: c.id,
+                      label: `${c.name} (${c.congty?.tenVietTat || c.congty?.ten || 'N/A'})`,
+                    }))
+                  ]}
+                  value={syncSelectedConfigId}
+                  onValueChange={handleSelectSyncConfig}
+                  placeholder="Chọn cấu hình đã lưu"
                 />
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  Lấy token từ cổng thuế điện tử
-                </p>
+                {syncSavedConfigs.length === 0 && (
+                  <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
+                    Chưa có cấu hình nào. Vui lòng vào Cài đặt để tạo cấu hình mới.
+                  </p>
+                )}
               </div>
+
+              {/* Hiển thị input token khi chọn "Nhập token thủ công" */}
+              {!syncSelectedConfigId && (
+                <div>
+                  <Label className="text-sm">Bearer Token *</Label>
+                  <Input
+                    type="password"
+                    placeholder="eyJhbGciOiJIUzUxMiJ9..."
+                    value={syncConfig.bearerToken}
+                    onChange={(e) =>
+                      setSyncConfig({ ...syncConfig, bearerToken: e.target.value })
+                    }
+                    className="mt-1.5"
+                  />
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    Lấy token từ cổng thuế điện tử
+                  </p>
+                </div>
+              )}
+
+              {/* Thông báo đang dùng config đã lưu */}
+              {syncSelectedConfigId && (
+                <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-3">
+                  <p className="text-sm text-green-700 dark:text-green-300">
+                    ✓ Sử dụng Bearer Token từ cấu hình đã lưu
+                  </p>
+                </div>
+              )}
+
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <Label className="text-sm">Từ ngày</Label>
@@ -658,7 +905,7 @@ export default function HoaDonPage() {
             <Button variant="outline" onClick={() => setShowSyncDialog(false)}>
               Hủy
             </Button>
-            <Button onClick={handleSync} disabled={isSyncing}>
+            <Button onClick={handleSync} disabled={isSyncing || (!syncSelectedConfigId && !syncConfig.bearerToken)}>
               {isSyncing ? (
                 <>
                   <RefreshCw className="h-4 w-4 animate-spin" />
@@ -678,9 +925,11 @@ export default function HoaDonPage() {
       {/* Config Dialog */}
       <Dialog open={showConfigDialog} onOpenChange={(open) => {
         setShowConfigDialog(open);
-        if (open) fetchApiConfig();
+        if (!open) {
+          resetConfigForm();
+        }
       }}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>Cài đặt API</DialogTitle>
             <DialogDescription>
@@ -689,6 +938,46 @@ export default function HoaDonPage() {
           </DialogHeader>
           <DialogBody>
             <div className="space-y-4">
+              {/* Danh sách cấu hình đã lưu */}
+              <div>
+                <Label className="text-sm font-medium">Chọn cấu hình đã lưu</Label>
+                {isLoadingConfigs ? (
+                  <div className="flex items-center gap-2 mt-1 py-2 px-3 border border-dashed border-gray-300 dark:border-gray-600 rounded-md">
+                    <RefreshCw className="h-4 w-4 animate-spin text-gray-400" />
+                    <span className="text-sm text-gray-500">Đang tải cấu hình...</span>
+                  </div>
+                ) : savedConfigs.length > 0 ? (
+                  <Combobox
+                    options={[
+                      { value: '', label: '+ Tạo cấu hình mới' },
+                      ...savedConfigs.map((c) => ({
+                        value: c.id,
+                        label: `${c.name} (${c.congty?.tenVietTat || c.congty?.ten || c.congtyId})`,
+                      }))
+                    ]}
+                    value={selectedConfigId}
+                    onValueChange={handleSelectConfig}
+                    placeholder="Chọn cấu hình hoặc tạo mới"
+                  />
+                ) : (
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 py-2 px-3 border border-dashed border-gray-300 dark:border-gray-600 rounded-md">
+                    Chưa có cấu hình nào. Điền thông tin bên dưới để tạo mới.
+                  </p>
+                )}
+              </div>
+
+              {/* Separator */}
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t border-gray-200 dark:border-gray-700" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-white dark:bg-gray-900 px-2 text-gray-500">
+                    {isEditingConfig ? 'Chỉnh sửa cấu hình' : 'Thông tin cấu hình'}
+                  </span>
+                </div>
+              </div>
+
               <div>
                 <Label className="text-sm">Công ty *</Label>
                 <Combobox
@@ -752,6 +1041,21 @@ export default function HoaDonPage() {
             </div>
           </DialogBody>
           <DialogFooter>
+            {isEditingConfig && selectedConfigId && (
+              <Button 
+                variant="destructive" 
+                onClick={handleDeleteConfig} 
+                disabled={isDeletingConfig}
+                className="mr-auto"
+              >
+                {isDeletingConfig ? (
+                  <RefreshCw className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Trash2 className="h-4 w-4" />
+                )}
+                <span className="ml-1 hidden sm:inline">Xóa</span>
+              </Button>
+            )}
             <Button variant="outline" onClick={() => setShowConfigDialog(false)}>
               Hủy
             </Button>
@@ -762,7 +1066,10 @@ export default function HoaDonPage() {
                   <span className="ml-1">Đang lưu...</span>
                 </>
               ) : (
-                'Lưu cấu hình'
+                <>
+                  {isEditingConfig ? <Pencil className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+                  <span className="ml-1">{isEditingConfig ? 'Cập nhật' : 'Lưu cấu hình'}</span>
+                </>
               )}
             </Button>
           </DialogFooter>

@@ -282,6 +282,7 @@ export interface SyncLog {
 export interface CreateInvoiceInput {
   idServer: string;
   brandname?: string;
+  congtyId?: string;
   nbmst: string;
   nbten?: string;
   nbdchi?: string;
@@ -320,6 +321,7 @@ export interface SyncInvoicesInput {
   fromDate: string;
   toDate: string;
   brandname?: string;
+  congtyId?: string;
 }
 
 // ======================

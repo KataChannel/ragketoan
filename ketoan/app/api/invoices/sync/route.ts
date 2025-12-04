@@ -1,19 +1,58 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { invoiceSyncService } from '@/app/services';
 import { InvoiceType } from '@/app/types';
+import prisma from '@/app/lib/prisma';
 
 // POST /api/invoices/sync - Đồng bộ hóa đơn từ API Thuế
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const { 
-      bearerToken, 
+      configId,
+      bearerToken: manualToken, 
       invoiceType, 
       fromDate, 
       toDate, 
       brandname,
+      congtyId,
       baseUrl 
     } = body;
+
+    let bearerToken = manualToken;
+    let effectiveBaseUrl = baseUrl;
+    let effectiveBrandname = brandname;
+    let effectiveCongtyId = congtyId;
+
+    // Nếu có configId, lấy thông tin từ database
+    if (configId) {
+      const config = await prisma.ext_apiconfig.findUnique({
+        where: { id: configId },
+        include: {
+          congty: {
+            select: { id: true, mst: true, ten: true }
+          }
+        }
+      });
+
+      if (!config) {
+        return NextResponse.json(
+          { success: false, error: 'Không tìm thấy cấu hình API' },
+          { status: 404 }
+        );
+      }
+
+      if (!config.isActive) {
+        return NextResponse.json(
+          { success: false, error: 'Cấu hình API đã bị vô hiệu hóa' },
+          { status: 400 }
+        );
+      }
+
+      bearerToken = config.bearerToken;
+      effectiveBaseUrl = config.baseUrl || baseUrl;
+      effectiveBrandname = brandname || config.brandname;
+      effectiveCongtyId = config.congtyId;
+    }
 
     // Validate required fields
     if (!bearerToken) {
@@ -38,15 +77,27 @@ export async function POST(request: NextRequest) {
     }
 
     // Init Tax API Service
-    invoiceSyncService.initTaxApi(bearerToken, { baseUrl });
+    invoiceSyncService.initTaxApi(bearerToken, { baseUrl: effectiveBaseUrl });
 
     // Sync invoices
     const result = await invoiceSyncService.syncInvoices({
       invoiceType: invoiceType as InvoiceType,
       fromDate,
       toDate,
-      brandname,
+      brandname: effectiveBrandname,
+      congtyId: effectiveCongtyId,
     });
+
+    // Cập nhật lastSyncAt nếu dùng configId
+    if (configId) {
+      await prisma.ext_apiconfig.update({
+        where: { id: configId },
+        data: {
+          lastSyncAt: new Date(),
+          lastSyncStatus: result.errorCount > 0 ? 'partial' : 'success',
+        }
+      });
+    }
 
     return NextResponse.json({
       success: true,

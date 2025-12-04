@@ -28,6 +28,7 @@ export class InvoiceDbService {
     const data = {
       idServer: input.idServer,
       brandname: input.brandname,
+      congtyId: input.congtyId,
       nbmst: input.nbmst,
       nbten: input.nbten,
       nbdchi: input.nbdchi,
@@ -372,13 +373,14 @@ export class InvoiceSyncService {
     fromDate: string;
     toDate: string;
     brandname?: string;
+    congtyId?: string;
     onProgress?: (progress: { current: number; total: number; message: string; percentage: number }) => void;
   }): Promise<SyncResult> {
     if (!this.taxApiService) {
       throw new Error('Tax API Service chưa được khởi tạo. Gọi initTaxApi() trước.');
     }
 
-    const { invoiceType, fromDate, toDate, brandname, onProgress } = options;
+    const { invoiceType, fromDate, toDate, brandname, congtyId, onProgress } = options;
 
     // 1. Lấy danh sách hóa đơn từ API Thuế
     const invoices = await this.taxApiService.fetchAllInvoices(
@@ -396,7 +398,7 @@ export class InvoiceSyncService {
 
     // 2. Chuyển đổi và lưu vào database
     const inputs: CreateInvoiceInput[] = invoices.map((inv) =>
-      this.mapApiToCreateInput(inv, invoiceType, brandname)
+      this.mapApiToCreateInput(inv, invoiceType, brandname, congtyId)
     );
 
     let successCount = 0;
@@ -480,11 +482,13 @@ export class InvoiceSyncService {
   private mapApiToCreateInput(
     data: InvoiceApiData,
     invoiceType: InvoiceType,
-    brandname?: string
+    brandname?: string,
+    congtyId?: string
   ): CreateInvoiceInput {
     return {
       idServer: data.id,
       brandname,
+      congtyId,
       nbmst: data.nbmst,
       nbten: data.nbten,
       nbdchi: data.nbdchi,
