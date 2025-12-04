@@ -42,7 +42,6 @@ export class TaxApiService {
         'Accept-Language': 'vi',
         'Cache-Control': 'no-cache',
         'Connection': 'keep-alive',
-        'End-Point': '/tra-cuu/tra-cuu-hoa-don',
       },
       timeout: DEFAULT_TIMEOUT,
     });

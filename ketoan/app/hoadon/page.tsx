@@ -57,6 +57,17 @@ interface ExtendedSyncProgress extends SyncProgress {
     current: number;
     total: number;
   };
+  // Kết quả cuối cùng
+  result?: {
+    totalRecords: number;
+    successCount: number;
+    errorCount: number;
+    detailResult?: {
+      totalRecords: number;
+      successCount: number;
+      errorCount: number;
+    };
+  };
 }
 
 export default function HoaDonPage() {
@@ -85,6 +96,7 @@ export default function HoaDonPage() {
   const [showSyncDialog, setShowSyncDialog] = useState(false);
   const [syncSavedConfigs, setSyncSavedConfigs] = useState<ApiConfig[]>([]);
   const [syncSelectedConfigId, setSyncSelectedConfigId] = useState<string>('');
+  const [syncInvoiceType, setSyncInvoiceType] = useState<InvoiceType>('banra'); // Loại hóa đơn để đồng bộ
   const [syncConfig, setSyncConfig] = useState({
     configId: '',
     bearerToken: '',
@@ -229,7 +241,7 @@ export default function HoaDonPage() {
         body: JSON.stringify({
           configId: syncSelectedConfigId || undefined,
           bearerToken: syncConfig.bearerToken || undefined,
-          invoiceType,
+          invoiceType: syncInvoiceType, // Sử dụng loại hóa đơn từ dialog
           fromDate: syncConfig.fromDate,
           toDate: syncConfig.toDate,
           brandname: syncConfig.brandname,
@@ -303,8 +315,9 @@ export default function HoaDonPage() {
                   setSyncProgress({
                     current: data.result?.successCount || 0,
                     total: data.result?.totalRecords || 0,
-                    message: data.message || 'Hoàn thành!',
+                    message: `Đã đồng bộ ${data.result?.successCount}/${data.result?.totalRecords} hóa đơn`,
                     percentage: 100,
+                    result: data.result, // Lưu kết quả để hiển thị
                   });
                   
                   // Build success message
@@ -952,9 +965,11 @@ export default function HoaDonPage() {
           setSyncProgress(null);
           setSyncSessionId(null);
           setIsStopping(false);
+          setSyncInvoiceType(invoiceType); // Đặt mặc định theo filter đang chọn
         } else {
           // Reset state when closing
           setSyncSelectedConfigId('');
+          setSyncInvoiceType('banra');
           setSyncConfig({
             configId: '',
             bearerToken: '',
@@ -996,6 +1011,17 @@ export default function HoaDonPage() {
                     Chưa có cấu hình nào. Vui lòng vào Cài đặt để tạo cấu hình mới.
                   </p>
                 )}
+              </div>
+
+              {/* Chọn loại hóa đơn */}
+              <div>
+                <Label className="text-sm font-medium">Loại hóa đơn</Label>
+                <Combobox
+                  options={invoiceTypeOptions}
+                  value={syncInvoiceType}
+                  onValueChange={(val) => setSyncInvoiceType(val as InvoiceType)}
+                  placeholder="Chọn loại hóa đơn"
+                />
               </div>
 
               {/* Hiển thị input token khi chọn "Nhập token thủ công" */}
@@ -1166,6 +1192,61 @@ export default function HoaDonPage() {
                         <div className={`flex items-center gap-1 ${syncProgress.phase === 'detail' ? 'text-green-600 font-medium' : 'text-gray-400'}`}>
                           <div className={`w-2 h-2 rounded-full ${syncProgress.phase === 'detail' ? 'bg-green-600 animate-pulse' : 'bg-gray-300'}`} />
                           <span>Chi tiết</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Kết quả chi tiết khi hoàn thành */}
+                  {syncProgress.percentage === 100 && syncProgress.result && (
+                    <div className="mt-3 pt-3 border-t border-blue-200 dark:border-blue-700 space-y-2">
+                      <div className="grid grid-cols-3 gap-2 text-center">
+                        <div className="bg-white dark:bg-gray-800 rounded-md p-2">
+                          <div className="text-lg font-bold text-blue-600 dark:text-blue-400">
+                            {syncProgress.result.totalRecords}
+                          </div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400">Tổng số</div>
+                        </div>
+                        <div className="bg-white dark:bg-gray-800 rounded-md p-2">
+                          <div className="text-lg font-bold text-green-600 dark:text-green-400">
+                            {syncProgress.result.successCount}
+                          </div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400">Thành công</div>
+                        </div>
+                        <div className="bg-white dark:bg-gray-800 rounded-md p-2">
+                          <div className="text-lg font-bold text-red-600 dark:text-red-400">
+                            {syncProgress.result.errorCount}
+                          </div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400">Lỗi</div>
+                        </div>
+                      </div>
+                      
+                      {/* Chi tiết hàng hóa nếu có */}
+                      {syncProgress.result.detailResult && (
+                        <div className="bg-green-50 dark:bg-green-900/20 rounded-md p-2 border border-green-200 dark:border-green-700">
+                          <div className="text-xs font-medium text-green-700 dark:text-green-300 mb-1">
+                            Chi tiết hàng hóa/dịch vụ
+                          </div>
+                          <div className="grid grid-cols-3 gap-2 text-center text-xs">
+                            <div>
+                              <span className="font-semibold text-green-600 dark:text-green-400">
+                                {syncProgress.result.detailResult.totalRecords}
+                              </span>
+                              <span className="text-gray-500 dark:text-gray-400"> dòng</span>
+                            </div>
+                            <div>
+                              <span className="font-semibold text-green-600 dark:text-green-400">
+                                {syncProgress.result.detailResult.successCount}
+                              </span>
+                              <span className="text-gray-500 dark:text-gray-400"> OK</span>
+                            </div>
+                            <div>
+                              <span className="font-semibold text-red-600 dark:text-red-400">
+                                {syncProgress.result.detailResult.errorCount}
+                              </span>
+                              <span className="text-gray-500 dark:text-gray-400"> lỗi</span>
+                            </div>
+                          </div>
                         </div>
                       )}
                     </div>
