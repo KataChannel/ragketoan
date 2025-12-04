@@ -177,6 +177,71 @@ export class TaxApiService {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
+  /**
+   * Phân nhỏ khoảng thời gian thành các tháng riêng biệt
+   * VD: fromDate=2025-03-15, toDate=2025-05-20 
+   * => [
+   *   { fromDate: '2025-03-15', toDate: '2025-03-31' },
+   *   { fromDate: '2025-04-01', toDate: '2025-04-30' },
+   *   { fromDate: '2025-05-01', toDate: '2025-05-20' }
+   * ]
+   */
+  static splitDateRangeByMonth(fromDate: string, toDate: string): { fromDate: string; toDate: string }[] {
+    const ranges: { fromDate: string; toDate: string }[] = [];
+    
+    // Parse dates (support YYYY-MM-DD format)
+    const parseDate = (dateStr: string): Date => {
+      if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+        const [year, month, day] = dateStr.split('-').map(Number);
+        return new Date(year, month - 1, day);
+      }
+      return new Date(dateStr);
+    };
+
+    const formatDate = (date: Date): string => {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    };
+
+    const getLastDayOfMonth = (year: number, month: number): number => {
+      return new Date(year, month + 1, 0).getDate();
+    };
+
+    const start = parseDate(fromDate);
+    const end = parseDate(toDate);
+
+    // Nếu cùng tháng, trả về nguyên khoảng
+    if (start.getFullYear() === end.getFullYear() && start.getMonth() === end.getMonth()) {
+      return [{ fromDate, toDate }];
+    }
+
+    let currentStart = new Date(start);
+
+    while (currentStart <= end) {
+      const year = currentStart.getFullYear();
+      const month = currentStart.getMonth();
+      const lastDay = getLastDayOfMonth(year, month);
+
+      // Ngày cuối của tháng hiện tại
+      const monthEnd = new Date(year, month, lastDay);
+      
+      // Ngày kết thúc cho range này: min(cuối tháng, ngày kết thúc tổng)
+      const rangeEnd = monthEnd < end ? monthEnd : end;
+
+      ranges.push({
+        fromDate: formatDate(currentStart),
+        toDate: formatDate(rangeEnd),
+      });
+
+      // Chuyển sang ngày đầu tháng tiếp theo
+      currentStart = new Date(year, month + 1, 1);
+    }
+
+    return ranges;
+  }
+
   // ====================
   // API Methods
   // ====================
@@ -288,7 +353,9 @@ export class TaxApiService {
   }
 
   /**
-   * Lấy tất cả hóa đơn (với pagination)
+   * Lấy tất cả hóa đơn (với pagination và phân nhỏ theo tháng)
+   * - Tự động chia khoảng thời gian thành các tháng riêng biệt
+   * - Mỗi tháng sẽ pagination với state cho đến khi hết dữ liệu
    */
   async fetchAllInvoices(
     invoiceType: InvoiceType,
@@ -296,38 +363,70 @@ export class TaxApiService {
     onProgress?: (progress: { current: number; total: number; message: string }) => void
   ): Promise<InvoiceListResponse['datas']> {
     const allData: InvoiceListResponse['datas'] = [];
-    let currentState: string | undefined;
-    let page = 0;
-    let total = 0;
+    
+    // Phân nhỏ khoảng thời gian theo tháng
+    const monthRanges = TaxApiService.splitDateRangeByMonth(filter.fromDate, filter.toDate);
+    console.log(`📅 Chia thành ${monthRanges.length} khoảng thời gian:`, monthRanges);
 
-    do {
-      const response = await this.fetchInvoices(invoiceType, filter, {
-        page,
-        size: 50,
-        state: currentState,
-      });
+    let estimatedTotal = 0;
+    let processedMonths = 0;
 
-      allData.push(...response.datas);
-      currentState = response.state;
-      total = response.total;
-      page++;
+    for (const range of monthRanges) {
+      console.log(`📆 Đang xử lý: ${range.fromDate} -> ${range.toDate}`);
+      
+      let currentState: string | undefined;
+      let page = 0;
+      let monthTotal = 0;
 
-      // Progress callback
-      if (onProgress) {
-        onProgress({
-          current: allData.length,
-          total,
-          message: `Đã tải ${allData.length}/${total} hóa đơn...`,
+      // Pagination trong mỗi tháng
+      do {
+        const response = await this.fetchInvoices(invoiceType, {
+          ...filter,
+          fromDate: range.fromDate,
+          toDate: range.toDate,
+        }, {
+          page,
+          size: 50,
+          state: currentState,
         });
-      }
 
-      // Rate limiting: đợi giữa các request
-      if (currentState) {
-        const delayTime = this.getDelayTime(total);
-        await this.delay(delayTime);
-      }
-    } while (currentState && allData.length < total);
+        allData.push(...response.datas);
+        currentState = response.state;
+        monthTotal = response.total;
+        
+        // Cập nhật estimated total
+        if (page === 0) {
+          estimatedTotal += monthTotal;
+        }
+        
+        page++;
 
+        // Progress callback
+        if (onProgress) {
+          onProgress({
+            current: allData.length,
+            total: estimatedTotal || allData.length,
+            message: `Đã tải ${allData.length} hóa đơn (tháng ${processedMonths + 1}/${monthRanges.length})...`,
+          });
+        }
+
+        // Rate limiting: đợi giữa các request
+        if (currentState) {
+          const delayTime = this.getDelayTime(monthTotal);
+          await this.delay(delayTime);
+        }
+      } while (currentState);
+
+      processedMonths++;
+      console.log(`✅ Hoàn thành tháng ${processedMonths}/${monthRanges.length}: ${monthTotal} hóa đơn`);
+
+      // Delay giữa các tháng để tránh rate limit
+      if (processedMonths < monthRanges.length) {
+        await this.delay(1500);
+      }
+    }
+
+    console.log(`📊 Tổng cộng: ${allData.length} hóa đơn từ ${monthRanges.length} tháng`);
     return allData;
   }
 
