@@ -511,6 +511,32 @@ show_banner
 check_prerequisites
 check_env
 
+# Auto git commit and push
+auto_git() {
+    echo -e "${CYAN}[GIT] Auto commit và push...${NC}"
+    cd "$SCRIPT_DIR"
+    
+    # Check if there are changes
+    if [ -n "$(git status --porcelain 2>/dev/null)" ]; then
+        local timestamp=$(date +"%Y-%m-%d %H:%M:%S")
+        git add . 2>/dev/null
+        git commit -m "auto: $timestamp" 2>/dev/null
+        git push 2>/dev/null
+        
+        if [ $? -eq 0 ]; then
+            echo -e "  ${GREEN}✓${NC} Đã push code lên git"
+        else
+            echo -e "  ${YELLOW}⚠${NC} Không thể push (có thể chưa config remote)"
+        fi
+    else
+        echo -e "  ${GREEN}✓${NC} Không có thay đổi mới"
+    fi
+    echo ""
+}
+
+# Run auto git
+auto_git
+
 # Non-interactive mode
 if [ -n "$SERVICE" ]; then
     case $SERVICE in
