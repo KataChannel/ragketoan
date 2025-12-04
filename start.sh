@@ -48,6 +48,7 @@ show_menu() {
     echo -e "  ${GREEN}7)${NC} 📜 Xem logs           (Logs)"
     echo -e "  ${GREEN}8)${NC} 💾 Backup dữ liệu     (Backup data)"
     echo -e "  ${GREEN}9)${NC} 🔄 Restore dữ liệu    (Restore data)"
+    echo -e "  ${GREEN}g)${NC} 🔀 Git commit & push  (Auto git)"
     echo -e "  ${GREEN}0)${NC} ❌ Thoát"
     echo ""
 }
@@ -485,6 +486,9 @@ while [[ $# -gt 0 ]]; do
             echo "  --backup    Backup dữ liệu dự án"
             echo "  --restore   Restore dữ liệu từ backup"
             echo ""
+            echo "Git Options:"
+            echo "  --git       Auto git add, commit và push"
+            echo ""
             echo "Other:"
             echo "  -h, --help  Hiển thị trợ giúp"
             echo ""
@@ -497,6 +501,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         --restore)
             SERVICE="restore"
+            shift
+            ;;
+        --git)
+            SERVICE="git"
             shift
             ;;
         *)
@@ -534,9 +542,6 @@ auto_git() {
     echo ""
 }
 
-# Run auto git
-auto_git
-
 # Non-interactive mode
 if [ -n "$SERVICE" ]; then
     case $SERVICE in
@@ -554,6 +559,9 @@ if [ -n "$SERVICE" ]; then
             ;;
         restore)
             restore_data
+            ;;
+        git)
+            auto_git
             ;;
     esac
     exit 0
@@ -628,12 +636,17 @@ while true; do
             restore_data
             echo ""
             ;;
+        g|G)
+            # Git auto commit and push
+            auto_git
+            echo ""
+            ;;
         0)
             echo -e "${YELLOW}Tạm biệt! 👋${NC}"
             exit 0
             ;;
         *)
-            echo -e "${RED}Lựa chọn không hợp lệ. Vui lòng chọn 0-9.${NC}"
+            echo -e "${RED}Lựa chọn không hợp lệ. Vui lòng chọn 0-9 hoặc g.${NC}"
             echo ""
             ;;
     esac
@@ -645,3 +658,4 @@ echo -e "${YELLOW}[TIP] Dùng './logs.sh' để xem logs${NC}"
 echo -e "${YELLOW}[TIP] Dùng './status.sh' để xem trạng thái${NC}"
 echo -e "${YELLOW}[TIP] Dùng './start.sh --backup' để backup dữ liệu${NC}"
 echo -e "${YELLOW}[TIP] Dùng './start.sh --restore' để restore dữ liệu${NC}"
+echo -e "${YELLOW}[TIP] Dùng './start.sh --git' để auto git commit & push${NC}"
