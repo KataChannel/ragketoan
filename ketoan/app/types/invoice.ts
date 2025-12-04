@@ -22,8 +22,23 @@ export interface InvoiceListResponse {
 
 /** Response từ API chi tiết hóa đơn */
 export interface InvoiceDetailResponse {
-  datas: InvoiceDetailApiData[];
-  success: boolean;
+  // API có thể trả về datas hoặc data hoặc hddvu
+  datas?: InvoiceDetailApiData[];
+  data?: InvoiceDetailApiData[] | InvoiceDetailApiData;
+  hddvu?: InvoiceDetailApiData[]; // Hàng hóa dịch vụ
+  success?: boolean;
+  // Các field khác của hóa đơn (thông tin header)
+  nbmst?: string;
+  nbten?: string;
+  nmmst?: string;
+  nmten?: string;
+  khmshdon?: string;
+  khhdon?: string;
+  shdon?: string;
+  tdlap?: string;
+  tgtcthue?: number;
+  tgtthue?: number;
+  tgtttbso?: number;
 }
 
 /** Dữ liệu hóa đơn từ API Thuế */
@@ -256,6 +271,40 @@ export interface SyncProgress {
   total: number;
   message: string;
   percentage: number;
+}
+
+/** Stream progress - chi tiết từng bước đồng bộ */
+export interface StreamProgress {
+  type: 'progress' | 'invoice' | 'detail' | 'complete' | 'error' | 'aborted';
+  phase?: 'fetch' | 'save' | 'detail';
+  current?: number;
+  total?: number;
+  message?: string;
+  percentage?: number;
+  invoice?: {
+    shdon: string;
+    khhdon: string;
+    nbten?: string;
+    nmten?: string;
+  };
+  detail?: {
+    invoiceShdon: string;
+    current: number;
+    total: number;
+    itemName?: string;
+  };
+  result?: {
+    totalRecords: number;
+    successCount: number;
+    errorCount: number;
+    detailResult?: {
+      totalRecords: number;
+      successCount: number;
+      errorCount: number;
+    };
+  };
+  error?: string;
+  sessionId?: string;
 }
 
 /** Sync log */

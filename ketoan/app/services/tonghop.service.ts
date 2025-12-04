@@ -1,0 +1,528 @@
+/**
+ * Service Tổng hợp dữ liệu hóa đơn
+ * Kết hợp ext_detailhoadon và ext_listhoadon thành ext_tonghop
+ * Phục vụ cho RAG và xử lý xuất nhập tồn theo mặt hàng
+ */
+
+import prisma from '@/app/lib/prisma'
+import { Decimal } from '@prisma/client/runtime/library'
+
+// ============================================================================
+// Types
+// ============================================================================
+
+export interface TongHopSyncOptions {
+  congtyId?: string
+  fromDate?: Date
+  toDate?: Date
+  forceResync?: boolean // Xóa và đồng bộ lại tất cả
+}
+
+export interface TongHopSyncResult {
+  success: boolean
+  totalProcessed: number
+  inserted: number
+  updated: number
+  errors: number
+  message: string
+  details?: string[]
+}
+
+export interface TongHopStats {
+  tongSoLuong: number
+  tongNhap: number
+  tongXuat: number
+  giaTriNhap: number
+  giaTriXuat: number
+  soMatHang: number
+  soHoaDon: number
+}
+
+// ============================================================================
+// Helper Functions
+// ============================================================================
+
+/**
+ * Chuẩn hóa tên hàng hóa cho RAG
+ * - Loại bỏ dấu
+ * - Viết hoa
+ * - Trim whitespace
+ */
+function chuanHoaTenHang(ten: string): string {
+  return ten
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '') // Loại bỏ dấu
+    .replace(/đ/gi, 'd')
+    .toUpperCase()
+    .trim()
+    .replace(/\s+/g, ' ') // Normalize whitespace
+}
+
+/**
+ * Tạo search text cho full-text search
+ */
+function taoSearchText(tenHang: string, nbten?: string | null, nmten?: string | null): string {
+  const parts = [tenHang]
+  if (nbten) parts.push(nbten)
+  if (nmten) parts.push(nmten)
+  return parts.join(' | ')
+}
+
+/**
+ * Tính quý từ tháng
+ */
+function tinhQuy(thang: number): number {
+  return Math.ceil(thang / 3)
+}
+
+/**
+ * Sinh mã hàng từ tên
+ */
+function sinhMaHang(ten: string, index: number): string {
+  const tenChuan = chuanHoaTenHang(ten)
+  const words = tenChuan.split(' ').filter(w => w.length > 2)
+  const prefix = words.slice(0, 3).map(w => w.charAt(0)).join('')
+  return `${prefix || 'SP'}${index.toString().padStart(4, '0')}`
+}
+
+// ============================================================================
+// Main Service Functions
+// ============================================================================
+
+/**
+ * Đồng bộ dữ liệu từ ext_detailhoadon + ext_listhoadon → ext_tonghop
+ */
+export async function syncTongHop(options: TongHopSyncOptions = {}): Promise<TongHopSyncResult> {
+  const { congtyId, fromDate, toDate, forceResync = false } = options
+  const errors: string[] = []
+  let inserted = 0
+  let updated = 0
+
+  try {
+    // Nếu forceResync, xóa dữ liệu cũ theo điều kiện
+    if (forceResync) {
+      const deleteWhere: Record<string, unknown> = {}
+      if (congtyId) deleteWhere.congtyId = congtyId
+      if (fromDate || toDate) {
+        deleteWhere.tdlap = {}
+        if (fromDate) (deleteWhere.tdlap as Record<string, Date>).gte = fromDate
+        if (toDate) (deleteWhere.tdlap as Record<string, Date>).lte = toDate
+      }
+      
+      await prisma.ext_tonghop.deleteMany({
+        where: Object.keys(deleteWhere).length > 0 ? deleteWhere : undefined
+      })
+    }
+
+    // Lấy danh sách chi tiết hóa đơn với thông tin header
+    const whereClause: Record<string, unknown> = {}
+    if (congtyId) {
+      whereClause.invoice = { congtyId }
+    }
+    if (fromDate || toDate) {
+      whereClause.invoice = {
+        ...(whereClause.invoice as object || {}),
+        tdlap: {
+          ...(fromDate ? { gte: fromDate } : {}),
+          ...(toDate ? { lte: toDate } : {})
+        }
+      }
+    }
+
+    const details = await prisma.ext_detailhoadon.findMany({
+      where: Object.keys(whereClause).length > 0 ? whereClause : undefined,
+      include: {
+        invoice: {
+          include: {
+            congty: true
+          }
+        }
+      }
+    })
+
+    // Lấy danh sách idServer đã có trong ext_tonghop
+    const existingIds = new Set(
+      (await prisma.ext_tonghop.findMany({
+        select: { idDetailServer: true }
+      })).map(t => t.idDetailServer)
+    )
+
+    // Xử lý từng chi tiết
+    let index = await prisma.ext_tonghop.count()
+    
+    for (const detail of details) {
+      try {
+        const invoice = detail.invoice
+        const congty = invoice.congty
+        
+        // Tính các trường derived
+        const nam = invoice.tdlap.getFullYear()
+        const thang = invoice.tdlap.getMonth() + 1
+        const quy = tinhQuy(thang)
+        
+        const tenHangChuan = chuanHoaTenHang(detail.ten)
+        const searchText = taoSearchText(detail.ten, invoice.nbten, invoice.nmten)
+        
+        // Tính số lượng và giá trị nhập/xuất
+        const sluong = new Decimal(detail.sluong)
+        const thtien = new Decimal(detail.thtien)
+        const tthue = new Decimal(detail.tthue)
+        const tongTien = thtien.add(tthue)
+        
+        const isNhap = invoice.loaihd === 'muavao'
+        const soLuongNhap = isNhap ? sluong : new Decimal(0)
+        const soLuongXuat = isNhap ? new Decimal(0) : sluong
+        const giaTriNhap = isNhap ? tongTien : new Decimal(0)
+        const giaTriXuat = isNhap ? new Decimal(0) : tongTien
+
+        const data = {
+          idDetailServer: detail.idServer,
+          idHoadonServer: invoice.idServer,
+          
+          // Thông tin công ty
+          congtyId: congty?.id || null,
+          congtyMst: congty?.mst || null,
+          congtyTen: congty?.ten || null,
+          
+          // Thông tin hóa đơn
+          khmshdon: invoice.khmshdon,
+          khhdon: invoice.khhdon,
+          shdon: invoice.shdon,
+          mhso: invoice.mhso,
+          tdlap: invoice.tdlap,
+          tthai: invoice.tthai,
+          loaihd: invoice.loaihd,
+          
+          // Người bán
+          nbmst: invoice.nbmst,
+          nbten: invoice.nbten,
+          nbdchi: invoice.nbdchi,
+          
+          // Người mua
+          nmmst: invoice.nmmst,
+          nmten: invoice.nmten,
+          nmdchi: invoice.nmdchi,
+          
+          // Chi tiết hàng hóa
+          stt: detail.stt,
+          tenHang: detail.ten,
+          tenHangChuan,
+          maHang: sinhMaHang(detail.ten, ++index),
+          nhomHang: null, // Sẽ được update sau bởi AI/RAG
+          dvtinh: detail.dvtinh,
+          
+          // Số liệu
+          sluong: detail.sluong,
+          dgia: detail.dgia,
+          thtien: detail.thtien,
+          
+          // Thuế
+          tsuat: detail.tsuat,
+          tthue: detail.tthue,
+          tongTien,
+          
+          // Xuất nhập tồn
+          soLuongNhap,
+          soLuongXuat,
+          giaTriNhap,
+          giaTriXuat,
+          
+          // RAG metadata
+          searchText,
+          tags: [],
+          
+          // Thời gian
+          nam,
+          thang,
+          quy,
+          
+          syncedAt: new Date()
+        }
+
+        if (existingIds.has(detail.idServer)) {
+          // Update nếu đã tồn tại
+          await prisma.ext_tonghop.update({
+            where: { idDetailServer: detail.idServer },
+            data
+          })
+          updated++
+        } else {
+          // Insert mới
+          await prisma.ext_tonghop.create({ data })
+          inserted++
+        }
+      } catch (err) {
+        const errorMsg = `Lỗi xử lý detail ${detail.idServer}: ${err instanceof Error ? err.message : 'Unknown'}`
+        errors.push(errorMsg)
+        console.error(errorMsg)
+      }
+    }
+
+    return {
+      success: true,
+      totalProcessed: details.length,
+      inserted,
+      updated,
+      errors: errors.length,
+      message: `Đồng bộ thành công: ${inserted} mới, ${updated} cập nhật, ${errors.length} lỗi`,
+      details: errors.length > 0 ? errors : undefined
+    }
+  } catch (err) {
+    return {
+      success: false,
+      totalProcessed: 0,
+      inserted: 0,
+      updated: 0,
+      errors: 1,
+      message: `Lỗi đồng bộ: ${err instanceof Error ? err.message : 'Unknown'}`,
+      details: [err instanceof Error ? err.stack || err.message : 'Unknown error']
+    }
+  }
+}
+
+/**
+ * Lấy thống kê tổng hợp
+ */
+export async function getTongHopStats(options: {
+  congtyId?: string
+  fromDate?: Date
+  toDate?: Date
+  maHang?: string
+  tenHang?: string
+}): Promise<TongHopStats> {
+  const { congtyId, fromDate, toDate, maHang, tenHang } = options
+  
+  const where: Record<string, unknown> = {}
+  if (congtyId) where.congtyId = congtyId
+  if (maHang) where.maHang = maHang
+  if (tenHang) where.tenHang = { contains: tenHang, mode: 'insensitive' }
+  if (fromDate || toDate) {
+    where.tdlap = {}
+    if (fromDate) (where.tdlap as Record<string, Date>).gte = fromDate
+    if (toDate) (where.tdlap as Record<string, Date>).lte = toDate
+  }
+
+  const [aggregation, countMatHang, countHoaDon] = await Promise.all([
+    prisma.ext_tonghop.aggregate({
+      where,
+      _sum: {
+        sluong: true,
+        soLuongNhap: true,
+        soLuongXuat: true,
+        giaTriNhap: true,
+        giaTriXuat: true
+      }
+    }),
+    prisma.ext_tonghop.groupBy({
+      by: ['tenHangChuan'],
+      where,
+      _count: true
+    }),
+    prisma.ext_tonghop.groupBy({
+      by: ['idHoadonServer'],
+      where,
+      _count: true
+    })
+  ])
+
+  return {
+    tongSoLuong: Number(aggregation._sum.sluong || 0),
+    tongNhap: Number(aggregation._sum.soLuongNhap || 0),
+    tongXuat: Number(aggregation._sum.soLuongXuat || 0),
+    giaTriNhap: Number(aggregation._sum.giaTriNhap || 0),
+    giaTriXuat: Number(aggregation._sum.giaTriXuat || 0),
+    soMatHang: countMatHang.length,
+    soHoaDon: countHoaDon.length
+  }
+}
+
+/**
+ * Lấy danh sách tổng hợp với pagination và filter
+ */
+export async function getTongHopList(options: {
+  congtyId?: string
+  fromDate?: Date
+  toDate?: Date
+  loaihd?: 'banra' | 'muavao'
+  search?: string
+  page?: number
+  limit?: number
+  orderBy?: 'tdlap' | 'tenHang' | 'sluong' | 'tongTien'
+  order?: 'asc' | 'desc'
+}) {
+  const {
+    congtyId,
+    fromDate,
+    toDate,
+    loaihd,
+    search,
+    page = 1,
+    limit = 20,
+    orderBy = 'tdlap',
+    order = 'desc'
+  } = options
+
+  const where: Record<string, unknown> = {}
+  if (congtyId) where.congtyId = congtyId
+  if (loaihd) where.loaihd = loaihd
+  if (search) {
+    where.OR = [
+      { tenHang: { contains: search, mode: 'insensitive' } },
+      { tenHangChuan: { contains: search, mode: 'insensitive' } },
+      { maHang: { contains: search, mode: 'insensitive' } },
+      { nbten: { contains: search, mode: 'insensitive' } },
+      { nmten: { contains: search, mode: 'insensitive' } }
+    ]
+  }
+  if (fromDate || toDate) {
+    where.tdlap = {}
+    if (fromDate) (where.tdlap as Record<string, Date>).gte = fromDate
+    if (toDate) (where.tdlap as Record<string, Date>).lte = toDate
+  }
+
+  const [items, total] = await Promise.all([
+    prisma.ext_tonghop.findMany({
+      where,
+      orderBy: { [orderBy]: order },
+      skip: (page - 1) * limit,
+      take: limit
+    }),
+    prisma.ext_tonghop.count({ where })
+  ])
+
+  return {
+    items,
+    pagination: {
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit)
+    }
+  }
+}
+
+/**
+ * Lấy báo cáo xuất nhập tồn theo mặt hàng
+ */
+export async function getXuatNhapTonByMatHang(options: {
+  congtyId?: string
+  fromDate?: Date
+  toDate?: Date
+  groupBy?: 'tenHangChuan' | 'maHang' | 'nhomHang'
+}) {
+  const { congtyId, fromDate, toDate, groupBy = 'tenHangChuan' } = options
+
+  const where: Record<string, unknown> = {}
+  if (congtyId) where.congtyId = congtyId
+  if (fromDate || toDate) {
+    where.tdlap = {}
+    if (fromDate) (where.tdlap as Record<string, Date>).gte = fromDate
+    if (toDate) (where.tdlap as Record<string, Date>).lte = toDate
+  }
+
+  const result = await prisma.ext_tonghop.groupBy({
+    by: [groupBy, 'dvtinh'],
+    where,
+    _sum: {
+      soLuongNhap: true,
+      soLuongXuat: true,
+      giaTriNhap: true,
+      giaTriXuat: true
+    },
+    _count: true,
+    orderBy: {
+      _sum: {
+        giaTriNhap: 'desc'
+      }
+    }
+  })
+
+  return result.map(item => ({
+    tenMatHang: item[groupBy],
+    dvtinh: item.dvtinh,
+    soLuongNhap: Number(item._sum.soLuongNhap || 0),
+    soLuongXuat: Number(item._sum.soLuongXuat || 0),
+    tonCuoi: Number(item._sum.soLuongNhap || 0) - Number(item._sum.soLuongXuat || 0),
+    giaTriNhap: Number(item._sum.giaTriNhap || 0),
+    giaTriXuat: Number(item._sum.giaTriXuat || 0),
+    giaTriTon: Number(item._sum.giaTriNhap || 0) - Number(item._sum.giaTriXuat || 0),
+    soLanGiaoDich: item._count
+  }))
+}
+
+/**
+ * Lấy báo cáo theo thời gian (tháng/quý/năm)
+ */
+export async function getXuatNhapTonTheoThoiGian(options: {
+  congtyId?: string
+  nam: number
+  groupBy?: 'thang' | 'quy'
+}) {
+  const { congtyId, nam, groupBy = 'thang' } = options
+
+  const where: Record<string, unknown> = { nam }
+  if (congtyId) where.congtyId = congtyId
+
+  // Tách riêng 2 case để tránh lỗi TypeScript với dynamic orderBy
+  if (groupBy === 'thang') {
+    const result = await prisma.ext_tonghop.groupBy({
+      by: ['thang'],
+      where,
+      _sum: {
+        soLuongNhap: true,
+        soLuongXuat: true,
+        giaTriNhap: true,
+        giaTriXuat: true
+      },
+      _count: true,
+      orderBy: {
+        thang: 'asc'
+      }
+    })
+
+    return result.map(item => ({
+      thang: item.thang,
+      soLuongNhap: Number(item._sum.soLuongNhap || 0),
+      soLuongXuat: Number(item._sum.soLuongXuat || 0),
+      giaTriNhap: Number(item._sum.giaTriNhap || 0),
+      giaTriXuat: Number(item._sum.giaTriXuat || 0),
+      soGiaoDich: item._count
+    }))
+  } else {
+    const result = await prisma.ext_tonghop.groupBy({
+      by: ['quy'],
+      where,
+      _sum: {
+        soLuongNhap: true,
+        soLuongXuat: true,
+        giaTriNhap: true,
+        giaTriXuat: true
+      },
+      _count: true,
+      orderBy: {
+        quy: 'asc'
+      }
+    })
+
+    return result.map(item => ({
+      quy: item.quy,
+      soLuongNhap: Number(item._sum.soLuongNhap || 0),
+      soLuongXuat: Number(item._sum.soLuongXuat || 0),
+      giaTriNhap: Number(item._sum.giaTriNhap || 0),
+      giaTriXuat: Number(item._sum.giaTriXuat || 0),
+      soGiaoDich: item._count
+    }))
+  }
+}
+
+// ============================================================================
+// Export default
+// ============================================================================
+
+export default {
+  syncTongHop,
+  getTongHopStats,
+  getTongHopList,
+  getXuatNhapTonByMatHang,
+  getXuatNhapTonTheoThoiGian
+}

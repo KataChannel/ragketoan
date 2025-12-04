@@ -240,3 +240,97 @@ model ext_synclog {
   @@index([status])
   @@index([startedAt])
 }
+
+// ============================================================================
+// Bảng Tổng hợp - Kết hợp chi tiết hóa đơn với thông tin header
+// Phục vụ RAG và xử lý xuất nhập tồn theo mặt hàng
+// ============================================================================
+
+/// Tổng hợp chi tiết hàng hóa - Denormalized view for RAG & inventory
+model ext_tonghop {
+  id             String   @id @default(uuid())
+  
+  // ===== Nguồn dữ liệu =====
+  idDetailServer String   @unique // FK → ext_detailhoadon.idServer
+  idHoadonServer String   // FK → ext_listhoadon.idServer
+  
+  // ===== Thông tin công ty =====
+  congtyId       String?  // FK → ext_congty.id
+  congtyMst      String?  // MST công ty (denormalized)
+  congtyTen      String?  // Tên công ty (denormalized)
+  
+  // ===== Thông tin hóa đơn (từ ext_listhoadon) =====
+  khmshdon       String   // Ký hiệu mẫu số hóa đơn
+  khhdon         String   // Ký hiệu hóa đơn
+  shdon          String   // Số hóa đơn
+  mhso           String?  // Mẫu hóa đơn
+  tdlap          DateTime // Thời điểm lập hóa đơn
+  tthai          String?  // Trạng thái hóa đơn
+  loaihd         String   // 'banra' | 'muavao'
+  
+  // ===== Thông tin người bán =====
+  nbmst          String   // MST người bán
+  nbten          String?  // Tên người bán
+  nbdchi         String?  // Địa chỉ người bán
+  
+  // ===== Thông tin người mua =====
+  nmmst          String?  // MST người mua
+  nmten          String?  // Tên người mua
+  nmdchi         String?  // Địa chỉ người mua
+  
+  // ===== Chi tiết hàng hóa (từ ext_detailhoadon) =====
+  stt            Int      @default(1)   // Số thứ tự trong hóa đơn
+  tenHang        String   // Tên hàng hóa/dịch vụ
+  tenHangChuan   String?  // Tên hàng đã chuẩn hóa (cho RAG)
+  maHang         String?  // Mã hàng (auto-gen hoặc mapping)
+  nhomHang       String?  // Nhóm hàng (category)
+  dvtinh         String?  // Đơn vị tính
+  
+  // ===== Số liệu =====
+  sluong         Decimal  @default(1) @db.Decimal(18, 4)  // Số lượng
+  dgia           Decimal  @default(0) @db.Decimal(18, 2)  // Đơn giá
+  thtien         Decimal  @default(0) @db.Decimal(18, 2)  // Thành tiền (chưa thuế)
+  
+  // ===== Thuế =====
+  tsuat          Decimal  @default(0) @db.Decimal(5, 2)   // Thuế suất (%)
+  tthue          Decimal  @default(0) @db.Decimal(18, 2)  // Tiền thuế
+  tongTien       Decimal  @default(0) @db.Decimal(18, 2)  // Tổng tiền (thành tiền + thuế)
+  
+  // ===== Xuất nhập tồn =====
+  // loaihd = 'banra' → Xuất
+  // loaihd = 'muavao' → Nhập
+  soLuongNhap    Decimal  @default(0) @db.Decimal(18, 4)  // Số lượng nhập
+  soLuongXuat    Decimal  @default(0) @db.Decimal(18, 4)  // Số lượng xuất
+  giaTriNhap     Decimal  @default(0) @db.Decimal(18, 2)  // Giá trị nhập
+  giaTriXuat     Decimal  @default(0) @db.Decimal(18, 2)  // Giá trị xuất
+  
+  // ===== RAG Metadata =====
+  searchText     String?  // Full-text search: tên hàng + tên NB + tên NM
+  tags           String[] @default([]) // Tags for filtering
+  
+  // ===== Thời gian theo kỳ =====
+  nam            Int      // Năm (từ tdlap)
+  thang          Int      // Tháng (từ tdlap)
+  quy            Int      // Quý (từ tdlap)
+  
+  // ===== Metadata =====
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  syncedAt       DateTime @default(now()) // Thời điểm đồng bộ
+  
+  // ===== Indexes cho query performance =====
+  @@index([congtyId])
+  @@index([congtyMst])
+  @@index([idHoadonServer])
+  @@index([tdlap])
+  @@index([loaihd])
+  @@index([nbmst])
+  @@index([nmmst])
+  @@index([tenHang])
+  @@index([tenHangChuan])
+  @@index([maHang])
+  @@index([nhomHang])
+  @@index([nam, thang])
+  @@index([nam, quy])
+  @@index([tthai])
+}

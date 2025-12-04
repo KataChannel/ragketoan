@@ -15,7 +15,9 @@ export async function POST(request: NextRequest) {
       toDate, 
       brandname,
       congtyId,
-      baseUrl 
+      baseUrl,
+      syncDetails = false, // Có đồng bộ chi tiết không
+      delayBetweenDetails = 2000, // Delay giữa các request chi tiết (ms)
     } = body;
 
     let bearerToken = manualToken;
@@ -86,6 +88,8 @@ export async function POST(request: NextRequest) {
       toDate,
       brandname: effectiveBrandname,
       congtyId: effectiveCongtyId,
+      syncDetails,
+      delayBetweenDetails,
     });
 
     // Cập nhật lastSyncAt nếu dùng configId
@@ -99,10 +103,16 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    // Build response message
+    let message = `Đã đồng bộ ${result.successCount}/${result.totalRecords} hóa đơn`;
+    if (result.detailResult) {
+      message += `. Chi tiết: ${result.detailResult.successCount}/${result.detailResult.totalRecords} dòng`;
+    }
+
     return NextResponse.json({
       success: true,
       data: result,
-      message: `Đã đồng bộ ${result.successCount}/${result.totalRecords} hóa đơn`,
+      message,
     });
   } catch (error) {
     console.error('Error syncing invoices:', error);

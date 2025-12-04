@@ -246,31 +246,46 @@ export class TaxApiService {
    * Lấy chi tiết hóa đơn
    */
   async fetchInvoiceDetails(params: InvoiceDetailParams): Promise<InvoiceDetailResponse> {
-    // Validate MST format (10 or 13 digits)
-    const mstRegex = /^\d{10}(\d{3})?$/;
-    if (!mstRegex.test(params.nbmst)) {
-      throw new Error('MST không đúng định dạng (10 hoặc 13 số)');
+    // Log params để debug
+    console.log('🔍 fetchInvoiceDetails params:', JSON.stringify(params));
+    
+    // Validate MST - có thể có dấu gạch ngang cho chi nhánh (ví dụ: 0123456789-001)
+    if (!params.nbmst || params.nbmst.trim() === '') {
+      console.error('❌ MST người bán trống');
+      throw new Error('MST người bán không được để trống');
     }
 
     const queryParams = new URLSearchParams({
-      nbmst: params.nbmst,
-      khhdon: params.khhdon,
-      shdon: params.shdon,
-      khmshdon: params.khmshdon,
+      nbmst: params.nbmst.trim(),
+      khhdon: params.khhdon.trim(),
+      shdon: String(params.shdon).trim(),
+      khmshdon: String(params.khmshdon).trim(),
     });
 
-    const response = await this.executeWithRetry(() =>
-      this.axiosInstance.get<InvoiceDetailResponse>(
-        `/query/invoices/detail?${queryParams.toString()}`,
-        {
-          headers: {
-            'Action': encodeURIComponent('Xem chi tiết hóa đơn'),
-          }
-        }
-      )
-    );
+    const fullUrl = `/query/invoices/detail?${queryParams.toString()}`;
+    console.log('📡 Fetching invoice detail:', fullUrl);
 
-    return response.data;
+    try {
+      const response = await this.executeWithRetry(() =>
+        this.axiosInstance.get<InvoiceDetailResponse>(
+          fullUrl,
+          {
+            headers: {
+              'Action': encodeURIComponent('Xem hóa đơn (hóa đơn bán ra)'),
+            }
+          }
+        )
+      );
+
+      console.log('📦 Invoice detail response status:', response.status);
+      console.log('📦 Invoice detail response keys:', Object.keys(response.data || {}));
+      console.log('📦 Invoice detail response:', JSON.stringify(response.data).substring(0, 1500));
+
+      return response.data;
+    } catch (error) {
+      console.error('❌ Error fetching invoice detail:', error);
+      throw error;
+    }
   }
 
   /**
