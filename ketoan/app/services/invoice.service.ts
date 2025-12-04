@@ -35,15 +35,15 @@ export class InvoiceDbService {
       nmmst: input.nmmst,
       nmten: input.nmten,
       nmdchi: input.nmdchi,
-      khmshdon: input.khmshdon,
+      khmshdon: String(input.khmshdon), // Convert to string
       khhdon: input.khhdon,
-      shdon: input.shdon,
+      shdon: String(input.shdon), // Convert to string
       mhso: input.mhso,
       tgtcthue: input.tgtcthue,
       tgtthue: input.tgtthue,
       tgtttbso: input.tgtttbso,
       tdlap: new Date(input.tdlap),
-      tthai: input.tthai,
+      tthai: input.tthai != null ? String(input.tthai) : null, // Convert to string
       loaihd: input.loaihd,
     };
 
@@ -133,7 +133,7 @@ export class InvoiceDbService {
     ]);
 
     return {
-      data: data.map(this.mapToInvoice),
+      data: data.map((d) => this.mapToInvoice(d)),
       total,
     };
   }
@@ -228,7 +228,7 @@ export class InvoiceDbService {
       include: { products: true },
     });
 
-    return results.map(this.mapToInvoiceDetail);
+    return results.map((d) => this.mapToInvoiceDetail(d));
   }
 
   // ====================
@@ -321,7 +321,7 @@ export class InvoiceDbService {
       loaihd: data.loaihd,
       createdAt: data.createdAt,
       updatedAt: data.updatedAt,
-      details: data.details?.map(this.mapToInvoiceDetail),
+      details: data.details?.map((d: any) => this.mapToInvoiceDetail(d)),
     };
   }
 

@@ -37,7 +37,12 @@ export class TaxApiService {
       headers: {
         Authorization: `Bearer ${bearerToken}`,
         'Content-Type': 'application/json',
-        Accept: 'application/json',
+        Accept: 'application/json, text/plain, */*',
+        'Accept-Encoding': 'gzip, deflate, br, zstd',
+        'Accept-Language': 'vi',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive',
+        'End-Point': '/tra-cuu/tra-cuu-hoa-don',
       },
       timeout: DEFAULT_TIMEOUT,
     });
@@ -62,12 +67,14 @@ export class TaxApiService {
   private buildSearchQuery(filter: InvoiceFilter): string {
     const searchParts: string[] = [];
 
-    // Date range (required)
+    // Date range (required) - format: DD/MM/YYYY
     if (filter.fromDate) {
-      searchParts.push(`tdlap=ge=${filter.fromDate}T00:00:00`);
+      const fromDateFormatted = this.formatDateForApi(filter.fromDate);
+      searchParts.push(`tdlap=ge=${fromDateFormatted}T00:00:00`);
     }
     if (filter.toDate) {
-      searchParts.push(`tdlap=le=${filter.toDate}T23:59:59`);
+      const toDateFormatted = this.formatDateForApi(filter.toDate);
+      searchParts.push(`tdlap=le=${toDateFormatted}T23:59:59`);
     }
 
     // Optional filters
@@ -88,6 +95,35 @@ export class TaxApiService {
   }
 
   /**
+   * Format date to DD/MM/YYYY for API
+   * Input can be: YYYY-MM-DD, DD/MM/YYYY, or Date object
+   */
+  private formatDateForApi(dateInput: string): string {
+    // If already in DD/MM/YYYY format, return as is
+    if (/^\d{2}\/\d{2}\/\d{4}$/.test(dateInput)) {
+      return dateInput;
+    }
+    
+    // If in YYYY-MM-DD format, convert to DD/MM/YYYY
+    if (/^\d{4}-\d{2}-\d{2}$/.test(dateInput)) {
+      const [year, month, day] = dateInput.split('-');
+      return `${day}/${month}/${year}`;
+    }
+    
+    // Try parsing as date
+    const date = new Date(dateInput);
+    if (!isNaN(date.getTime())) {
+      const day = String(date.getDate()).padStart(2, '0');
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const year = date.getFullYear();
+      return `${day}/${month}/${year}`;
+    }
+    
+    // Return as-is if cannot parse
+    return dateInput;
+  }
+
+  /**
    * Execute request with retry logic
    */
   private async executeWithRetry<T>(
@@ -99,6 +135,13 @@ export class TaxApiService {
     } catch (error) {
       if (axios.isAxiosError(error)) {
         const status = error.response?.status;
+        
+        // Log chi tiết lỗi để debug
+        if (status === 400) {
+          console.error('❌ Bad Request (400) - Response:', JSON.stringify(error.response?.data, null, 2));
+          console.error('❌ Request URL:', error.config?.url);
+          console.error('❌ Request Headers:', JSON.stringify(error.config?.headers, null, 2));
+        }
 
         // Retry for rate limit errors
         if ((status === 409 || status === 429) && retryCount < (this.config.maxRetries || 3)) {
@@ -170,6 +213,11 @@ export class TaxApiService {
     const endpoint =
       invoiceType === 'banra' ? '/query/invoices/sold' : '/query/invoices/purchase';
 
+    // Action header tùy theo loại hóa đơn (URL encoded để tránh lỗi invalid character)
+    const actionHeader = invoiceType === 'banra' 
+      ? encodeURIComponent('Tìm kiếm (hóa đơn bán ra)') 
+      : encodeURIComponent('Tìm kiếm (hóa đơn mua vào)');
+
     const searchQuery = this.buildSearchQuery(filter);
 
     const queryParams = new URLSearchParams({
@@ -180,8 +228,15 @@ export class TaxApiService {
       ...(params.state && { state: params.state }),
     });
 
+    const fullUrl = `${endpoint}?${queryParams.toString()}`;
+    console.log('📡 Fetching invoices:', fullUrl);
+
     const response = await this.executeWithRetry(() =>
-      this.axiosInstance.get<InvoiceListResponse>(`${endpoint}?${queryParams.toString()}`)
+      this.axiosInstance.get<InvoiceListResponse>(`${endpoint}?${queryParams.toString()}`, {
+        headers: {
+          'Action': actionHeader,
+        }
+      })
     );
 
     return response.data;
@@ -206,7 +261,12 @@ export class TaxApiService {
 
     const response = await this.executeWithRetry(() =>
       this.axiosInstance.get<InvoiceDetailResponse>(
-        `/query/invoices/detail?${queryParams.toString()}`
+        `/query/invoices/detail?${queryParams.toString()}`,
+        {
+          headers: {
+            'Action': encodeURIComponent('Xem chi tiết hóa đơn'),
+          }
+        }
       )
     );
 
