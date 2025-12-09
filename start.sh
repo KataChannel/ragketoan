@@ -218,23 +218,39 @@ backup_data() {
     
     # 2. Backup PostgreSQL database (nén trực tiếp)
     echo -e "${CYAN}[2/5] Backup PostgreSQL database...${NC}"
-    if docker ps --format '{{.Names}}' | grep -q "postgres"; then
+    
+    # Tìm container postgres của project này (ragketoan-postgres-1 hoặc postgres)
+    local pg_container=""
+    for name in "ragketoan-postgres-1" "ragketoan_postgres_1" "postgres"; do
+        if docker ps --format '{{.Names}}' | grep -q "^${name}$"; then
+            pg_container="$name"
+            break
+        fi
+    done
+    
+    if [ -n "$pg_container" ]; then
+        echo -e "  ${CYAN}Container:${NC} $pg_container"
+        
         # Load env để lấy credentials
         if [ -f "$SCRIPT_DIR/.env" ]; then
+            set -a
             source "$SCRIPT_DIR/.env"
+            set +a
         fi
         
         # Sử dụng pg_dump với custom format (-Fc) để tối ưu dung lượng
-        docker exec postgres pg_dump -U "${POSTGRES_USER:-postgres}" \
+        # Thêm timeout 60s để tránh treo
+        timeout 60 docker exec "$pg_container" pg_dump -U "${POSTGRES_USER:-postgres}" \
             -d "${POSTGRES_DB:-n8n}" \
             -Fc --compress=9 \
             > "$temp_dir/postgres_db.dump" 2>/dev/null
         
-        if [ $? -eq 0 ]; then
+        if [ $? -eq 0 ] && [ -s "$temp_dir/postgres_db.dump" ]; then
             local db_size=$(stat -f%z "$temp_dir/postgres_db.dump" 2>/dev/null || stat -c%s "$temp_dir/postgres_db.dump" 2>/dev/null)
             echo -e "  ${GREEN}✓${NC} postgres_db.dump ($(get_size ${db_size:-0}))"
         else
-            echo -e "  ${YELLOW}⚠${NC} Không thể backup PostgreSQL (container có thể chưa chạy)"
+            echo -e "  ${YELLOW}⚠${NC} Không thể backup PostgreSQL (lỗi pg_dump hoặc timeout)"
+            rm -f "$temp_dir/postgres_db.dump"
         fi
     else
         echo -e "  ${YELLOW}⚠${NC} PostgreSQL container không chạy, bỏ qua..."
@@ -387,14 +403,27 @@ restore_data() {
     # Restore PostgreSQL
     echo -e "${CYAN}[3/5] Restore PostgreSQL database...${NC}"
     if [ -f "$temp_dir/postgres_db.dump" ]; then
-        if docker ps --format '{{.Names}}' | grep -q "postgres"; then
+        # Tìm container postgres của project này
+        local pg_container=""
+        for name in "ragketoan-postgres-1" "ragketoan_postgres_1" "postgres"; do
+            if docker ps --format '{{.Names}}' | grep -q "^${name}$"; then
+                pg_container="$name"
+                break
+            fi
+        done
+        
+        if [ -n "$pg_container" ]; then
+            echo -e "  ${CYAN}Container:${NC} $pg_container"
+            
             # Load env để lấy credentials
             if [ -f "$SCRIPT_DIR/.env" ]; then
+                set -a
                 source "$SCRIPT_DIR/.env"
+                set +a
             fi
             
-            # Restore using pg_restore
-            docker exec -i postgres pg_restore -U "${POSTGRES_USER:-postgres}" \
+            # Restore using pg_restore với timeout
+            timeout 120 docker exec -i "$pg_container" pg_restore -U "${POSTGRES_USER:-postgres}" \
                 -d "${POSTGRES_DB:-n8n}" \
                 --clean --if-exists \
                 < "$temp_dir/postgres_db.dump" 2>/dev/null

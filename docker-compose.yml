@@ -150,3 +150,53 @@ services:
     image: ollama/ollama:rocm
     depends_on:
      - ollama-gpu-amd
+
+  # =============================================================================
+  # RAG Service - Python FastAPI
+  # =============================================================================
+  rag-service:
+    build:
+      context: ./rag-service
+      dockerfile: Dockerfile
+    hostname: rag-service
+    container_name: rag-service
+    networks: ['demo']
+    restart: unless-stopped
+    ports:
+      - 8000:8000
+    environment:
+      - HOST=0.0.0.0
+      - PORT=8000
+      - DEBUG=true
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      - QDRANT_HOST=qdrant
+      - QDRANT_PORT=6333
+      - QDRANT_COLLECTION=ketoan_invoices
+      # LLM Provider: 'ollama' (local) or 'google' (cloud)
+      - LLM_PROVIDER=${LLM_PROVIDER:-ollama}
+      # Ollama (Local)
+      - OLLAMA_HOST=ollama
+      - OLLAMA_PORT=11434
+      - OLLAMA_MODEL=${OLLAMA_MODEL:-llama3.2:latest}
+      # Google AI Studio (Cloud) - Optional
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY:-}
+      - GOOGLE_MODEL=${GOOGLE_MODEL:-gemini-1.5-flash}
+      # Embedding
+      - EMBEDDING_MODEL=sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2
+      - EMBEDDING_DIMENSION=384
+      - TOP_K_RESULTS=5
+    volumes:
+      - ./rag-service:/app
+      - ./shared:/data/shared
+    depends_on:
+      postgres:
+        condition: service_healthy
+      qdrant:
+        condition: service_started
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:8000/health']
+      interval: 30s
+      timeout: 10s
+      start_period: 60s
+      retries: 3
+

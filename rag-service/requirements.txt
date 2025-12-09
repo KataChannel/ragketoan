@@ -1,0 +1,32 @@
+# FastAPI & Server
+fastapi==0.115.5
+uvicorn[standard]==0.32.1
+python-multipart==0.0.18
+httpx==0.28.1
+
+# LangChain & RAG
+langchain==0.3.10
+langchain-community==0.3.10
+langchain-core==0.3.24
+
+# Google AI Studio (Gemini)
+google-generativeai==0.8.3
+langchain-google-genai==2.0.7
+
+# Vector Store - Qdrant
+qdrant-client==1.12.1
+
+# Embeddings
+sentence-transformers==3.3.1
+
+# Database
+psycopg2-binary==2.9.10
+sqlalchemy==2.0.36
+
+# Utilities
+python-dotenv==1.0.1
+pydantic==2.10.3
+pydantic-settings==2.6.1
+
+# Vietnamese NLP (optional, cho xử lý tiếng Việt tốt hơn)
+pyvi==0.1.1
