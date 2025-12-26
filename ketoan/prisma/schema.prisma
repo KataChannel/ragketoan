@@ -1,0 +1,336 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================================
+// Công ty - Quản lý nhiều công ty
+// ============================================================================
+
+/// Thông tin công ty
+model ext_congty {
+  id        String   @id @default(uuid())
+  mst       String   @unique // Mã số thuế công ty
+  ten       String   // Tên công ty
+  tenVietTat String? // Tên viết tắt
+  diaChi    String?  // Địa chỉ
+  dienThoai String?  // Số điện thoại
+  email     String?  // Email
+  nguoiDaiDien String? // Người đại diện
+  
+  // Trạng thái
+  isActive  Boolean  @default(true)
+  isDefault Boolean  @default(false) // Công ty mặc định
+  
+  // Metadata
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  apiConfigs ext_apiconfig[]
+  hoadons    ext_listhoadon[]
+  synclogs   ext_synclog[]
+  
+  // Indexes
+  @@index([mst])
+  @@index([ten])
+  @@index([isActive])
+}
+
+// ============================================================================
+// Hóa đơn điện tử từ API Thuế
+// ============================================================================
+
+/// Danh sách hóa đơn - Header
+model ext_listhoadon {
+  id        String   @id @default(uuid())
+  idServer  String   @unique // ID từ server thuế
+  brandname String?  // Tên nhãn hàng
+  
+  // Liên kết công ty
+  congtyId  String?  // FK → ext_congty.id
+  congty    ext_congty? @relation(fields: [congtyId], references: [id], onDelete: SetNull)
+  
+  // Thông tin người bán
+  nbmst     String   // MST người bán
+  nbten     String?  // Tên người bán
+  nbdchi    String?  // Địa chỉ người bán
+  
+  // Thông tin người mua
+  nmmst     String?  // MST người mua
+  nmten     String?  // Tên người mua
+  nmdchi    String?  // Địa chỉ người mua
+  
+  // Thông tin hóa đơn
+  khmshdon  String   // Ký hiệu mẫu số hóa đơn
+  khhdon    String   // Ký hiệu hóa đơn
+  shdon     String   // Số hóa đơn
+  mhso      String?  // Mẫu hóa đơn
+  
+  // Thông tin tiền
+  tgtcthue  Decimal  @default(0) @db.Decimal(18, 2) // Tổng tiền chưa thuế
+  tgtthue   Decimal  @default(0) @db.Decimal(18, 2) // Tổng tiền thuế
+  tgtttbso  Decimal  @default(0) @db.Decimal(18, 2) // Tổng thanh toán
+  
+  // Thời gian & trạng thái
+  tdlap     DateTime // Thời điểm lập
+  tthai     String?  // Trạng thái hóa đơn
+  
+  // Loại hóa đơn: 'banra' | 'muavao'
+  loaihd    String   @default("banra")
+  
+  // Metadata
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  details   ext_detailhoadon[]
+  
+  // Indexes
+  @@index([congtyId])
+  @@index([nbmst])
+  @@index([nmmst])
+  @@index([khmshdon, shdon])
+  @@index([tdlap])
+  @@index([tthai])
+  @@index([loaihd])
+}
+
+/// Chi tiết hóa đơn - Line items
+model ext_detailhoadon {
+  id           String   @id @default(uuid())
+  idServer     String   @unique // ID từ server thuế
+  idhdonServer String   // FK → ext_listhoadon.idServer
+  
+  // Thông tin hàng hóa
+  stt      Int      @default(1)   // Số thứ tự
+  ten      String   // Tên hàng hóa/dịch vụ
+  dvtinh   String?  // Đơn vị tính
+  sluong   Decimal  @default(1) @db.Decimal(18, 4)  // Số lượng
+  dgia     Decimal  @default(0) @db.Decimal(18, 2)  // Đơn giá
+  thtien   Decimal  @default(0) @db.Decimal(18, 2)  // Thành tiền (chưa thuế)
+  
+  // Thuế
+  tsuat    Decimal  @default(0) @db.Decimal(5, 2)   // Thuế suất (%)
+  tthue    Decimal  @default(0) @db.Decimal(18, 2)  // Tiền thuế
+  
+  // Metadata
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  invoice  ext_listhoadon @relation(fields: [idhdonServer], references: [idServer], onDelete: Cascade)
+  products ext_sanphamhoadon[]
+  
+  // Indexes
+  @@index([idhdonServer])
+  @@index([ten])
+}
+
+/// Sản phẩm hóa đơn - Normalized products
+model ext_sanphamhoadon {
+  id             String   @id @default(uuid())
+  iddetailhoadon String   // FK → ext_detailhoadon.id
+  
+  // Thông tin sản phẩm
+  ten    String   // Tên gốc
+  ten2   String?  // Tên đã chuẩn hóa
+  ma     String?  // Mã sản phẩm (auto-gen)
+  dvt    String?  // Đơn vị tính
+  dgia   Decimal  @default(0) @db.Decimal(18, 2) // Đơn giá
+  
+  // Metadata
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  detail ext_detailhoadon @relation(fields: [iddetailhoadon], references: [id], onDelete: Cascade)
+  
+  // Indexes
+  @@index([iddetailhoadon])
+  @@index([ten])
+  @@index([ten2])
+  @@index([ma])
+}
+
+// ============================================================================
+// Cấu hình API
+// ============================================================================
+
+/// Cấu hình kết nối API Thuế - Mỗi công ty có config riêng
+model ext_apiconfig {
+  id           String   @id @default(uuid())
+  name         String   // Tên cấu hình (vd: "thue_dienttu")
+  
+  // Liên kết công ty
+  congtyId     String   // FK → ext_congty.id
+  congty       ext_congty @relation(fields: [congtyId], references: [id], onDelete: Cascade)
+  
+  // API credentials
+  bearerToken  String   // JWT Token từ API Thuế
+  baseUrl      String   @default("https://hoadondientu.gdt.gov.vn:30000")
+  brandname    String?  // Tên nhãn hàng
+  
+  // Rate limiting config
+  batchSize              Int @default(3)
+  delayBetweenBatches    Int @default(3000)  // ms
+  delayBetweenDetailCalls Int @default(2000) // ms
+  maxRetries             Int @default(5)
+  
+  // Sync status
+  lastSyncAt   DateTime?
+  lastSyncStatus String?
+  
+  // Metadata
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  // Relations
+  synclogs     ext_synclog[]
+  
+  // Indexes & Constraints
+  @@unique([congtyId, name]) // Mỗi công ty chỉ có 1 config với 1 tên
+  @@index([congtyId])
+  @@index([isActive])
+}
+
+/// Log đồng bộ
+model ext_synclog {
+  id           String   @id @default(uuid())
+  
+  // Liên kết
+  congtyId     String?  // FK → ext_congty.id
+  congty       ext_congty? @relation(fields: [congtyId], references: [id], onDelete: SetNull)
+  configId     String?  // FK → ext_apiconfig.id
+  config       ext_apiconfig? @relation(fields: [configId], references: [id], onDelete: SetNull)
+  
+  // Sync info
+  syncType     String   // 'banra' | 'muavao' | 'detail'
+  fromDate     DateTime?
+  toDate       DateTime?
+  
+  // Results
+  totalRecords Int      @default(0)
+  successCount Int      @default(0)
+  errorCount   Int      @default(0)
+  
+  // Status
+  status       String   @default("pending") // pending | running | completed | failed
+  errorMessage String?
+  
+  // Timing
+  startedAt    DateTime @default(now())
+  completedAt  DateTime?
+  
+  // Metadata
+  createdAt    DateTime @default(now())
+  
+  // Indexes
+  @@index([congtyId])
+  @@index([configId])
+  @@index([status])
+  @@index([startedAt])
+}
+
+// ============================================================================
+// Bảng Tổng hợp - Kết hợp chi tiết hóa đơn với thông tin header
+// Phục vụ RAG và xử lý xuất nhập tồn theo mặt hàng
+// ============================================================================
+
+/// Tổng hợp chi tiết hàng hóa - Denormalized view for RAG & inventory
+model ext_tonghop {
+  id             String   @id @default(uuid())
+  
+  // ===== Nguồn dữ liệu =====
+  idDetailServer String   @unique // FK → ext_detailhoadon.idServer
+  idHoadonServer String   // FK → ext_listhoadon.idServer
+  
+  // ===== Thông tin công ty =====
+  congtyId       String?  // FK → ext_congty.id
+  congtyMst      String?  // MST công ty (denormalized)
+  congtyTen      String?  // Tên công ty (denormalized)
+  
+  // ===== Thông tin hóa đơn (từ ext_listhoadon) =====
+  khmshdon       String   // Ký hiệu mẫu số hóa đơn
+  khhdon         String   // Ký hiệu hóa đơn
+  shdon          String   // Số hóa đơn
+  mhso           String?  // Mẫu hóa đơn
+  tdlap          DateTime // Thời điểm lập hóa đơn
+  tthai          String?  // Trạng thái hóa đơn
+  loaihd         String   // 'banra' | 'muavao'
+  
+  // ===== Thông tin người bán =====
+  nbmst          String   // MST người bán
+  nbten          String?  // Tên người bán
+  nbdchi         String?  // Địa chỉ người bán
+  
+  // ===== Thông tin người mua =====
+  nmmst          String?  // MST người mua
+  nmten          String?  // Tên người mua
+  nmdchi         String?  // Địa chỉ người mua
+  
+  // ===== Chi tiết hàng hóa (từ ext_detailhoadon) =====
+  stt            Int      @default(1)   // Số thứ tự trong hóa đơn
+  tenHang        String   // Tên hàng hóa/dịch vụ
+  tenHangChuan   String?  // Tên hàng đã chuẩn hóa (cho RAG)
+  maHang         String?  // Mã hàng (auto-gen hoặc mapping)
+  nhomHang       String?  // Nhóm hàng (category)
+  dvtinh         String?  // Đơn vị tính
+  
+  // ===== Số liệu =====
+  sluong         Decimal  @default(1) @db.Decimal(18, 4)  // Số lượng
+  dgia           Decimal  @default(0) @db.Decimal(18, 2)  // Đơn giá
+  thtien         Decimal  @default(0) @db.Decimal(18, 2)  // Thành tiền (chưa thuế)
+  
+  // ===== Thuế =====
+  tsuat          Decimal  @default(0) @db.Decimal(5, 2)   // Thuế suất (%)
+  tthue          Decimal  @default(0) @db.Decimal(18, 2)  // Tiền thuế
+  tongTien       Decimal  @default(0) @db.Decimal(18, 2)  // Tổng tiền (thành tiền + thuế)
+  
+  // ===== Xuất nhập tồn =====
+  // loaihd = 'banra' → Xuất
+  // loaihd = 'muavao' → Nhập
+  soLuongNhap    Decimal  @default(0) @db.Decimal(18, 4)  // Số lượng nhập
+  soLuongXuat    Decimal  @default(0) @db.Decimal(18, 4)  // Số lượng xuất
+  giaTriNhap     Decimal  @default(0) @db.Decimal(18, 2)  // Giá trị nhập
+  giaTriXuat     Decimal  @default(0) @db.Decimal(18, 2)  // Giá trị xuất
+  
+  // ===== RAG Metadata =====
+  searchText     String?  // Full-text search: tên hàng + tên NB + tên NM
+  tags           String[] @default([]) // Tags for filtering
+  
+  // ===== Thời gian theo kỳ =====
+  nam            Int      // Năm (từ tdlap)
+  thang          Int      // Tháng (từ tdlap)
+  quy            Int      // Quý (từ tdlap)
+  
+  // ===== Metadata =====
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  syncedAt       DateTime @default(now()) // Thời điểm đồng bộ
+  
+  // ===== Indexes cho query performance =====
+  @@index([congtyId])
+  @@index([congtyMst])
+  @@index([idHoadonServer])
+  @@index([tdlap])
+  @@index([loaihd])
+  @@index([nbmst])
+  @@index([nmmst])
+  @@index([tenHang])
+  @@index([tenHangChuan])
+  @@index([maHang])
+  @@index([nhomHang])
+  @@index([nam, thang])
+  @@index([nam, quy])
+  @@index([tthai])
+}
