@@ -74,6 +74,8 @@ interface TongHopItem {
 interface XuatNhapTonItem {
   tenMatHang: string;
   dvtinh: string;
+  tonDauQty: number;
+  tonDauVal: number;
   soLuongNhap: number;
   soLuongXuat: number;
   tonCuoi: number;
@@ -111,6 +113,7 @@ export default function XuatNhapTonPage() {
   // State
   const [isLoading, setIsLoading] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
+  const [isRecalculating, setIsRecalculating] = useState(false);
   const [activeTab, setActiveTab] = useState<'overview' | 'xnt-mathang' | 'xnt-thoigian'>('xnt-mathang');
   
   // Filter state
@@ -314,6 +317,32 @@ export default function XuatNhapTonPage() {
     }
   };
 
+  const handleRecalculate = async () => {
+    setIsRecalculating(true);
+    try {
+      const response = await fetch('/api/tonghop', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          congtyId: selectedCompanyId || undefined,
+          action: 'recalculate',
+        }),
+      });
+      
+      const result = await response.json();
+      if (result.success) {
+        toast.success(result.message);
+        handleRefresh();
+      } else {
+        toast.error(result.message || 'Lỗi tính toán lại');
+      }
+    } catch (error) {
+      toast.error('Lỗi kết nối server');
+    } finally {
+      setIsRecalculating(false);
+    }
+  };
+
   const handleRefresh = () => {
     fetchStats();
     if (activeTab === 'overview') fetchList();
@@ -477,9 +506,25 @@ export default function XuatNhapTonPage() {
               <Download className="h-4 w-4" />
               <span className="hidden sm:inline ml-1">Xuất Excel</span>
             </Button>
-            <Button variant="outline" size="sm" onClick={handleExport12Thang} disabled={isLoading} className="text-blue-600 border-blue-200 hover:bg-blue-50">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleExport12Thang} 
+              disabled={isLoading} 
+              className="text-blue-600 border-blue-200 hover:bg-blue-50"
+            >
               <FileText className="h-4 w-4" />
               <span className="hidden sm:inline ml-1">Báo cáo 12 tháng</span>
+            </Button>
+            <Button 
+              variant="outline"
+              size="sm" 
+              onClick={handleRecalculate} 
+              disabled={isRecalculating || isLoading}
+              className="text-amber-600 border-amber-200 hover:bg-amber-50"
+            >
+              <RefreshCw className={`h-4 w-4 ${isRecalculating ? 'animate-spin' : ''}`} />
+              <span className="hidden sm:inline ml-1">Cập nhật XNT</span>
             </Button>
             <Button size="sm" onClick={() => setShowSyncDialog(true)}>
               <ArrowUpDown className="h-4 w-4" />
@@ -689,9 +734,10 @@ export default function XuatNhapTonPage() {
                 <thead className="bg-gray-50 dark:bg-gray-900/50">
                   <tr>
                     <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Mặt hàng</th>
+                    <th className="px-3 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Tồn đầu</th>
                     <th className="px-3 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Nhập</th>
                     <th className="px-3 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Xuất</th>
-                    <th className="px-3 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Tồn</th>
+                    <th className="px-3 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Tồn cuối</th>
                     <th className="px-3 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase hidden sm:table-cell">Giá trị tồn</th>
                   </tr>
                 </thead>
@@ -707,6 +753,7 @@ export default function XuatNhapTonPage() {
                         )}
                         <div className="text-xs text-gray-500">{item.dvtinh} | {item.soLanGiaoDich} GD</div>
                       </td>
+                      <td className="px-3 py-3 text-right text-gray-500 italic">{item.tonDauQty.toLocaleString()}</td>
                       <td className="px-3 py-3 text-right text-green-600">{item.soLuongNhap.toLocaleString()}</td>
                       <td className="px-3 py-3 text-right text-blue-600">{item.soLuongXuat.toLocaleString()}</td>
                       <td className={`px-3 py-3 text-right font-bold ${item.tonCuoi >= 0 ? 'text-gray-900 dark:text-white' : 'text-red-600'}`}>

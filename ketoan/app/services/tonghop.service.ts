@@ -428,60 +428,88 @@ export async function getXuatNhapTonByMatHang(options: {
     search
   } = options
 
-  const where: Record<string, any> = {}
-  if (congtyId) where.congtyId = congtyId
-  if (fromDate || toDate) {
-    where.tdlap = {}
-    if (fromDate) where.tdlap.gte = fromDate
-    if (toDate) where.tdlap.lte = toDate
-  }
-  
-  if (search) {
-    where[groupBy] = { contains: search, mode: 'insensitive' }
-  }
+  const startDate = fromDate || new Date(new Date().getFullYear(), 0, 1);
+  const endDate = toDate || new Date();
+  startDate.setHours(0, 0, 0, 0);
+  endDate.setHours(0, 0, 0, 0);
 
-  // Tiếc là Prisma groupBy chưa hỗ trợ skip/take trực tiếp tốt cho pagination phức tạp
-  // Nên ta lấy tất cả rồi phân trang ở code, hoặc dùng raw query
-  // Tuy nhiên, vì số lượng mặt hàng thường không quá lớn (vài nghìn), 
-  // ta có thể thực hiện count và sau đó lấy dữ liệu với pagination
-  
-  // Để pagination chính xác, ta cần biết tổng số nhóm
-  const groups = await prisma.ext_tonghop.groupBy({
-    by: [groupBy],
-    where,
-  })
-  const total = groups.length
+  // Lấy tổng số mặt hàng (nhóm)
+  const groupQuery = {
+    where: {
+      congtyId,
+      date: { gte: startDate, lte: endDate },
+      ...(search ? { tenHangChuan: { contains: search, mode: 'insensitive' } } : {})
+    }
+  };
+  const groups = await (prisma as any).ext_daily_stock_v2.groupBy({
+    by: ['tenHangChuan'],
+    where: groupQuery.where,
+  });
+  const total = groups.length;
 
-  const result = await prisma.ext_tonghop.groupBy({
-    by: [groupBy, 'dvtinh'],
-    where,
+  // Lấy dữ liệu tổng hợp từ snapshots
+  const snapshots = await (prisma as any).ext_daily_stock_v2.groupBy({
+    by: ['tenHangChuan', 'dvtinh'],
+    where: groupQuery.where,
     _sum: {
-      soLuongNhap: true,
-      soLuongXuat: true,
-      giaTriNhap: true,
-      giaTriXuat: true
+      nhapQty: true,
+      nhapVal: true,
+      xuatQty: true,
+      xuatVal: true,
     },
-    _count: true,
     orderBy: {
-      _sum: {
-        giaTriNhap: 'desc'
-      }
+      tenHangChuan: 'asc'
     },
     skip: (page - 1) * limit,
     take: limit
-  })
+  });
 
-  const items = result.map(item => ({
-    tenMatHang: (item[groupBy] as string) || 'Chưa phân loại',
-    dvtinh: item.dvtinh,
-    soLuongNhap: Number(item._sum.soLuongNhap || 0),
-    soLuongXuat: Number(item._sum.soLuongXuat || 0),
-    tonCuoi: Number(item._sum.soLuongNhap || 0) - Number(item._sum.soLuongXuat || 0),
-    giaTriNhap: Number(item._sum.giaTriNhap || 0),
-    giaTriXuat: Number(item._sum.giaTriXuat || 0),
-    giaTriTon: Number(item._sum.giaTriNhap || 0) - Number(item._sum.giaTriXuat || 0),
-    soLanGiaoDich: item._count
-  }))
+  // Lấy số dư đầu kỳ (tonDauQty ngày startDate) và số dư cuối kỳ (tonCuoiQty ngày endDate)
+  const items = await Promise.all(snapshots.map(async (s: any) => {
+    const [opening, closing] = await Promise.all([
+      (prisma as any).ext_daily_stock_v2.findFirst({
+        where: {
+          congtyId,
+          tenHangChuan: s.tenHangChuan,
+          date: startDate
+        },
+        select: { tonDauQty: true, tonDauVal: true }
+      }),
+      (prisma as any).ext_daily_stock_v2.findFirst({
+        where: {
+          congtyId,
+          tenHangChuan: s.tenHangChuan,
+          date: endDate
+        },
+        select: { tonCuoiQty: true, tonCuoiVal: true }
+      })
+    ]);
+
+    const nhapQty = Number(s._sum.nhapQty || 0);
+    const nhapVal = Number(s._sum.nhapVal || 0);
+    const xuatQty = Number(s._sum.xuatQty || 0);
+    const xuatVal = Number(s._sum.xuatVal || 0);
+    const tonDauQty = Number(opening?.tonDauQty || 0);
+    const tonDauVal = Number(opening?.tonDauVal || 0);
+    
+    // Nếu không tìm thấy closing (có thể do chưa tính đến ngày đó), ta lấy tonDau + nhap - xuat
+    const tonCuoiQty = closing ? Number(closing.tonCuoiQty) : tonDauQty + nhapQty - xuatQty;
+    const tonCuoiVal = closing ? Number(closing.tonCuoiVal) : tonDauVal + nhapVal - xuatVal;
+
+    return {
+      tenMatHang: s.tenHangChuan || 'Chưa phân loại',
+      dvtinh: s.dvtinh,
+      soLuongNhap: nhapQty,
+      soLuongXuat: xuatQty,
+      tonDauQty: tonDauQty,
+      tonDauVal: tonDauVal,
+      tonCuoi: tonCuoiQty,
+      giaTriNhap: nhapVal,
+      giaTriXuat: xuatVal,
+      giaTriTon: tonCuoiVal,
+      soLanGiaoDich: 0 // Snapshot không lưu số lần GD trực tiếp, có thể bổ sung nếu cần
+    };
+  }));
 
   // Lấy danh sách tên gốc cho các mặt hàng trong trang này để hiển thị nhỏ bên dưới
   const itemNames = items.map(i => i.tenMatHang).filter(n => n && n !== 'Chưa phân loại')
@@ -490,17 +518,18 @@ export async function getXuatNhapTonByMatHang(options: {
   if (itemNames.length > 0) {
     const originals = await prisma.ext_tonghop.findMany({
       where: {
-        ...where,
-        [groupBy]: { in: itemNames }
+        congtyId,
+        tdlap: { gte: startDate, lte: endDate },
+        tenHangChuan: { in: itemNames }
       },
       select: {
-        [groupBy]: true,
+        tenHangChuan: true,
         tenHang: true
       }
     })
     
     originals.forEach((o: any) => {
-      const key = o[groupBy]
+      const key = o.tenHangChuan
       if (key) {
         if (!originalNamesMap.has(key)) originalNamesMap.set(key, new Set())
         originalNamesMap.get(key)?.add(o.tenHang)
@@ -633,103 +662,175 @@ export async function getXuatNhapTonBaoCaoThang(options: {
     })
   }
 
-  // 2. Lấy số dư đầu năm (trước ngày 01/01/nam)
-  const openingYear = await prisma.ext_tonghop.groupBy({
-    by: ['tenHangChuan'],
-    where: {
-      ...where,
-      tdlap: { lt: new Date(nam, 0, 1) }
-    },
-    _sum: {
-      soLuongNhap: true,
-      soLuongXuat: true,
-      giaTriNhap: true,
-      giaTriXuat: true
-    }
-  })
-
-  const openingYearMap = new Map()
-  openingYear.forEach(item => {
-    openingYearMap.set(item.tenHangChuan, {
-      qty: Number(item._sum.soLuongNhap || 0) - Number(item._sum.soLuongXuat || 0),
-      val: Number(item._sum.giaTriNhap || 0) - Number(item._sum.giaTriXuat || 0)
-    })
-  })
-
-  // 3. Lấy dữ liệu phát sinh trong từng tháng của năm
-  const monthlyTransactions = await prisma.ext_tonghop.groupBy({
-    by: ['tenHangChuan', 'thang'],
-    where: {
-      ...where,
-      nam: nam
-    },
-    _sum: {
-      soLuongNhap: true,
-      soLuongXuat: true,
-      giaTriNhap: true,
-      giaTriXuat: true
-    }
-  })
-
-  // Map dữ liệu theo [thang][tenHangChuan]
-  const transMap = new Map()
-  monthlyTransactions.forEach(t => {
-    if (!transMap.has(t.thang)) transMap.set(t.thang, new Map())
-    transMap.get(t.thang).set(t.tenHangChuan, {
-      inQty: Number(t._sum.soLuongNhap || 0),
-      inVal: Number(t._sum.giaTriNhap || 0),
-      outQty: Number(t._sum.soLuongXuat || 0),
-      outVal: Number(t._sum.giaTriXuat || 0)
-    })
-  })
-
-  // 4. Tổng hợp 12 tháng
   const report: Record<number, any[]> = {}
   
-  // Khởi tạo số dư lũy kế bắt đầu từ đầu năm
-  const currentBalances = new Map(openingYearMap)
-
   for (let m = 1; m <= 12; m++) {
-    const monthData: any[] = []
-    const monthTrans = transMap.get(m) || new Map()
+    const startDate = new Date(nam, m - 1, 1);
+    const endDate = new Date(nam, m, 0); // Ngày cuối cùng của tháng
+    
+    const monthBalances = await (prisma as any).ext_daily_stock_v2.findMany({
+      where: {
+        congtyId,
+        date: endDate
+      },
+      orderBy: { tenHangChuan: 'asc' }
+    });
 
-    items.forEach(item => {
-      const tenHang = item.tenHangChuan as string
-      const dvt = item.dvtinh || ''
-      const bal = currentBalances.get(tenHang) || { qty: 0, val: 0 }
-      const trans = monthTrans.get(tenHang) || { inQty: 0, inVal: 0, outQty: 0, outVal: 0 }
-
-      // Chỉ thêm vào báo cáo nếu có số dư hoặc có phát sinh trong tháng
-      if (bal.qty !== 0 || trans.inQty !== 0 || trans.outQty !== 0) {
-        const closingQty = bal.qty + trans.inQty - trans.outQty
-        const closingVal = bal.val + trans.inVal - trans.outVal
-
-        monthData.push({
-          tenMatHang: tenHang,
-          tenGocList: Array.from(originalNamesMap.get(tenHang) || []).join(', '),
-          dvt: dvt,
-          tonDauQty: bal.qty,
-          tonDauVal: bal.val,
-          nhapQty: trans.inQty,
-          nhapVal: trans.inVal,
-          xuatQty: trans.outQty,
-          xuatVal: trans.outVal,
-          tonCuoiQty: closingQty,
-          tonCuoiVal: closingVal
-        })
-
-        // Cập nhật số dư cho tháng sau
-        currentBalances.set(tenHang, {
-          qty: closingQty,
-          val: closingVal
-        })
-      }
-    })
-
-    report[m] = monthData
+    report[m] = monthBalances.map((b: any) => ({
+      tenMatHang: b.tenHangChuan,
+      tenGocList: '', // Có thể lấy thêm nếu cần (như logic cũ)
+      dvt: b.dvtinh,
+      tonDauQty: Number(b.tonDauQty),
+      tonDauVal: Number(b.tonDauVal),
+      nhapQty: Number(b.nhapQty),
+      nhapVal: Number(b.nhapVal),
+      xuatQty: Number(b.xuatQty),
+      xuatVal: Number(b.xuatVal),
+      tonCuoiQty: Number(b.tonCuoiQty),
+      tonCuoiVal: Number(b.tonCuoiVal)
+    }));
   }
 
-  return report
+  return report;
+}
+
+/**
+ * Tính toán lại tồn kho hàng ngày và lưu vào bảng ext_daily_stock_balance
+ * @param congtyId ID công ty (null nếu tất cả)
+ */
+export async function recalculateDailyInventory(congtyId?: string) {
+  console.log(`Starting recalculateDailyInventory for company: ${congtyId || 'ALL'}`);
+  
+  // 1. Xóa dữ liệu cũ
+  const deleteWhere = congtyId ? { congtyId } : {};
+  await (prisma as any).ext_daily_stock_v2.deleteMany({ where: deleteWhere });
+
+  // 2. Lấy tất cả các mặt hàng chuẩn và DVT của chúng
+  const items = await prisma.ext_tonghop.findMany({
+    where: congtyId ? { congtyId } : {},
+    select: {
+      tenHangChuan: true,
+      dvtinh: true,
+      maHang: true,
+      congtyId: true,
+    },
+    distinct: ['tenHangChuan', 'congtyId']
+  });
+
+  if (items.length === 0) return { success: true, message: 'Không có dữ liệu để tính toán' };
+
+  // 3. Lấy tất cả giao dịch, sắp xếp theo ngày
+  const transactions = await prisma.ext_tonghop.findMany({
+    where: congtyId ? { congtyId } : {},
+    orderBy: { tdlap: 'asc' },
+    select: {
+      tdlap: true,
+      tenHangChuan: true,
+      soLuongNhap: true,
+      soLuongXuat: true,
+      giaTriNhap: true,
+      giaTriXuat: true,
+      congtyId: true
+    }
+  });
+
+  // 4. Tìm ngày bắt đầu và kết thúc
+  const startDate = new Date(transactions[0].tdlap);
+  startDate.setHours(0, 0, 0, 0);
+  const endDate = new Date();
+  endDate.setHours(0, 0, 0, 0);
+
+  // Group transactions by date and product
+  const transByDate = new Map<string, Map<string, any>>();
+  transactions.forEach(t => {
+    if (!t.tenHangChuan) return;
+    const dateStr = t.tdlap.toISOString().split('T')[0];
+    if (!transByDate.has(dateStr)) transByDate.set(dateStr, new Map());
+    const dayMap = transByDate.get(dateStr)!;
+    
+    // Key is companyId + tenHangChuan
+    const key = `${t.congtyId}_${t.tenHangChuan}`;
+    if (!dayMap.has(key)) {
+      dayMap.set(key, { 
+        nhapQty: new Decimal(0), nhapVal: new Decimal(0), 
+        xuatQty: new Decimal(0), xuatVal: new Decimal(0) 
+      });
+    }
+    const sum = dayMap.get(key);
+    sum.nhapQty = sum.nhapQty.add(t.soLuongNhap);
+    sum.nhapVal = sum.nhapVal.add(t.giaTriNhap);
+    sum.xuatQty = sum.xuatQty.add(t.soLuongXuat);
+    sum.xuatVal = sum.xuatVal.add(t.giaTriXuat);
+  });
+
+  // Current running balance: Map<Key, {qty, val}>
+  const balances = new Map<string, { qty: Decimal, val: Decimal }>();
+  
+  // Data for bulk insert
+  const snapshotData: any[] = [];
+  
+  // Iterate day by day
+  let current = new Date(startDate);
+  while (current <= endDate) {
+    const dateStr = current.toISOString().split('T')[0];
+    const dayTrans = transByDate.get(dateStr) || new Map();
+    
+    // Process each item
+    for (const item of items) {
+      if (!item.tenHangChuan) continue;
+      const key = `${item.congtyId}_${item.tenHangChuan}`;
+      const prevBal = balances.get(key) || { qty: new Decimal(0), val: new Decimal(0) };
+      const trans = dayTrans.get(key) || { 
+        nhapQty: new Decimal(0), nhapVal: new Decimal(0), 
+        xuatQty: new Decimal(0), xuatVal: new Decimal(0) 
+      };
+
+      const tonCuoiQty = prevBal.qty.add(trans.nhapQty).sub(trans.xuatQty);
+      const tonCuoiVal = prevBal.val.add(trans.nhapVal).sub(trans.xuatVal);
+
+      // Only save if there's a balance or a transaction today
+      if (tonCuoiQty.toNumber() !== 0 || tonCuoiVal.toNumber() !== 0 || 
+          prevBal.qty.toNumber() !== 0 || trans.nhapQty.toNumber() !== 0 || trans.xuatQty.toNumber() !== 0) {
+        
+        snapshotData.push({
+          congtyId: item.congtyId,
+          date: new Date(current),
+          tenHangChuan: item.tenHangChuan,
+          maHang: item.maHang,
+          dvtinh: item.dvtinh,
+          tonDauQty: prevBal.qty,
+          tonDauVal: prevBal.val,
+          nhapQty: trans.nhapQty,
+          nhapVal: trans.nhapVal,
+          xuatQty: trans.xuatQty,
+          xuatVal: trans.xuatVal,
+          tonCuoiQty: tonCuoiQty,
+          tonCuoiVal: tonCuoiVal
+        });
+
+        // Update running balance
+        balances.set(key, { qty: tonCuoiQty, val: tonCuoiVal });
+      }
+    }
+    
+    current.setDate(current.getDate() + 1);
+    
+    // Batch insert every 5000 records to avoid memory issues and query limits
+    if (snapshotData.length >= 5000) {
+       await (prisma as any).ext_daily_stock_v2.createMany({ data: snapshotData });
+       snapshotData.length = 0;
+    }
+  }
+
+  // Final batch insert
+  if (snapshotData.length > 0) {
+    await (prisma as any).ext_daily_stock_v2.createMany({ data: snapshotData });
+  }
+
+  return { 
+    success: true, 
+    message: `Đã tính toán xong tồn kho hàng ngày từ ${startDate.toLocaleDateString()} đến ${endDate.toLocaleDateString()}` 
+  };
 }
 
 // ============================================================================
@@ -742,5 +843,6 @@ export default {
   getTongHopList,
   getXuatNhapTonByMatHang,
   getXuatNhapTonTheoThoiGian,
-  getXuatNhapTonBaoCaoThang
+  getXuatNhapTonBaoCaoThang,
+  recalculateDailyInventory
 }
