@@ -334,3 +334,26 @@ model ext_tonghop {
   @@index([nam, quy])
   @@index([tthai])
 }
+
+/// Từ điển chuẩn hóa mặt hàng (Training data)
+model ext_sanpham_dictionary {
+  id           String   @id @default(uuid())
+  tenGoc       String   @unique // Tên gốc trên hóa đơn (Unique để map 1-1)
+  tenChuan     String   // Tên mặt hàng sau khi đã chọn chuẩn hóa
+  maHang       String?  // Mã hàng hóa tự quy định
+  nhomHang     String?  // Nhóm hàng
+  dvtinh       String?  // Đơn vị tính chuẩn
+  
+  // Metadata
+  congtyId     String?  // Nếu map riêng cho từng công ty
+  frequency    Int      @default(1) // Số lần xuất hiện
+  
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([tenGoc])
+  @@index([tenChuan])
+  @@index([maHang])
+  @@index([congtyId])
+}
+

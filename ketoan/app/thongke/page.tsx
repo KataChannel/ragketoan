@@ -129,6 +129,7 @@ export default function ThongKePage() {
   const [xntMatHang, setXntMatHang] = useState<XuatNhapTonItem[]>([]);
   const [xntThoiGian, setXntThoiGian] = useState<XNTTheoThoiGian[]>([]);
   const [pagination, setPagination] = useState({ page: 1, limit: 20, total: 0, totalPages: 0 });
+  const [xntPagination, setXntPagination] = useState({ page: 1, limit: 20, total: 0, totalPages: 0 });
   
   // Sync dialog
   const [showSyncDialog, setShowSyncDialog] = useState(false);
@@ -201,7 +202,12 @@ export default function ThongKePage() {
   const fetchXNTMatHang = useCallback(async () => {
     setIsLoading(true);
     try {
-      const params = new URLSearchParams({ action: 'xnt-mathang' });
+      const params = new URLSearchParams({ 
+        action: 'xnt-mathang',
+        page: xntPagination.page.toString(),
+        limit: xntPagination.limit.toString(),
+        search: search
+      });
       if (selectedCompanyId) params.append('congtyId', selectedCompanyId);
       if (fromDate) params.append('fromDate', fromDate);
       if (toDate) params.append('toDate', toDate);
@@ -209,14 +215,15 @@ export default function ThongKePage() {
       const response = await fetch(`/api/tonghop?${params}`);
       const result = await response.json();
       if (result.success) {
-        setXntMatHang(result.data);
+        setXntMatHang(result.items);
+        setXntPagination(result.pagination);
       }
     } catch (error) {
       console.error('Error fetching XNT mat hang:', error);
     } finally {
       setIsLoading(false);
     }
-  }, [selectedCompanyId, fromDate, toDate]);
+  }, [selectedCompanyId, fromDate, toDate, xntPagination.page, xntPagination.limit, search]);
 
   // Fetch XNT theo thời gian
   const fetchXNTThoiGian = useCallback(async () => {
@@ -563,6 +570,27 @@ export default function ThongKePage() {
                   </Button>
                 </div>
               )}
+
+              {activeTab === 'xnt-mathang' && (
+                <div className="flex gap-2">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    <Input
+                      placeholder="Tìm tên mặt hàng..."
+                      value={search}
+                      onChange={(e) => setSearch(e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => fetchXNTMatHang()}
+                  >
+                    <Filter className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
 
@@ -792,7 +820,7 @@ export default function ThongKePage() {
           {/* Pagination - Overview only */}
           {activeTab === 'overview' && pagination.totalPages > 1 && (
             <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200 dark:border-gray-700">
-              <div className="text-sm text-gray-500 dark:text-gray-400">
+              <div className="text-sm text-gray-500 dark:text-gray-400 text-xs sm:text-sm">
                 Trang {pagination.page}/{pagination.totalPages} | Tổng: {pagination.total}
               </div>
               <div className="flex gap-2">
@@ -809,6 +837,33 @@ export default function ThongKePage() {
                   size="sm"
                   disabled={pagination.page >= pagination.totalPages}
                   onClick={() => setPagination(p => ({ ...p, page: p.page + 1 }))}
+                >
+                  Sau
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Pagination - XNT Mat Hang */}
+          {activeTab === 'xnt-mathang' && xntPagination.totalPages > 1 && (
+            <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200 dark:border-gray-700">
+              <div className="text-sm text-gray-500 dark:text-gray-400 text-xs sm:text-sm">
+                Trang {xntPagination.page}/{xntPagination.totalPages} | Tổng: {xntPagination.total}
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={xntPagination.page <= 1}
+                  onClick={() => setXntPagination(p => ({ ...p, page: p.page - 1 }))}
+                >
+                  Trước
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={xntPagination.page >= xntPagination.totalPages}
+                  onClick={() => setXntPagination(p => ({ ...p, page: p.page + 1 }))}
                 >
                   Sau
                 </Button>
@@ -854,7 +909,7 @@ export default function ThongKePage() {
                       <p>• Tổng xử lý: {syncResult.totalProcessed}</p>
                       <p>• Thêm mới: {syncResult.inserted}</p>
                       <p>• Cập nhật: {syncResult.updated}</p>
-                      {syncResult.errors > 0 && <p>• Lỗi: {syncResult.errors}</p>}
+                      {syncResult.errors !== undefined && syncResult.errors > 0 && <p>• Lỗi: {syncResult.errors}</p>}
                     </div>
                   )}
                 </div>

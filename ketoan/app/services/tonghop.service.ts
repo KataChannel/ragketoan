@@ -147,6 +147,11 @@ export async function syncTongHop(options: TongHopSyncOptions = {}): Promise<Ton
       })).map(t => t.idDetailServer)
     )
 
+    // Lấy từ điển chuẩn hóa để map tự động
+    const dictionary = await (prisma as any).ext_sanpham_dictionary.findMany()
+    const dictMap = new Map<string, any>()
+    dictionary.forEach((d: any) => dictMap.set(d.tenGoc, d))
+
     // Xử lý từng chi tiết
     let index = await prisma.ext_tonghop.count()
     
@@ -206,9 +211,9 @@ export async function syncTongHop(options: TongHopSyncOptions = {}): Promise<Ton
           // Chi tiết hàng hóa
           stt: detail.stt,
           tenHang: detail.ten,
-          tenHangChuan,
-          maHang: sinhMaHang(detail.ten, ++index),
-          nhomHang: null, // Sẽ được update sau bởi AI/RAG
+          tenHangChuan: dictMap.get(detail.ten)?.tenChuan || tenHangChuan,
+          maHang: dictMap.get(detail.ten)?.maHang || sinhMaHang(detail.ten, ++index),
+          nhomHang: dictMap.get(detail.ten)?.nhomHang || null,
           dvtinh: detail.dvtinh,
           
           // Số liệu
@@ -402,23 +407,50 @@ export async function getTongHopList(options: {
 }
 
 /**
- * Lấy báo cáo xuất nhập tồn theo mặt hàng
+ * Lấy báo cáo xuất nhập tồn theo mặt hàng với pagination
  */
 export async function getXuatNhapTonByMatHang(options: {
   congtyId?: string
   fromDate?: Date
   toDate?: Date
   groupBy?: 'tenHangChuan' | 'maHang' | 'nhomHang'
+  page?: number
+  limit?: number
+  search?: string
 }) {
-  const { congtyId, fromDate, toDate, groupBy = 'tenHangChuan' } = options
+  const { 
+    congtyId, 
+    fromDate, 
+    toDate, 
+    groupBy = 'tenHangChuan',
+    page = 1,
+    limit = 20,
+    search
+  } = options
 
-  const where: Record<string, unknown> = {}
+  const where: Record<string, any> = {}
   if (congtyId) where.congtyId = congtyId
   if (fromDate || toDate) {
     where.tdlap = {}
-    if (fromDate) (where.tdlap as Record<string, Date>).gte = fromDate
-    if (toDate) (where.tdlap as Record<string, Date>).lte = toDate
+    if (fromDate) where.tdlap.gte = fromDate
+    if (toDate) where.tdlap.lte = toDate
   }
+  
+  if (search) {
+    where[groupBy] = { contains: search, mode: 'insensitive' }
+  }
+
+  // Tiếc là Prisma groupBy chưa hỗ trợ skip/take trực tiếp tốt cho pagination phức tạp
+  // Nên ta lấy tất cả rồi phân trang ở code, hoặc dùng raw query
+  // Tuy nhiên, vì số lượng mặt hàng thường không quá lớn (vài nghìn), 
+  // ta có thể thực hiện count và sau đó lấy dữ liệu với pagination
+  
+  // Để pagination chính xác, ta cần biết tổng số nhóm
+  const groups = await prisma.ext_tonghop.groupBy({
+    by: [groupBy],
+    where,
+  })
+  const total = groups.length
 
   const result = await prisma.ext_tonghop.groupBy({
     by: [groupBy, 'dvtinh'],
@@ -434,11 +466,13 @@ export async function getXuatNhapTonByMatHang(options: {
       _sum: {
         giaTriNhap: 'desc'
       }
-    }
+    },
+    skip: (page - 1) * limit,
+    take: limit
   })
 
-  return result.map(item => ({
-    tenMatHang: item[groupBy],
+  const items = result.map(item => ({
+    tenMatHang: item[groupBy] as string,
     dvtinh: item.dvtinh,
     soLuongNhap: Number(item._sum.soLuongNhap || 0),
     soLuongXuat: Number(item._sum.soLuongXuat || 0),
@@ -448,6 +482,16 @@ export async function getXuatNhapTonByMatHang(options: {
     giaTriTon: Number(item._sum.giaTriNhap || 0) - Number(item._sum.giaTriXuat || 0),
     soLanGiaoDich: item._count
   }))
+
+  return {
+    items,
+    pagination: {
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit)
+    }
+  }
 }
 
 /**
@@ -515,6 +559,124 @@ export async function getXuatNhapTonTheoThoiGian(options: {
   }
 }
 
+/**
+ * Lấy báo cáo xuất nhập tồn 12 tháng với số dư đầu kỳ/cuối kỳ
+ */
+export async function getXuatNhapTonBaoCaoThang(options: {
+  congtyId?: string
+  nam: number
+}) {
+  const { congtyId, nam } = options
+  const where: any = {}
+  if (congtyId) where.congtyId = congtyId
+
+  // 1. Lấy tất cả mặt hàng có phát sinh
+  const items = await prisma.ext_tonghop.groupBy({
+    by: ['tenHangChuan', 'dvtinh'],
+    where: {
+      ...where,
+      nam: { lte: nam }
+    }
+  })
+
+  // 2. Lấy số dư đầu năm (trước ngày 01/01/nam)
+  const openingYear = await prisma.ext_tonghop.groupBy({
+    by: ['tenHangChuan'],
+    where: {
+      ...where,
+      tdlap: { lt: new Date(nam, 0, 1) }
+    },
+    _sum: {
+      soLuongNhap: true,
+      soLuongXuat: true,
+      giaTriNhap: true,
+      giaTriXuat: true
+    }
+  })
+
+  const openingYearMap = new Map()
+  openingYear.forEach(item => {
+    openingYearMap.set(item.tenHangChuan, {
+      qty: Number(item._sum.soLuongNhap || 0) - Number(item._sum.soLuongXuat || 0),
+      val: Number(item._sum.giaTriNhap || 0) - Number(item._sum.giaTriXuat || 0)
+    })
+  })
+
+  // 3. Lấy dữ liệu phát sinh trong từng tháng của năm
+  const monthlyTransactions = await prisma.ext_tonghop.groupBy({
+    by: ['tenHangChuan', 'thang'],
+    where: {
+      ...where,
+      nam: nam
+    },
+    _sum: {
+      soLuongNhap: true,
+      soLuongXuat: true,
+      giaTriNhap: true,
+      giaTriXuat: true
+    }
+  })
+
+  // Map dữ liệu theo [thang][tenHangChuan]
+  const transMap = new Map()
+  monthlyTransactions.forEach(t => {
+    if (!transMap.has(t.thang)) transMap.set(t.thang, new Map())
+    transMap.get(t.thang).set(t.tenHangChuan, {
+      inQty: Number(t._sum.soLuongNhap || 0),
+      inVal: Number(t._sum.giaTriNhap || 0),
+      outQty: Number(t._sum.soLuongXuat || 0),
+      outVal: Number(t._sum.giaTriXuat || 0)
+    })
+  })
+
+  // 4. Tổng hợp 12 tháng
+  const report: Record<number, any[]> = {}
+  
+  // Khởi tạo số dư lũy kế bắt đầu từ đầu năm
+  const currentBalances = new Map(openingYearMap)
+
+  for (let m = 1; m <= 12; m++) {
+    const monthData: any[] = []
+    const monthTrans = transMap.get(m) || new Map()
+
+    items.forEach(item => {
+      const tenHang = item.tenHangChuan as string
+      const dvt = item.dvtinh || ''
+      const bal = currentBalances.get(tenHang) || { qty: 0, val: 0 }
+      const trans = monthTrans.get(tenHang) || { inQty: 0, inVal: 0, outQty: 0, outVal: 0 }
+
+      // Chỉ thêm vào báo cáo nếu có số dư hoặc có phát sinh trong tháng
+      if (bal.qty !== 0 || trans.inQty !== 0 || trans.outQty !== 0) {
+        const closingQty = bal.qty + trans.inQty - trans.outQty
+        const closingVal = bal.val + trans.inVal - trans.outVal
+
+        monthData.push({
+          tenMatHang: tenHang,
+          dvt: dvt,
+          tonDauQty: bal.qty,
+          tonDauVal: bal.val,
+          nhapQty: trans.inQty,
+          nhapVal: trans.inVal,
+          xuatQty: trans.outQty,
+          xuatVal: trans.outVal,
+          tonCuoiQty: closingQty,
+          tonCuoiVal: closingVal
+        })
+
+        // Cập nhật số dư cho tháng sau
+        currentBalances.set(tenHang, {
+          qty: closingQty,
+          val: closingVal
+        })
+      }
+    })
+
+    report[m] = monthData
+  }
+
+  return report
+}
+
 // ============================================================================
 // Export default
 // ============================================================================
@@ -524,5 +686,6 @@ export default {
   getTongHopStats,
   getTongHopList,
   getXuatNhapTonByMatHang,
-  getXuatNhapTonTheoThoiGian
+  getXuatNhapTonTheoThoiGian,
+  getXuatNhapTonBaoCaoThang
 }

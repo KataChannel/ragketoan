@@ -11,6 +11,8 @@ import {
   Building2,
   Search,
   Menu,
+  Package,
+  Sparkles,
 } from "lucide-react"
 
 import {
@@ -43,6 +45,11 @@ const menuItems = [
     href: "/hoadon",
   },
   {
+    title: "Xuất nhập tồn",
+    icon: Package,
+    href: "/xuatnhapton",
+  },
+  {
     title: "Thống kê",
     icon: TrendingUp,
     href: "/thongke",
@@ -51,6 +58,11 @@ const menuItems = [
     title: "Khách hàng",
     icon: Building2,
     href: "/khachhang",
+  },
+  {
+    title: "Chuẩn hóa",
+    icon: Sparkles,
+    href: "/training",
   },
   {
     title: "Cài đặt",
