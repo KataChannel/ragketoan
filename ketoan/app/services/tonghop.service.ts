@@ -34,8 +34,10 @@ export interface TongHopStats {
   tongXuat: number
   giaTriNhap: number
   giaTriXuat: number
-  soMatHang: number
+  tongMatHang: number
   soHoaDon: number
+  giaTriTonCuoi: number
+  soLuongTonCuoi: number
 }
 
 // ============================================================================
@@ -307,7 +309,7 @@ export async function getTongHopStats(options: {
     if (toDate) (where.tdlap as Record<string, Date>).lte = toDate
   }
 
-  const [aggregation, countMatHang, countHoaDon] = await Promise.all([
+  const [aggregation, countMatHang, countHoaDon, closingStock] = await Promise.all([
     prisma.ext_tonghop.aggregate({
       where,
       _sum: {
@@ -327,8 +329,65 @@ export async function getTongHopStats(options: {
       by: ['idHoadonServer'],
       where,
       _count: true
+    }),
+    (prisma as any).ext_daily_stock_v2.aggregate({
+      where: {
+        congtyId,
+        date: toDate ? { lte: toDate } : undefined
+      },
+      // Lấy balance gần nhất cho mỗi mặt hàng là phức tạp trong aggregate đơn lẻ
+      // Nếu toDate được cung cấp, ta lý tưởng nhất là lấy sum của tonCuoiQty vào ngày toDate
+      _sum: {
+        tonCuoiQty: true,
+        tonCuoiVal: true
+      }
     })
   ])
+
+  // Nếu có toDate chi tiết, ta lấy aggregate của ngày đó
+  let giaTriTonCuoi = 0;
+  let soLuongTonCuoi = 0;
+  let tongMatHangWithBalance = 0;
+
+  if (toDate) {
+    const endOfDay = new Date(toDate);
+    endOfDay.setUTCHours(0, 0, 0, 0);
+    
+    const [stockAtDate, countWithBalance] = await Promise.all([
+      (prisma as any).ext_daily_stock_v2.aggregate({
+        where: {
+          congtyId,
+          date: endOfDay
+        },
+        _sum: {
+          tonCuoiQty: true,
+          tonCuoiVal: true
+        }
+      }),
+      (prisma as any).ext_daily_stock_v2.count({
+        where: {
+          congtyId,
+          date: endOfDay,
+          OR: [
+            { tonCuoiQty: { not: 0 } },
+            { tonCuoiVal: { not: 0 } }
+          ]
+        }
+      })
+    ]);
+
+    giaTriTonCuoi = Number(stockAtDate._sum.tonCuoiVal || 0);
+    soLuongTonCuoi = Number(stockAtDate._sum.tonCuoiQty || 0);
+    tongMatHangWithBalance = countWithBalance;
+  } else {
+    giaTriTonCuoi = Number(closingStock._sum.tonCuoiVal || 0);
+    soLuongTonCuoi = Number(closingStock._sum.tonCuoiQty || 0);
+    tongMatHangWithBalance = countMatHang.length; // Fallback
+  }
+
+  // tongMatHang should be union of transaction items and balance items
+  // For simplicity, if we have balance snapshots, we use that count as it's more comprehensive
+  const finalTongMatHang = Math.max(countMatHang.length, tongMatHangWithBalance);
 
   return {
     tongSoLuong: Number(aggregation._sum.sluong || 0),
@@ -336,8 +395,10 @@ export async function getTongHopStats(options: {
     tongXuat: Number(aggregation._sum.soLuongXuat || 0),
     giaTriNhap: Number(aggregation._sum.giaTriNhap || 0),
     giaTriXuat: Number(aggregation._sum.giaTriXuat || 0),
-    soMatHang: countMatHang.length,
-    soHoaDon: countHoaDon.length
+    tongMatHang: finalTongMatHang,
+    soHoaDon: countHoaDon.length,
+    giaTriTonCuoi,
+    soLuongTonCuoi
   }
 }
 
@@ -428,10 +489,12 @@ export async function getXuatNhapTonByMatHang(options: {
     search
   } = options
 
-  const startDate = fromDate || new Date(new Date().getFullYear(), 0, 1);
-  const endDate = toDate || new Date();
-  startDate.setHours(0, 0, 0, 0);
-  endDate.setHours(0, 0, 0, 0);
+  const startDate = fromDate ? new Date(fromDate) : new Date(new Date().getFullYear(), 0, 1);
+  const endDate = toDate ? new Date(toDate) : new Date();
+  
+  // Normalize to UTC midnight for ext_daily_stock_v2 consistency
+  startDate.setUTCHours(0, 0, 0, 0);
+  endDate.setUTCHours(0, 0, 0, 0);
 
   // Lấy tổng số mặt hàng (nhóm)
   const groupQuery = {
@@ -736,9 +799,9 @@ export async function recalculateDailyInventory(congtyId?: string) {
 
   // 4. Tìm ngày bắt đầu và kết thúc
   const startDate = new Date(transactions[0].tdlap);
-  startDate.setHours(0, 0, 0, 0);
+  startDate.setUTCHours(0, 0, 0, 0);
   const endDate = new Date();
-  endDate.setHours(0, 0, 0, 0);
+  endDate.setUTCHours(0, 0, 0, 0);
 
   // Group transactions by date and product
   const transByDate = new Map<string, Map<string, any>>();

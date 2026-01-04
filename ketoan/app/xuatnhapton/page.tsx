@@ -14,8 +14,11 @@ import {
   Search,
   Filter,
   BarChart3,
-  Calendar,
+  Calendar as CalendarIcon,
   ArrowUpDown,
+  ChevronLeft,
+  ChevronRight,
+  FileIcon,
 } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { DashboardLayout } from '@/app/components/dashboard-layout';
@@ -40,13 +43,13 @@ import { CongTy } from '@/app/types';
 // ============================================================================
 
 interface TongHopStats {
-  tongSoLuong: number;
+  tongMatHang: number;
   tongNhap: number;
   tongXuat: number;
   giaTriNhap: number;
   giaTriXuat: number;
-  soMatHang: number;
-  soHoaDon: number;
+  giaTriTonCuoi: number;
+  soLuongTonCuoi: number;
 }
 
 interface TongHopItem {
@@ -114,7 +117,6 @@ export default function XuatNhapTonPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
   const [isRecalculating, setIsRecalculating] = useState(false);
-  const [activeTab, setActiveTab] = useState<'overview' | 'xnt-mathang' | 'xnt-thoigian'>('xnt-mathang');
   
   // Filter state
   const [companies, setCompanies] = useState<CongTy[]>([]);
@@ -122,19 +124,13 @@ export default function XuatNhapTonPage() {
   const [fromDate, setFromDate] = useState(getDateRange(12).fromDate);
   const [toDate, setToDate] = useState(getDateRange(12).toDate);
   const [search, setSearch] = useState('');
-  const [loaihd, setLoaihd] = useState<string>('');
-  const [nam, setNam] = useState(new Date().getFullYear());
-  const [groupBy, setGroupBy] = useState<'thang' | 'quy'>('thang');
   
   // Data state
   const [stats, setStats] = useState<TongHopStats | null>(null);
-  const [tongHopList, setTongHopList] = useState<TongHopItem[]>([]);
   const [xntMatHang, setXntMatHang] = useState<XuatNhapTonItem[]>([]);
-  const [xntThoiGian, setXntThoiGian] = useState<XNTTheoThoiGian[]>([]);
   
   // Paginations
-  const [pagination, setPagination] = useState({ page: 1, limit: 20, total: 0, totalPages: 0 });
-  const [xntPagination, setXntPagination] = useState({ page: 1, limit: 20, total: 0, totalPages: 0 });
+  const [xntPagination, setXntPagination] = useState({ page: 1, limit: 10, total: 0, totalPages: 0 });
   
   // Sync dialog
   const [showSyncDialog, setShowSyncDialog] = useState(false);
@@ -175,34 +171,6 @@ export default function XuatNhapTonPage() {
     }
   }, [selectedCompanyId, fromDate, toDate]);
 
-  // Fetch list (Overview)
-  const fetchList = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const params = new URLSearchParams({
-        action: 'list',
-        page: pagination.page.toString(),
-        limit: pagination.limit.toString(),
-      });
-      if (selectedCompanyId) params.append('congtyId', selectedCompanyId);
-      if (fromDate) params.append('fromDate', fromDate);
-      if (toDate) params.append('toDate', toDate);
-      if (search) params.append('search', search);
-      if (loaihd) params.append('loaihd', loaihd);
-      
-      const response = await fetch(`/api/tonghop?${params}`);
-      const result = await response.json();
-      if (result.success) {
-        setTongHopList(result.items);
-        setPagination(result.pagination);
-      }
-    } catch (error) {
-      console.error('Error fetching list:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [selectedCompanyId, fromDate, toDate, search, loaihd, pagination.page, pagination.limit]);
-
   // Fetch XNT theo mặt hàng
   const fetchXNTMatHang = useCallback(async () => {
     setIsLoading(true);
@@ -230,28 +198,6 @@ export default function XuatNhapTonPage() {
     }
   }, [selectedCompanyId, fromDate, toDate, xntPagination.page, xntPagination.limit, search]);
 
-  // Fetch XNT theo thời gian
-  const fetchXNTThoiGian = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const params = new URLSearchParams({
-        action: 'xnt-thoigian',
-        nam: nam.toString(),
-        groupBy,
-      });
-      if (selectedCompanyId) params.append('congtyId', selectedCompanyId);
-      
-      const response = await fetch(`/api/tonghop?${params}`);
-      const result = await response.json();
-      if (result.success) {
-        setXntThoiGian(result.data);
-      }
-    } catch (error) {
-      console.error('Error fetching XNT thoi gian:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [selectedCompanyId, nam, groupBy]);
 
   // ============================================================================
   // Effects
@@ -272,17 +218,8 @@ export default function XuatNhapTonPage() {
 
   useEffect(() => {
     fetchStats();
-  }, [fetchStats]);
-
-  useEffect(() => {
-    if (activeTab === 'overview') {
-      fetchList();
-    } else if (activeTab === 'xnt-mathang') {
-      fetchXNTMatHang();
-    } else if (activeTab === 'xnt-thoigian') {
-      fetchXNTThoiGian();
-    }
-  }, [activeTab, fetchList, fetchXNTMatHang, fetchXNTThoiGian]);
+    fetchXNTMatHang();
+  }, [fetchStats, fetchXNTMatHang]);
 
   // ============================================================================
   // Handlers
@@ -345,60 +282,27 @@ export default function XuatNhapTonPage() {
 
   const handleRefresh = () => {
     fetchStats();
-    if (activeTab === 'overview') fetchList();
-    else if (activeTab === 'xnt-mathang') fetchXNTMatHang();
-    else if (activeTab === 'xnt-thoigian') fetchXNTThoiGian();
+    fetchXNTMatHang();
   };
 
   const handleExportExcel = () => {
     try {
-      let dataToExport = [];
-      let filename = 'xuat-nhap-ton';
-
-      if (activeTab === 'overview') {
-        dataToExport = tongHopList.map((item) => ({
-          'Tên hàng chuẩn': item.tenHangChuan || item.tenHang,
-          'Tên hàng gốc': item.tenHang,
-          'Mã hàng': item.maHang,
-          'ĐVT': item.dvtinh,
-          'Số lượng': item.sluong,
-          'Đơn giá': item.dgia,
-          'Tổng tiền': item.tongTien,
-          'Loại': item.loaihd === 'banra' ? 'Xuất' : 'Nhập',
-          'Ngày': format(new Date(item.tdlap), 'dd/MM/yyyy'),
-          'Số hóa đơn': item.shdon,
-          'Đối tác': item.loaihd === 'banra' ? item.nmten : item.nbten,
-        }));
-        filename = `ChiTiet_XNT_${format(new Date(), 'yyyyMMdd')}`;
-      } else if (activeTab === 'xnt-mathang') {
-        dataToExport = xntMatHang.map((item) => ({
-          'Tên mặt hàng chuẩn': item.tenMatHang,
-          'Tên mặt hàng gốc': item.tenGocList,
-          'Đơn vị tính': item.dvtinh,
-          'Số lượng nhập': item.soLuongNhap,
-          'Số lượng xuất': item.soLuongXuat,
-          'Tồn cuối': item.tonCuoi,
-          'Giá trị nhập': item.giaTriNhap,
-          'Giá trị xuất': item.giaTriXuat,
-          'Số lần giao dịch': item.soLanGiaoDich,
-        }));
-        filename = `TongHop_XNT_MatHang_${format(new Date(), 'yyyyMMdd')}`;
-      } else {
-        dataToExport = xntThoiGian.map((item) => ({
-          [groupBy === 'thang' ? 'Tháng' : 'Quý']: groupBy === 'thang' ? `Tháng ${item.thang}` : `Quý ${item.quy}`,
-          'Số lượng nhập': item.soLuongNhap,
-          'Số lượng xuất': item.soLuongXuat,
-          'Giá trị nhập': item.giaTriNhap,
-          'Giá trị xuất': item.giaTriXuat,
-          'Số giao dịch': item.soGiaoDich,
-        }));
-        filename = `XNT_TheoThoiGian_${nam}_${format(new Date(), 'yyyyMMdd')}`;
-      }
-
+      const dataToExport = xntMatHang.map((item) => ({
+        'Tên mặt hàng chuẩn': item.tenMatHang,
+        'Tên mặt hàng gốc': item.tenGocList,
+        'Đơn vị tính': item.dvtinh,
+        'Số lượng nhập': item.soLuongNhap,
+        'Số lượng xuất': item.soLuongXuat,
+        'Tồn cuối': item.tonCuoi,
+        'Giá trị nhập': item.giaTriNhap,
+        'Giá trị xuất': item.giaTriXuat,
+        'Số lần giao dịch': item.soLanGiaoDich,
+      }));
+      
       const ws = XLSX.utils.json_to_sheet(dataToExport);
       const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
-      XLSX.writeFile(wb, `${filename}.xlsx`);
+      XLSX.utils.book_append_sheet(wb, ws, 'TongHopXNT');
+      XLSX.writeFile(wb, `TongHop_XNT_${format(new Date(), 'yyyyMMdd')}.xlsx`);
       
       toast.success('Xuất file Excel thành công');
     } catch (error) {
@@ -412,7 +316,7 @@ export default function XuatNhapTonPage() {
     try {
       const params = new URLSearchParams({
         action: 'xnt-baocao-12thang',
-        nam: nam.toString(),
+        nam: new Date().getFullYear().toString(),
       });
       if (selectedCompanyId) params.append('congtyId', selectedCompanyId);
 
@@ -442,7 +346,7 @@ export default function XuatNhapTonPage() {
           XLSX.utils.book_append_sheet(wb, ws, `Tháng ${m}`);
         }
         
-        XLSX.writeFile(wb, `BaoCao_XNT_12Thang_${nam}.xlsx`);
+        XLSX.writeFile(wb, `BaoCao_XNT_12Thang_${new Date().getFullYear()}.xlsx`);
         toast.success('Xuất báo cáo 12 tháng thành công');
       } else {
         toast.error('Lỗi khi lấy dữ liệu báo cáo');
@@ -464,22 +368,6 @@ export default function XuatNhapTonPage() {
     })),
   ];
 
-  const loaiHDOptions = [
-    { value: '', label: 'Tất cả loại' },
-    { value: 'banra', label: 'Bán ra (Xuất)' },
-    { value: 'muavao', label: 'Mua vào (Nhập)' },
-  ];
-
-  const groupByOptions = [
-    { value: 'thang', label: 'Theo tháng' },
-    { value: 'quy', label: 'Theo quý' },
-  ];
-
-  const namOptions = Array.from({ length: 5 }, (_, i) => {
-    const year = new Date().getFullYear() - i;
-    return { value: year.toString(), label: `Năm ${year}` };
-  });
-
   // ============================================================================
   // Render
   // ============================================================================
@@ -491,10 +379,10 @@ export default function XuatNhapTonPage() {
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
-              Quản lý Xuất Nhập Tồn
+              Báo cáo Tổng hợp Xuất Nhập Tồn
             </h2>
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              Theo dõi chi tiết và tổng hợp biến động từ hóa đơn
+              Thống kê tồn kho chi tiết theo mặt hàng trong khoảng thời gian
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -513,7 +401,7 @@ export default function XuatNhapTonPage() {
               disabled={isLoading} 
               className="text-blue-600 border-blue-200 hover:bg-blue-50"
             >
-              <FileText className="h-4 w-4" />
+              <FileIcon className="h-4 w-4" />
               <span className="hidden sm:inline ml-1">Báo cáo 12 tháng</span>
             </Button>
             <Button 
@@ -533,312 +421,271 @@ export default function XuatNhapTonPage() {
           </div>
         </div>
 
-        {/* Stats Cards */}
+        {/* Stats Grid */}
         {stats && (
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
             <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-3 sm:p-4">
               <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-xs sm:text-sm mb-1">
                 <Package className="h-4 w-4" />
-                <span>Mặt hàng</span>
+                <span>Số mặt hàng</span>
               </div>
-              <div className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
-                {stats.soMatHang.toLocaleString()}
+              <div className="text-base sm:text-xl font-bold text-gray-900 dark:text-white">
+                {(stats.tongMatHang ?? 0).toLocaleString()}
               </div>
-              <div className="text-xs text-secondary-500 dark:text-gray-400">
-                {stats.soHoaDon} hóa đơn
-              </div>
+              <div className="text-xs text-secondary-500 dark:text-gray-400">Có phát sinh giao dịch</div>
             </div>
             
             <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-3 sm:p-4">
               <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-xs sm:text-sm mb-1">
                 <TrendingDown className="h-4 w-4 text-green-500" />
-                <span>Nhập kho</span>
+                <span>Tổng nhập</span>
               </div>
-              <div className="text-base sm:text-xl font-bold text-green-600 dark:text-green-400">
-                {stats.tongNhap.toLocaleString()} SP
+              <div className="text-base sm:text-xl font-bold text-green-600 dark:text-green-400 font-mono">
+                {(stats.tongNhap ?? 0).toLocaleString()}
               </div>
-              <div className="text-xs text-secondary-500 dark:text-gray-400">
-                {formatCurrency(stats.giaTriNhap)}
+              <div className="text-xs text-secondary-500 dark:text-gray-400 font-mono">
+                {formatCurrency(stats.giaTriNhap ?? 0)}
               </div>
             </div>
             
             <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-3 sm:p-4">
               <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-xs sm:text-sm mb-1">
                 <TrendingUp className="h-4 w-4 text-blue-500" />
-                <span>Xuất kho</span>
+                <span>Tổng xuất</span>
               </div>
-              <div className="text-base sm:text-xl font-bold text-blue-600 dark:text-blue-400">
-                {stats.tongXuat.toLocaleString()} SP
+              <div className="text-base sm:text-xl font-bold text-blue-600 dark:text-blue-400 font-mono">
+                {(stats.tongXuat ?? 0).toLocaleString()}
               </div>
-              <div className="text-xs text-secondary-500 dark:text-gray-400">
-                {formatCurrency(stats.giaTriXuat)}
+              <div className="text-xs text-secondary-500 dark:text-gray-400 font-mono">
+                {formatCurrency(stats.giaTriXuat ?? 0)}
               </div>
             </div>
             
             <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-3 sm:p-4">
               <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-xs sm:text-sm mb-1">
-                <BarChart3 className="h-4 w-4" />
-                <span>Tồn kho ước tính</span>
+                <BarChart3 className="h-4 w-4 text-indigo-500" />
+                <span>Giá trị tồn cuối</span>
               </div>
-              <div className={`text-base sm:text-xl font-bold ${
-                stats.tongNhap - stats.tongXuat >= 0 
+              <div className={`text-base sm:text-xl font-bold font-mono ${
+                (stats.giaTriTonCuoi ?? 0) >= 0 
                   ? 'text-indigo-600 dark:text-indigo-400' 
                   : 'text-red-600 dark:text-red-400'
               }`}>
-                {(stats.tongNhap - stats.tongXuat).toLocaleString()} SP
+                {formatCurrency(stats.giaTriTonCuoi ?? 0)}
               </div>
-              <div className="text-xs text-secondary-500 dark:text-gray-400">
-                {formatCurrency(Math.abs(stats.giaTriNhap - stats.giaTriXuat))}
+              <div className="text-xs text-secondary-500 dark:text-gray-400 font-mono">
+                SL: {(stats.soLuongTonCuoi ?? 0).toLocaleString()}
               </div>
             </div>
           </div>
         )}
 
-        {/* Tabs and Filters */}
+        {/* Main Content Area */}
         <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
-          <div className="flex overflow-x-auto border-b border-gray-200 dark:border-gray-700">
-            <button
-              className={`px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
-                activeTab === 'xnt-mathang'
-                  ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
-              }`}
-              onClick={() => setActiveTab('xnt-mathang')}
-            >
-              <Package className="h-4 w-4 inline mr-1" />
-              Tổng hợp theo Mặt hàng
-            </button>
-            <button
-              className={`px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
-                activeTab === 'overview'
-                  ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
-              }`}
-              onClick={() => setActiveTab('overview')}
-            >
-              <FileText className="h-4 w-4 inline mr-1" />
-              Chi tiết giao dịch
-            </button>
-            <button
-              className={`px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
-                activeTab === 'xnt-thoigian'
-                  ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
-              }`}
-              onClick={() => setActiveTab('xnt-thoigian')}
-            >
-              <Calendar className="h-4 w-4 inline mr-1" />
-              Biến động thời gian
-            </button>
-          </div>
-
-          <div className="p-3 sm:p-4 border-b border-gray-200 dark:border-gray-700 space-y-3">
+          {/* Filter Bar */}
+          <div className="p-3 sm:p-4 border-b border-gray-200 dark:border-gray-700 flex flex-wrap items-center gap-3">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
               <div className="sm:col-span-2">
-                <Label className="text-xs text-gray-600 dark:text-gray-400 mb-1 block">Công ty</Label>
-                <Combobox options={companyOptions} value={selectedCompanyId} onValueChange={setSelectedCompanyId} />
-              </div>
-              
-              {activeTab !== 'xnt-thoigian' && (
-                <>
-                  <div>
-                    <Label className="text-xs text-gray-600 dark:text-gray-400 mb-1 block">Từ ngày</Label>
-                    <Input type="date" value={fromDate} onChange={(e) => setFromDate(e.target.value)} />
-                  </div>
-                  <div>
-                    <Label className="text-xs text-gray-600 dark:text-gray-400 mb-1 block">Đến ngày</Label>
-                    <Input type="date" value={toDate} onChange={(e) => setToDate(e.target.value)} />
-                  </div>
-                </>
-              )}
-              
-              {activeTab === 'xnt-thoigian' && (
-                <>
-                  <div>
-                    <Label className="text-xs text-gray-600 dark:text-gray-400 mb-1 block">Năm</Label>
-                    <Combobox options={namOptions} value={nam.toString()} onValueChange={(v) => setNam(parseInt(v))} />
-                  </div>
-                  <div>
-                    <Label className="text-xs text-gray-600 dark:text-gray-400 mb-1 block">Nhóm theo</Label>
-                    <Combobox options={groupByOptions} value={groupBy} onValueChange={(v) => setGroupBy(v as 'thang' | 'quy')} />
-                  </div>
-                </>
-              )}
-            </div>
-
-            <div className="flex gap-2">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <Input
-                  placeholder={activeTab === 'overview' ? "Tìm tên hàng, số hóa đơn..." : "Tìm tên mặt hàng..."}
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="pl-10"
+                <Label className="text-xs text-secondary-500 mb-1 block font-bold">CÔNG TY</Label>
+                <Combobox 
+                  options={companyOptions} 
+                  value={selectedCompanyId} 
+                  onValueChange={setSelectedCompanyId}
+                  placeholder="Chọn công ty..."
                 />
               </div>
-              {activeTab === 'overview' && (
-                <div className="w-[150px]">
-                  <Combobox options={loaiHDOptions} value={loaihd} onValueChange={setLoaihd} placeholder="Loại HĐ" />
-                </div>
-              )}
+              <div>
+                <Label className="text-xs text-secondary-500 mb-1 block font-bold">TỪ NGÀY</Label>
+                <Input 
+                  type="date" 
+                  value={fromDate} 
+                  onChange={(e) => setFromDate(e.target.value)}
+                  className="h-9"
+                />
+              </div>
+              <div>
+                <Label className="text-xs text-secondary-500 mb-1 block font-bold">ĐẾN NGÀY</Label>
+                <Input 
+                  type="date" 
+                  value={toDate} 
+                  onChange={(e) => setToDate(e.target.value)}
+                  className="h-9"
+                />
+              </div>
+            </div>
+
+            <div className="flex-1 min-w-[200px] flex items-end gap-2">
+              <div className="relative flex-1">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400" />
+                <Input
+                  placeholder="Tìm kiếm mặt hàng..."
+                  className="pl-9 h-9"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+              </div>
               <Button variant="outline" size="sm" onClick={handleRefresh}>
                 <Filter className="h-4 w-4" />
               </Button>
             </div>
           </div>
 
-          <div className="overflow-x-auto">
-            {activeTab === 'overview' && (
-              <table className="w-full text-sm">
-                <thead className="bg-gray-50 dark:bg-gray-900/50">
-                  <tr>
-                    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Mặt hàng</th>
-                    <th className="px-3 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">SL</th>
-                    <th className="px-3 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase hidden sm:table-cell">Đơn giá</th>
-                    <th className="px-3 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Thành tiền</th>
-                    <th className="px-3 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase hidden md:table-cell">Loại</th>
-                    <th className="px-3 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase hidden lg:table-cell">Ngày</th>
+          {/* Table Area */}
+          <div className="relative">
+            {isLoading && (
+               <div className="absolute inset-0 bg-white/50 dark:bg-gray-800/50 z-20 flex items-center justify-center backdrop-blur-sm">
+                 <div className="flex flex-col items-center gap-2">
+                    <RefreshCw className="h-8 w-8 text-blue-500 animate-spin" />
+                    <span className="text-sm font-medium">Đang tải dữ liệu...</span>
+                 </div>
+               </div>
+            )}
+
+            <div className="overflow-x-auto min-h-[400px]">
+              <table className="w-full text-[11px] sm:text-xs border-collapse">
+                <thead className="bg-gray-100 dark:bg-gray-900/80 sticky top-0 z-10 text-gray-700 dark:text-gray-200 font-bold uppercase">
+                  <tr className="border-b border-gray-200 dark:border-gray-700">
+                    <th rowSpan={2} className="px-2 py-3 text-left border-r border-gray-200 dark:border-gray-700 min-w-[200px]">Mặt hàng / VT</th>
+                    <th rowSpan={2} className="px-2 py-3 text-center border-r border-gray-200 dark:border-gray-700">ĐVT</th>
+                    <th colSpan={2} className="px-2 py-1 text-center border-r border-gray-200 dark:border-gray-700 bg-amber-50 dark:bg-amber-900/20">Tồn đầu kỳ</th>
+                    <th colSpan={2} className="px-2 py-1 text-center border-r border-gray-200 dark:border-gray-700 bg-green-50 dark:bg-green-900/20">Nhập trong kỳ</th>
+                    <th colSpan={2} className="px-2 py-1 text-center border-r border-gray-200 dark:border-gray-700 bg-blue-50 dark:bg-blue-900/20">Xuất trong kỳ</th>
+                    <th colSpan={2} className="px-2 py-1 text-center bg-indigo-50 dark:bg-indigo-900/20">Tồn cuối kỳ</th>
+                  </tr>
+                  <tr className="border-b border-gray-200 dark:border-gray-700">
+                    <th className="px-2 py-1 text-right border-r border-gray-200 dark:border-gray-700 bg-amber-50/50 dark:bg-amber-900/10">SL</th>
+                    <th className="px-2 py-1 text-right border-r border-gray-200 dark:border-gray-700 bg-amber-50/50 dark:bg-amber-900/10">Tiền</th>
+                    <th className="px-2 py-1 text-right border-r border-gray-200 dark:border-gray-700 bg-green-50/50 dark:bg-green-900/10">SL</th>
+                    <th className="px-2 py-1 text-right border-r border-gray-200 dark:border-gray-700 bg-green-50/50 dark:bg-green-900/10">Tiền</th>
+                    <th className="px-2 py-1 text-right border-r border-gray-200 dark:border-gray-700 bg-blue-50/50 dark:bg-blue-900/10">SL</th>
+                    <th className="px-2 py-1 text-right border-r border-gray-200 dark:border-gray-700 bg-blue-50/50 dark:bg-blue-900/10">Tiền</th>
+                    <th className="px-2 py-1 text-right border-r border-gray-200 dark:border-gray-700 bg-indigo-50/50 dark:bg-indigo-900/10">SL</th>
+                    <th className="px-2 py-1 text-right bg-indigo-50/50 dark:bg-indigo-900/10">Tiền</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                  {tongHopList.map((item) => (
-                    <tr key={item.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                      <td className="px-3 py-3">
-                        <div className="font-medium text-gray-900 dark:text-white truncate max-w-[200px]">
-                          {item.tenHangChuan || item.tenHang}
-                        </div>
-                        {item.tenHangChuan && (
-                          <div className="text-[10px] text-gray-400 dark:text-gray-500 italic truncate max-w-[200px]">
-                            Gốc: {item.tenHang}
+                  {xntMatHang.length === 0 && !isLoading ? (
+                    <tr>
+                      <td colSpan={10} className="px-4 py-8 text-center text-gray-500 italic">Không có dữ liệu trong khoảng thời gian này</td>
+                    </tr>
+                  ) : (
+                    xntMatHang.map((item, index) => (
+                      <tr key={index} className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
+                        <td className="px-2 py-2 border-r border-gray-100 dark:border-gray-800">
+                          <div className="font-semibold text-gray-900 dark:text-white leading-tight">
+                            {item.tenMatHang}
                           </div>
-                        )}
-                        <div className="text-xs text-gray-500 dark:text-gray-400">#{item.shdon} | {item.dvtinh}</div>
-                      </td>
-                      <td className="px-3 py-3 text-right">{item.sluong.toLocaleString()}</td>
-                      <td className="px-3 py-3 text-right hidden sm:table-cell">{formatCurrency(item.dgia)}</td>
-                      <td className="px-3 py-3 text-right font-medium text-blue-600 dark:text-blue-400">{formatCurrency(item.tongTien)}</td>
-                      <td className="px-3 py-3 text-center hidden md:table-cell">
-                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${item.loaihd === 'banra' ? 'bg-orange-100 text-orange-600' : 'bg-green-100 text-green-600'}`}>
-                          {item.loaihd === 'banra' ? 'XUẤT' : 'NHẬP'}
-                        </span>
-                      </td>
-                      <td className="px-3 py-3 text-center text-xs text-gray-500 hidden lg:table-cell">{format(new Date(item.tdlap), 'dd/MM/yy')}</td>
-                    </tr>
-                  ))}
+                          {item.tenGocList && (
+                            <div className="text-[10px] text-gray-400 italic truncate max-w-[220px]" title={item.tenGocList}>
+                              Gốc: {item.tenGocList}
+                            </div>
+                          )}
+                        </td>
+                        <td className="px-2 py-2 text-center border-r border-gray-100 dark:border-gray-800 font-mono text-gray-500">{item.dvtinh}</td>
+                        
+                        {/* Tồn đầu */}
+                        <td className="px-2 py-2 text-right border-r border-gray-100 dark:border-gray-800 bg-amber-50/20 dark:bg-amber-900/5 font-mono">{item.tonDauQty.toLocaleString()}</td>
+                        <td className="px-2 py-2 text-right border-r border-gray-100 dark:border-gray-800 bg-amber-50/20 dark:bg-amber-900/5 font-mono">{formatCurrency(item.tonDauVal)}</td>
+                        
+                        {/* Nhập */}
+                        <td className="px-2 py-2 text-right border-r border-gray-100 dark:border-gray-800 bg-green-50/20 dark:bg-green-900/5 text-green-600 font-bold font-mono">{item.soLuongNhap.toLocaleString()}</td>
+                        <td className="px-2 py-2 text-right border-r border-gray-100 dark:border-gray-800 bg-green-50/20 dark:bg-green-900/5 text-green-600 font-bold font-mono">{formatCurrency(item.giaTriNhap)}</td>
+                        
+                        {/* Xuất */}
+                        <td className="px-2 py-2 text-right border-r border-gray-100 dark:border-gray-800 bg-blue-50/20 dark:bg-blue-900/5 text-blue-600 font-bold font-mono">{item.soLuongXuat.toLocaleString()}</td>
+                        <td className="px-2 py-2 text-right border-r border-gray-100 dark:border-gray-800 bg-blue-50/20 dark:bg-blue-900/5 text-blue-600 font-bold font-mono">{formatCurrency(item.giaTriXuat)}</td>
+                        
+                        {/* Tồn cuối */}
+                        <td className={`px-2 py-2 text-right border-r border-gray-100 dark:border-gray-800 bg-indigo-50/20 dark:bg-indigo-900/5 font-bold font-mono ${item.tonCuoi < 0 ? 'text-red-500' : 'text-indigo-600'}`}>
+                          {item.tonCuoi.toLocaleString()}
+                        </td>
+                        <td className={`px-2 py-2 text-right bg-indigo-50/20 dark:bg-indigo-900/5 font-bold font-mono ${item.giaTriTon < 0 ? 'text-red-500' : 'text-indigo-600'}`}>
+                          {formatCurrency(item.giaTriTon)}
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
-              </table>
-            )}
-
-            {activeTab === 'xnt-mathang' && (
-              <table className="w-full text-sm">
-                <thead className="bg-gray-50 dark:bg-gray-900/50">
-                  <tr>
-                    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Mặt hàng</th>
-                    <th className="px-3 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Tồn đầu</th>
-                    <th className="px-3 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Nhập</th>
-                    <th className="px-3 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Xuất</th>
-                    <th className="px-3 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Tồn cuối</th>
-                    <th className="px-3 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase hidden sm:table-cell">Giá trị tồn</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                  {xntMatHang.map((item, index) => (
-                    <tr key={index} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                      <td className="px-3 py-3">
-                        <div className="font-medium text-gray-900 dark:text-white truncate max-w-[250px]">{item.tenMatHang}</div>
-                        {item.tenGocList && (
-                          <div className="text-[10px] text-gray-400 dark:text-gray-500 italic truncate max-w-[250px]" title={item.tenGocList}>
-                            Gốc: {item.tenGocList}
-                          </div>
-                        )}
-                        <div className="text-xs text-gray-500">{item.dvtinh} | {item.soLanGiaoDich} GD</div>
+                {xntMatHang.length > 0 && (
+                  <tfoot className="bg-gray-100 dark:bg-gray-900 font-bold sticky bottom-0 border-t border-gray-300 dark:border-gray-600 uppercase font-mono">
+                    <tr>
+                      <td colSpan={2} className="px-2 py-2 text-center border-r border-gray-200 dark:border-gray-700 font-sans">TỔNG CỘNG</td>
+                      <td className="px-2 py-2 text-right border-r border-gray-200 dark:border-gray-700 bg-amber-100/50 dark:bg-amber-900/30">
+                        {xntMatHang.reduce((acc, i) => acc + i.tonDauQty, 0).toLocaleString()}
                       </td>
-                      <td className="px-3 py-3 text-right text-gray-500 italic">{item.tonDauQty.toLocaleString()}</td>
-                      <td className="px-3 py-3 text-right text-green-600">{item.soLuongNhap.toLocaleString()}</td>
-                      <td className="px-3 py-3 text-right text-blue-600">{item.soLuongXuat.toLocaleString()}</td>
-                      <td className={`px-3 py-3 text-right font-bold ${item.tonCuoi >= 0 ? 'text-gray-900 dark:text-white' : 'text-red-600'}`}>
-                        {item.tonCuoi.toLocaleString()}
+                      <td className="px-2 py-2 text-right border-r border-gray-200 dark:border-gray-700 bg-amber-100/50 dark:bg-amber-900/30">
+                        {formatCurrency(xntMatHang.reduce((acc, i) => acc + i.tonDauVal, 0))}
                       </td>
-                      <td className="px-3 py-3 text-right hidden sm:table-cell text-gray-500">{formatCurrency(item.giaTriTon)}</td>
+                      <td className="px-2 py-2 text-right border-r border-gray-200 dark:border-gray-700 bg-green-100/50 dark:bg-green-900/30 text-green-700">
+                        {xntMatHang.reduce((acc, i) => acc + i.soLuongNhap, 0).toLocaleString()}
+                      </td>
+                      <td className="px-2 py-2 text-right border-r border-gray-200 dark:border-gray-700 bg-green-100/50 dark:bg-green-900/30 text-green-700">
+                        {formatCurrency(xntMatHang.reduce((acc, i) => acc + i.giaTriNhap, 0))}
+                      </td>
+                      <td className="px-2 py-2 text-right border-r border-gray-200 dark:border-gray-700 bg-blue-100/50 dark:bg-blue-900/30 text-blue-700">
+                        {xntMatHang.reduce((acc, i) => acc + i.soLuongXuat, 0).toLocaleString()}
+                      </td>
+                      <td className="px-2 py-2 text-right border-r border-gray-200 dark:border-gray-700 bg-blue-100/50 dark:bg-blue-900/30 text-blue-700">
+                        {formatCurrency(xntMatHang.reduce((acc, i) => acc + i.giaTriXuat, 0))}
+                      </td>
+                      <td className="px-2 py-2 text-right border-r border-gray-200 dark:border-gray-700 bg-indigo-100/50 dark:bg-indigo-900/30 text-indigo-700">
+                        {xntMatHang.reduce((acc, i) => acc + i.tonCuoi, 0).toLocaleString()}
+                      </td>
+                      <td className="px-2 py-2 text-right bg-indigo-100/50 dark:bg-indigo-900/30 text-indigo-700">
+                        {formatCurrency(xntMatHang.reduce((acc, i) => acc + i.giaTriTon, 0))}
+                      </td>
                     </tr>
-                  ))}
-                </tbody>
+                  </tfoot>
+                )}
               </table>
-            )}
-
-            {activeTab === 'xnt-thoigian' && (
-              <table className="w-full text-sm">
-                <thead className="bg-gray-50 dark:bg-gray-900/50">
-                  <tr>
-                    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{groupBy === 'thang' ? 'Tháng' : 'Quý'}</th>
-                    <th className="px-3 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">SL Nhập</th>
-                    <th className="px-3 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">SL Xuất</th>
-                    <th className="px-3 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase hidden sm:table-cell">Giá trị nhập</th>
-                    <th className="px-3 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase hidden sm:table-cell">Giá trị xuất</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                  {xntThoiGian.map((item, index) => (
-                    <tr key={index} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                      <td className="px-3 py-3 font-medium text-gray-900 dark:text-white">{groupBy === 'thang' ? `Tháng ${item.thang}` : `Quý ${item.quy}`}</td>
-                      <td className="px-3 py-3 text-right text-green-600">{item.soLuongNhap.toLocaleString()}</td>
-                      <td className="px-3 py-3 text-right text-blue-600">{item.soLuongXuat.toLocaleString()}</td>
-                      <td className="px-3 py-3 text-right hidden sm:table-cell text-green-600/70">{formatCurrency(item.giaTriNhap)}</td>
-                      <td className="px-3 py-3 text-right hidden sm:table-cell text-blue-600/70">{formatCurrency(item.giaTriXuat)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-            
-            {(isLoading && (tongHopList.length === 0 && xntMatHang.length === 0 && xntThoiGian.length === 0)) && (
-               <div className="py-10 text-center text-gray-500">Đang tải dữ liệu...</div>
-            )}
-            
-            {(!isLoading && (activeTab === 'overview' ? tongHopList.length === 0 : activeTab === 'xnt-mathang' ? xntMatHang.length === 0 : xntThoiGian.length === 0)) && (
-               <div className="py-10 text-center text-gray-500">Không có dữ liệu cho điều kiện lọc này.</div>
-            )}
-          </div>
-
-          {/* Pagination Footer */}
-          <div className="px-4 py-3 bg-gray-50 dark:bg-gray-900/30 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
-            <div className="text-xs text-gray-500">
-              {activeTab === 'overview' ? (
-                `Trang ${pagination.page}/${pagination.totalPages} | Tổng ${pagination.total}`
-              ) : activeTab === 'xnt-mathang' ? (
-                `Trang ${xntPagination.page}/${xntPagination.totalPages} | Tổng ${xntPagination.total}`
-              ) : (
-                `Tổng cộng ${xntThoiGian.length} bản ghi`
-              )}
             </div>
-            {(activeTab !== 'xnt-thoigian') && (
-              <div className="flex gap-1">
+
+            {/* Pagination Footer */}
+            <div className="px-4 py-3 bg-gray-50 dark:bg-gray-900/30 border-t border-gray-200 dark:border-gray-700 flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-6">
+                <div className="text-xs text-secondary-500 font-mono">
+                  Trang {xntPagination.page}/{xntPagination.totalPages} | Tổng {xntPagination.total} bản ghi
+                </div>
+                <div className="flex items-center gap-2 text-xs font-mono text-secondary-500">
+                  <span>Hiển thị:</span>
+                  <select 
+                    className="bg-transparent border border-gray-300 dark:border-gray-600 rounded px-1.5 py-1 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    value={xntPagination.limit}
+                    onChange={(e) => {
+                      const newLimit = Number(e.target.value);
+                      setXntPagination(p => ({ ...p, limit: newLimit, page: 1 }));
+                    }}
+                  >
+                    <option value={10}>10</option>
+                    <option value={100}>100</option>
+                    <option value={200}>200</option>
+                  </select>
+                </div>
+              </div>
+              
+              <div className="flex gap-2">
                 <Button
                   variant="outline"
                   size="sm"
-                  className="h-7 text-xs"
-                  disabled={(activeTab === 'overview' ? pagination.page <= 1 : xntPagination.page <= 1) || isLoading}
-                  onClick={() => {
-                    if (activeTab === 'overview') setPagination(p => ({ ...p, page: p.page - 1 }));
-                    else setXntPagination(p => ({ ...p, page: p.page - 1 }));
-                  }}
+                  className="h-8 text-xs font-mono"
+                  disabled={xntPagination.page <= 1 || isLoading}
+                  onClick={() => setXntPagination(p => ({ ...p, page: p.page - 1 }))}
                 >
+                  <ChevronLeft className="h-4 w-4 mr-1" />
                   Trước
                 </Button>
                 <Button
                   variant="outline"
                   size="sm"
-                  className="h-7 text-xs"
-                  disabled={(activeTab === 'overview' ? pagination.page >= pagination.totalPages : xntPagination.page >= xntPagination.totalPages) || isLoading}
-                  onClick={() => {
-                    if (activeTab === 'overview') setPagination(p => ({ ...p, page: p.page + 1 }));
-                    else setXntPagination(p => ({ ...p, page: p.page + 1 }));
-                  }}
+                  className="h-8 text-xs font-mono"
+                  disabled={xntPagination.page >= xntPagination.totalPages || isLoading}
+                  onClick={() => setXntPagination(p => ({ ...p, page: p.page + 1 }))}
                 >
                   Sau
+                  <ChevronRight className="h-4 w-4 ml-1" />
                 </Button>
               </div>
-            )}
+            </div>
           </div>
         </div>
       </div>
