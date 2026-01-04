@@ -686,72 +686,101 @@ export async function getXuatNhapTonTheoThoiGian(options: {
  */
 export async function getXuatNhapTonBaoCaoThang(options: {
   congtyId?: string
-  nam: number
+  fromDate: Date
+  toDate: Date
 }) {
-  const { congtyId, nam } = options
-  const where: any = {}
-  if (congtyId) where.congtyId = congtyId
-
-  // 1. Lấy tất cả mặt hàng có phát sinh
-  const items = await prisma.ext_tonghop.groupBy({
-    by: ['tenHangChuan', 'dvtinh'],
-    where: {
-      ...where,
-      nam: { lte: nam }
-    }
-  })
-
-  // Lấy danh sách tên gốc tương ứng
-  const allTenHangChuan = items.map(i => i.tenHangChuan).filter(Boolean) as string[]
-  const originalNamesMap = new Map<string, Set<string>>()
+  const { congtyId, fromDate, toDate } = options
+  const report: Record<string, any[]> = {}
   
-  if (allTenHangChuan.length > 0) {
-    const originals = await prisma.ext_tonghop.findMany({
+  // Start from the beginning of the fromDate month
+  let current = new Date(Date.UTC(fromDate.getUTCFullYear(), fromDate.getUTCMonth(), 1));
+  const end = new Date(Date.UTC(toDate.getUTCFullYear(), toDate.getUTCMonth(), 1));
+
+  while (current <= end) {
+    const year = current.getUTCFullYear();
+    const month = current.getUTCMonth() + 1;
+    const key = `${month}/${year}`;
+    
+    // Determine start and end of the month in UTC
+    const startDate = new Date(Date.UTC(year, month - 1, 1));
+    const endDate = new Date(Date.UTC(year, month, 0));
+    
+    // 1. Sum up all activity (Nhap/Xuat) for the month
+    const monthlyActivity = await (prisma as any).ext_daily_stock_v2.groupBy({
+      by: ['tenHangChuan', 'dvtinh'],
       where: {
-        ...where,
-        tenHangChuan: { in: allTenHangChuan }
+        congtyId,
+        date: {
+          gte: startDate,
+          lte: endDate
+        }
+      },
+      _sum: {
+        nhapQty: true,
+        nhapVal: true,
+        xuatQty: true,
+        xuatVal: true
+      }
+    });
+
+    // 2. Get Opening Balance (TonDau of the first day of the month)
+    const openingBalances = await (prisma as any).ext_daily_stock_v2.findMany({
+      where: {
+        congtyId,
+        date: startDate
       },
       select: {
         tenHangChuan: true,
-        tenHang: true
+        tonDauQty: true,
+        tonDauVal: true
       }
-    })
-    
-    originals.forEach(o => {
-      if (o.tenHangChuan) {
-        if (!originalNamesMap.has(o.tenHangChuan)) originalNamesMap.set(o.tenHangChuan, new Set())
-        originalNamesMap.get(o.tenHangChuan)?.add(o.tenHang)
-      }
-    })
-  }
+    });
 
-  const report: Record<number, any[]> = {}
-  
-  for (let m = 1; m <= 12; m++) {
-    const startDate = new Date(nam, m - 1, 1);
-    const endDate = new Date(nam, m, 0); // Ngày cuối cùng của tháng
-    
-    const monthBalances = await (prisma as any).ext_daily_stock_v2.findMany({
+    // 3. Get Closing Balance (TonCuoi of the last day of the month)
+    const closingBalances = await (prisma as any).ext_daily_stock_v2.findMany({
       where: {
         congtyId,
         date: endDate
       },
-      orderBy: { tenHangChuan: 'asc' }
+      select: {
+        tenHangChuan: true,
+        tonCuoiQty: true,
+        tonCuoiVal: true
+      }
     });
 
-    report[m] = monthBalances.map((b: any) => ({
-      tenMatHang: b.tenHangChuan,
-      tenGocList: '', // Có thể lấy thêm nếu cần (như logic cũ)
-      dvt: b.dvtinh,
-      tonDauQty: Number(b.tonDauQty),
-      tonDauVal: Number(b.tonDauVal),
-      nhapQty: Number(b.nhapQty),
-      nhapVal: Number(b.nhapVal),
-      xuatQty: Number(b.xuatQty),
-      xuatVal: Number(b.xuatVal),
-      tonCuoiQty: Number(b.tonCuoiQty),
-      tonCuoiVal: Number(b.tonCuoiVal)
-    }));
+    // Create maps for quick lookup
+    const openMap = new Map<string, any>(openingBalances.map((b: any) => [b.tenHangChuan, b]));
+    const closeMap = new Map<string, any>(closingBalances.map((b: any) => [b.tenHangChuan, b]));
+    
+    // Combine into final report for the month
+    const allItemNames = new Set([
+      ...monthlyActivity.map((a: any) => a.tenHangChuan),
+      ...closingBalances.filter((b: any) => Number(b.tonCuoiQty) !== 0 || Number(b.tonCuoiVal) !== 0).map((b: any) => b.tenHangChuan),
+      ...openingBalances.filter((b: any) => Number(b.tonDauQty) !== 0 || Number(b.tonDauVal) !== 0).map((b: any) => b.tenHangChuan)
+    ]);
+
+    report[key] = Array.from(allItemNames).map(name => {
+      const act = monthlyActivity.find((a: any) => a.tenHangChuan === name);
+      const open = openMap.get(name);
+      const close = closeMap.get(name);
+
+      return {
+        tenMatHang: name,
+        dvt: act?.dvtinh || open?.dvtinh || close?.dvtinh || '',
+        tonDauQty: Number(open?.tonDauQty || 0),
+        tonDauVal: Number(open?.tonDauVal || 0),
+        nhapQty: Number(act?._sum?.nhapQty || 0),
+        nhapVal: Number(act?._sum?.nhapVal || 0),
+        xuatQty: Number(act?._sum?.xuatQty || 0),
+        xuatVal: Number(act?._sum?.xuatVal || 0),
+        tonCuoiQty: Number(close?.tonCuoiQty || 0),
+        tonCuoiVal: Number(close?.tonCuoiVal || 0)
+      };
+    }).sort((a, b) => a.tenMatHang.localeCompare(b.tenMatHang));
+
+    // Move to next month
+    current.setUTCMonth(current.getUTCMonth() + 1);
   }
 
   return report;
