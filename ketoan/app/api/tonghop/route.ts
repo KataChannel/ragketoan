@@ -11,7 +11,8 @@ import {
   getTongHopList,
   getXuatNhapTonByMatHang,
   getXuatNhapTonTheoThoiGian,
-  getXuatNhapTonBaoCaoThang
+  getXuatNhapTonBaoCaoThang,
+  recalculateDailyInventory
 } from '@/app/services/tonghop.service'
 
 // ============================================================================
@@ -113,8 +114,14 @@ export async function POST(request: NextRequest) {
       congtyId,
       fromDate,
       toDate,
-      forceResync = false
+      forceResync = false,
+      action = 'sync'
     } = body
+
+    if (action === 'recalculate') {
+      const result = await recalculateDailyInventory(congtyId);
+      return NextResponse.json(result);
+    }
 
     const result = await syncTongHop({
       congtyId,

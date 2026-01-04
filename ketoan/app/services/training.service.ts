@@ -18,7 +18,7 @@ export async function getItemsForTraining(options: {
   onlyUnmapped?: boolean
   page?: number
   limit?: number
-  orderBy?: 'tenGoc' | 'frequency' | 'isMapped'
+  orderBy?: 'tenGoc' | 'frequency' | 'isMapped' | 'tenChuan'
   order?: 'asc' | 'desc'
 }) {
   const { 
@@ -81,13 +81,17 @@ export async function getItemsForTraining(options: {
     let valA: any = a[orderBy]
     let valB: any = b[orderBy]
     
-    if (typeof valA === 'string') {
+    // Handing nulls/undefined - push to end
+    if (valA === null || valA === undefined) return 1
+    if (valB === null || valB === undefined) return -1
+    
+    if (typeof valA === 'string' && typeof valB === 'string') {
       return order === 'asc' 
-        ? valA.localeCompare(valB) 
-        : valB.localeCompare(valA)
+        ? valA.localeCompare(valB, 'vi') 
+        : valB.localeCompare(valA, 'vi')
     }
     
-    return order === 'asc' ? valA - valB : valB - valA
+    return order === 'asc' ? (valA > valB ? 1 : -1) : (valA < valB ? 1 : -1)
   })
 
   const total = results.length

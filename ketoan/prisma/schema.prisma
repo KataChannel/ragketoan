@@ -3,7 +3,7 @@
 
 generator client {
   provider = "prisma-client-js"
-  output   = "../node_modules/.prisma/client"
+  output   = "./generated-client"
 }
 
 datasource db {
@@ -357,3 +357,35 @@ model ext_sanpham_dictionary {
   @@index([congtyId])
 }
 
+
+/// Bảng lưu trữ tồn kho hàng ngày để tăng tốc báo cáo
+model ext_daily_stock_v2 {
+  id           String   @id @default(uuid())
+  congtyId     String?  // FK → ext_congty.id
+  date         DateTime // Ngày chốt số (00:00:00)
+  tenHangChuan String   // Tên hàng đã chuẩn hóa
+  maHang       String?  // Mã hàng
+  dvtinh       String?  // Đơn vị tính
+  
+  // Tồn đầu ngày (là tồn cuối ngày trước đó)
+  tonDauQty    Decimal  @default(0) @db.Decimal(18, 4)
+  tonDauVal    Decimal  @default(0) @db.Decimal(18, 2)
+  
+  // Phát sinh trong ngày
+  nhapQty      Decimal  @default(0) @db.Decimal(18, 4)
+  nhapVal      Decimal  @default(0) @db.Decimal(18, 2)
+  xuatQty      Decimal  @default(0) @db.Decimal(18, 4)
+  xuatVal      Decimal  @default(0) @db.Decimal(18, 2)
+  
+  // Tồn cuối ngày
+  tonCuoiQty   Decimal  @default(0) @db.Decimal(18, 4)
+  tonCuoiVal   Decimal  @default(0) @db.Decimal(18, 2)
+  
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([congtyId, date, tenHangChuan])
+  @@index([congtyId])
+  @@index([date])
+  @@index([tenHangChuan])
+}

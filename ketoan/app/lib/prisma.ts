@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '../../prisma/generated-client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { Pool } from 'pg';
 
@@ -9,31 +9,25 @@ const globalForPrisma = globalThis as unknown as {
   pool: Pool | undefined;
 };
 
-// Create PostgreSQL connection pool
 const pool = globalForPrisma.pool ?? new Pool({ connectionString });
 
-// Create Prisma adapter
-const adapter = new PrismaPg(pool);
-
-// Create Prisma client with adapter
 const prismaClientFactory = () => {
+  const adapter = new PrismaPg(pool);
   return new PrismaClient({
     adapter,
     log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
   });
 };
 
-export const prisma = (() => {
-  let instance = globalForPrisma.prisma ?? prismaClientFactory();
-  
-  // Kiểm tra thực tế xem model có tồn tại không
-  const hasModel = 'ext_sanpham_dictionary' in instance;
-  
-  if (process.env.NODE_ENV === 'development' && !hasModel) {
-    instance = prismaClientFactory();
-  }
-  return instance;
-})();
+// Trong môi trường dev, thỉnh thoảng ta cần force tạo mới khi schema thay đổi 
+// (đặc biệt khi dùng Turbopack/Next.js cache bộ nhớ)
+export const prisma = process.env.NODE_ENV === 'development'
+  ? prismaClientFactory()
+  : (globalForPrisma.prisma ?? prismaClientFactory());
+
+// Add a dummy version to force module reload: v4
+console.log('[Prisma] Client loaded at: ' + new Date().toISOString());
+console.log('[Prisma] Available models:', Object.keys(prisma).filter(k => k.startsWith('ext_')));
 
 if (process.env.NODE_ENV !== 'production') {
   globalForPrisma.prisma = prisma;
