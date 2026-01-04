@@ -472,7 +472,7 @@ export async function getXuatNhapTonByMatHang(options: {
   })
 
   const items = result.map(item => ({
-    tenMatHang: item[groupBy] as string,
+    tenMatHang: (item[groupBy] as string) || 'Chưa phân loại',
     dvtinh: item.dvtinh,
     soLuongNhap: Number(item._sum.soLuongNhap || 0),
     soLuongXuat: Number(item._sum.soLuongXuat || 0),
@@ -483,8 +483,38 @@ export async function getXuatNhapTonByMatHang(options: {
     soLanGiaoDich: item._count
   }))
 
+  // Lấy danh sách tên gốc cho các mặt hàng trong trang này để hiển thị nhỏ bên dưới
+  const itemNames = items.map(i => i.tenMatHang).filter(n => n && n !== 'Chưa phân loại')
+  const originalNamesMap = new Map<string, Set<string>>()
+  
+  if (itemNames.length > 0) {
+    const originals = await prisma.ext_tonghop.findMany({
+      where: {
+        ...where,
+        [groupBy]: { in: itemNames }
+      },
+      select: {
+        [groupBy]: true,
+        tenHang: true
+      }
+    })
+    
+    originals.forEach((o: any) => {
+      const key = o[groupBy]
+      if (key) {
+        if (!originalNamesMap.has(key)) originalNamesMap.set(key, new Set())
+        originalNamesMap.get(key)?.add(o.tenHang)
+      }
+    })
+  }
+
+  const itemsWithOriginals = items.map(item => ({
+    ...item,
+    tenGocList: Array.from(originalNamesMap.get(item.tenMatHang) || []).join(', ')
+  }))
+
   return {
-    items,
+    items: itemsWithOriginals,
     pagination: {
       page,
       limit,
@@ -579,6 +609,30 @@ export async function getXuatNhapTonBaoCaoThang(options: {
     }
   })
 
+  // Lấy danh sách tên gốc tương ứng
+  const allTenHangChuan = items.map(i => i.tenHangChuan).filter(Boolean) as string[]
+  const originalNamesMap = new Map<string, Set<string>>()
+  
+  if (allTenHangChuan.length > 0) {
+    const originals = await prisma.ext_tonghop.findMany({
+      where: {
+        ...where,
+        tenHangChuan: { in: allTenHangChuan }
+      },
+      select: {
+        tenHangChuan: true,
+        tenHang: true
+      }
+    })
+    
+    originals.forEach(o => {
+      if (o.tenHangChuan) {
+        if (!originalNamesMap.has(o.tenHangChuan)) originalNamesMap.set(o.tenHangChuan, new Set())
+        originalNamesMap.get(o.tenHangChuan)?.add(o.tenHang)
+      }
+    })
+  }
+
   // 2. Lấy số dư đầu năm (trước ngày 01/01/nam)
   const openingYear = await prisma.ext_tonghop.groupBy({
     by: ['tenHangChuan'],
@@ -652,6 +706,7 @@ export async function getXuatNhapTonBaoCaoThang(options: {
 
         monthData.push({
           tenMatHang: tenHang,
+          tenGocList: Array.from(originalNamesMap.get(tenHang) || []).join(', '),
           dvt: dvt,
           tonDauQty: bal.qty,
           tonDauVal: bal.val,

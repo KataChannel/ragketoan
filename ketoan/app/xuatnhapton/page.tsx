@@ -81,6 +81,7 @@ interface XuatNhapTonItem {
   giaTriXuat: number;
   giaTriTon: number;
   soLanGiaoDich: number;
+  tenGocList?: string;
 }
 
 interface XNTTheoThoiGian {
@@ -255,7 +256,16 @@ export default function XuatNhapTonPage() {
 
   useEffect(() => {
     fetchCompanies();
+    // Load cached company
+    const cached = localStorage.getItem('last_selected_company_id');
+    if (cached) setSelectedCompanyId(cached);
   }, [fetchCompanies]);
+
+  useEffect(() => {
+    if (selectedCompanyId) {
+      localStorage.setItem('last_selected_company_id', selectedCompanyId);
+    }
+  }, [selectedCompanyId]);
 
   useEffect(() => {
     fetchStats();
@@ -318,7 +328,8 @@ export default function XuatNhapTonPage() {
 
       if (activeTab === 'overview') {
         dataToExport = tongHopList.map((item) => ({
-          'Tên hàng': item.tenHang,
+          'Tên hàng chuẩn': item.tenHangChuan || item.tenHang,
+          'Tên hàng gốc': item.tenHang,
           'Mã hàng': item.maHang,
           'ĐVT': item.dvtinh,
           'Số lượng': item.sluong,
@@ -332,7 +343,8 @@ export default function XuatNhapTonPage() {
         filename = `ChiTiet_XNT_${format(new Date(), 'yyyyMMdd')}`;
       } else if (activeTab === 'xnt-mathang') {
         dataToExport = xntMatHang.map((item) => ({
-          'Tên mặt hàng': item.tenMatHang,
+          'Tên mặt hàng chuẩn': item.tenMatHang,
+          'Tên mặt hàng gốc': item.tenGocList,
           'Đơn vị tính': item.dvtinh,
           'Số lượng nhập': item.soLuongNhap,
           'Số lượng xuất': item.soLuongXuat,
@@ -384,7 +396,8 @@ export default function XuatNhapTonPage() {
         for (let m = 1; m <= 12; m++) {
           const monthData = result.data[m] || [];
           const formattedData = monthData.map((item: any) => ({
-            'Tên Mặt hàng': item.tenMatHang,
+            'Tên mặt hàng chuẩn': item.tenMatHang,
+            'Tên mặt hàng gốc': item.tenGocList,
             'ĐVT': item.dvt,
             'Số Lượng Tồn Đầu': item.tonDauQty,
             'Thành tiền tồn đầu': item.tonDauVal,
@@ -646,7 +659,14 @@ export default function XuatNhapTonPage() {
                   {tongHopList.map((item) => (
                     <tr key={item.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
                       <td className="px-3 py-3">
-                        <div className="font-medium text-gray-900 dark:text-white truncate max-w-[200px]">{item.tenHang}</div>
+                        <div className="font-medium text-gray-900 dark:text-white truncate max-w-[200px]">
+                          {item.tenHangChuan || item.tenHang}
+                        </div>
+                        {item.tenHangChuan && (
+                          <div className="text-[10px] text-gray-400 dark:text-gray-500 italic truncate max-w-[200px]">
+                            Gốc: {item.tenHang}
+                          </div>
+                        )}
                         <div className="text-xs text-gray-500 dark:text-gray-400">#{item.shdon} | {item.dvtinh}</div>
                       </td>
                       <td className="px-3 py-3 text-right">{item.sluong.toLocaleString()}</td>
@@ -680,6 +700,11 @@ export default function XuatNhapTonPage() {
                     <tr key={index} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
                       <td className="px-3 py-3">
                         <div className="font-medium text-gray-900 dark:text-white truncate max-w-[250px]">{item.tenMatHang}</div>
+                        {item.tenGocList && (
+                          <div className="text-[10px] text-gray-400 dark:text-gray-500 italic truncate max-w-[250px]" title={item.tenGocList}>
+                            Gốc: {item.tenGocList}
+                          </div>
+                        )}
                         <div className="text-xs text-gray-500">{item.dvtinh} | {item.soLanGiaoDich} GD</div>
                       </td>
                       <td className="px-3 py-3 text-right text-green-600">{item.soLuongNhap.toLocaleString()}</td>

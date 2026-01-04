@@ -12,6 +12,7 @@ import {
   Database,
   RefreshCw,
   Plus,
+  ArrowUpDown,
 } from 'lucide-react';
 import { DashboardLayout } from '@/app/components/dashboard-layout';
 import { Button } from '@/app/components/ui/button';
@@ -46,7 +47,12 @@ export default function TrainingPage() {
   const [companies, setCompanies] = useState<any[]>([]);
   const [selectedCompanyId, setSelectedCompanyId] = useState<string>('');
   const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [onlyUnmapped, setOnlyUnmapped] = useState(true);
+  
+  // Sorting
+  const [orderBy, setOrderBy] = useState<'tenGoc' | 'frequency' | 'isMapped'>('frequency');
+  const [order, setOrder] = useState<'asc' | 'desc'>('desc');
   
   // Selection
   const [selectedNames, setSelectedNames] = useState<string[]>([]);
@@ -75,10 +81,12 @@ export default function TrainingPage() {
     try {
       const params = new URLSearchParams({
         action: 'list',
-        search,
+        search: debouncedSearch,
         onlyUnmapped: String(onlyUnmapped),
         page: pagination.page.toString(),
         limit: pagination.limit.toString(),
+        orderBy,
+        order
       });
       if (selectedCompanyId) params.append('congtyId', selectedCompanyId);
       
@@ -93,7 +101,29 @@ export default function TrainingPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [search, onlyUnmapped, pagination.page, pagination.limit, selectedCompanyId]);
+  }, [debouncedSearch, onlyUnmapped, pagination.page, pagination.limit, selectedCompanyId, orderBy, order]);
+
+  // Load cached company
+  useEffect(() => {
+    const cached = localStorage.getItem('last_selected_company_id');
+    if (cached) setSelectedCompanyId(cached);
+  }, []);
+
+  // Save cached company
+  useEffect(() => {
+    if (selectedCompanyId) {
+      localStorage.setItem('last_selected_company_id', selectedCompanyId);
+    }
+  }, [selectedCompanyId]);
+
+  // Debounce search
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search);
+      setPagination(p => ({ ...p, page: 1 }));
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [search]);
 
   useEffect(() => {
     fetchCompanies();
@@ -175,6 +205,16 @@ export default function TrainingPage() {
     }
   };
 
+  const toggleSort = (field: 'tenGoc' | 'frequency' | 'isMapped') => {
+    if (orderBy === field) {
+      setOrder(prev => prev === 'asc' ? 'desc' : 'asc');
+    } else {
+      setOrderBy(field);
+      setOrder('desc');
+    }
+    setPagination(p => ({ ...p, page: 1 }));
+  };
+
   return (
     <DashboardLayout>
       <div className="space-y-4 lg:space-y-6">
@@ -243,7 +283,7 @@ export default function TrainingPage() {
             </div>
 
             <Button variant="outline" size="sm" onClick={() => fetchItems()}>
-              Lọc dữ liệu
+              Làm mới
             </Button>
           </div>
         </div>
@@ -260,10 +300,34 @@ export default function TrainingPage() {
                       onCheckedChange={(v: boolean) => handleSelectAll(!!v)}
                     />
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tên gốc (Trên hóa đơn)</th>
+                  <th className="px-4 py-3 text-left">
+                    <button 
+                      className="flex items-center gap-1 text-xs font-medium text-gray-500 uppercase hover:text-blue-600 transition-colors"
+                      onClick={() => toggleSort('tenGoc')}
+                    >
+                      Tên gốc (Trên hóa đơn)
+                      <ArrowUpDown className={`h-3 w-3 ${orderBy === 'tenGoc' ? 'text-blue-500' : 'text-gray-300'}`} />
+                    </button>
+                  </th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tên chuẩn hóa</th>
-                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Số lần</th>
-                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Trạng thái</th>
+                  <th className="px-4 py-3 text-center">
+                    <button 
+                      className="flex items-center gap-1 text-xs font-medium text-gray-500 uppercase hover:text-blue-600 transition-colors mx-auto"
+                      onClick={() => toggleSort('frequency')}
+                    >
+                      Số lần
+                      <ArrowUpDown className={`h-3 w-3 ${orderBy === 'frequency' ? 'text-blue-500' : 'text-gray-300'}`} />
+                    </button>
+                  </th>
+                  <th className="px-4 py-3 text-center">
+                    <button 
+                      className="flex items-center gap-1 text-xs font-medium text-gray-500 uppercase hover:text-blue-600 transition-colors mx-auto"
+                      onClick={() => toggleSort('isMapped')}
+                    >
+                      Trạng thái
+                      <ArrowUpDown className={`h-3 w-3 ${orderBy === 'isMapped' ? 'text-blue-500' : 'text-gray-300'}`} />
+                    </button>
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
