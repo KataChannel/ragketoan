@@ -16,12 +16,24 @@ const pool = globalForPrisma.pool ?? new Pool({ connectionString });
 const adapter = new PrismaPg(pool);
 
 // Create Prisma client with adapter
-export const prisma =
-  globalForPrisma.prisma ??
-  new PrismaClient({
+const prismaClientFactory = () => {
+  return new PrismaClient({
     adapter,
     log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
   });
+};
+
+export const prisma = (() => {
+  let instance = globalForPrisma.prisma ?? prismaClientFactory();
+  
+  // Kiểm tra thực tế xem model có tồn tại không
+  const hasModel = 'ext_sanpham_dictionary' in instance;
+  
+  if (process.env.NODE_ENV === 'development' && !hasModel) {
+    instance = prismaClientFactory();
+  }
+  return instance;
+})();
 
 if (process.env.NODE_ENV !== 'production') {
   globalForPrisma.prisma = prisma;
@@ -29,3 +41,4 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 export default prisma;
+

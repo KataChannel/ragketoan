@@ -10,7 +10,8 @@ import {
   getTongHopStats,
   getTongHopList,
   getXuatNhapTonByMatHang,
-  getXuatNhapTonTheoThoiGian
+  getXuatNhapTonTheoThoiGian,
+  getXuatNhapTonBaoCaoThang
 } from '@/app/services/tonghop.service'
 
 // ============================================================================
@@ -47,13 +48,16 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ success: true, data: stats })
 
       case 'xnt-mathang':
-        const xntMatHang = await getXuatNhapTonByMatHang({
+        const xntMatHangResult = await getXuatNhapTonByMatHang({
           congtyId,
           fromDate,
           toDate,
-          groupBy: (groupBy as 'tenHangChuan' | 'maHang' | 'nhomHang') || 'tenHangChuan'
+          groupBy: (groupBy as 'tenHangChuan' | 'maHang' | 'nhomHang') || 'tenHangChuan',
+          page,
+          limit,
+          search
         })
-        return NextResponse.json({ success: true, data: xntMatHang })
+        return NextResponse.json({ success: true, ...xntMatHangResult })
 
       case 'xnt-thoigian':
         const xntThoiGian = await getXuatNhapTonTheoThoiGian({
@@ -62,6 +66,13 @@ export async function GET(request: NextRequest) {
           groupBy: (groupBy as 'thang' | 'quy') || 'thang'
         })
         return NextResponse.json({ success: true, data: xntThoiGian })
+
+      case 'xnt-baocao-12thang':
+        const xntBaoCao12Thang = await getXuatNhapTonBaoCaoThang({
+          congtyId,
+          nam
+        })
+        return NextResponse.json({ success: true, data: xntBaoCao12Thang })
 
       case 'list':
       default:
