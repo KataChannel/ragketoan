@@ -18,8 +18,18 @@ export async function getItemsForTraining(options: {
   onlyUnmapped?: boolean
   page?: number
   limit?: number
+  orderBy?: 'tenGoc' | 'frequency' | 'isMapped'
+  order?: 'asc' | 'desc'
 }) {
-  const { congtyId, search, onlyUnmapped = false, page = 1, limit = 50 } = options
+  const { 
+    congtyId, 
+    search, 
+    onlyUnmapped = false, 
+    page = 1, 
+    limit = 50,
+    orderBy = 'frequency',
+    order = 'desc'
+  } = options
 
   // 1. Lấy thống kê từ ext_tonghop
   const where: any = {}
@@ -65,6 +75,20 @@ export async function getItemsForTraining(options: {
   if (onlyUnmapped) {
     results = results.filter(r => !r.isMapped)
   }
+  
+  // 4. Sắp xếp kết quả
+  results.sort((a, b) => {
+    let valA: any = a[orderBy]
+    let valB: any = b[orderBy]
+    
+    if (typeof valA === 'string') {
+      return order === 'asc' 
+        ? valA.localeCompare(valB) 
+        : valB.localeCompare(valA)
+    }
+    
+    return order === 'asc' ? valA - valB : valB - valA
+  })
 
   const total = results.length
   const paginatedResults = results.slice((page - 1) * limit, page * limit)

@@ -16,6 +16,8 @@ export async function GET(request: NextRequest) {
     const onlyUnmapped = searchParams.get('onlyUnmapped') === 'true'
     const page = parseInt(searchParams.get('page') || '1')
     const limit = parseInt(searchParams.get('limit') || '50')
+    const orderBy = (searchParams.get('orderBy') as any) || 'frequency'
+    const order = (searchParams.get('order') as any) || 'desc'
 
     switch (action) {
       case 'suggest':
@@ -29,7 +31,9 @@ export async function GET(request: NextRequest) {
           search, 
           onlyUnmapped, 
           page, 
-          limit 
+          limit,
+          orderBy,
+          order
         })
         return NextResponse.json({ success: true, ...data })
     }
