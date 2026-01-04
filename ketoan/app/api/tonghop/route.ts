@@ -71,7 +71,8 @@ export async function GET(request: NextRequest) {
       case 'xnt-baocao-12thang':
         const xntBaoCao12Thang = await getXuatNhapTonBaoCaoThang({
           congtyId,
-          nam
+          fromDate: fromDate || new Date(new Date().getFullYear(), 0, 1),
+          toDate: toDate || new Date()
         })
         return NextResponse.json({ success: true, data: xntBaoCao12Thang })
 

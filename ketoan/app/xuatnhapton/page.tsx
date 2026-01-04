@@ -117,21 +117,21 @@ export default function XuatNhapTonPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
   const [isRecalculating, setIsRecalculating] = useState(false);
-  
+
   // Filter state
   const [companies, setCompanies] = useState<CongTy[]>([]);
   const [selectedCompanyId, setSelectedCompanyId] = useState<string>('');
   const [fromDate, setFromDate] = useState(getDateRange(12).fromDate);
   const [toDate, setToDate] = useState(getDateRange(12).toDate);
   const [search, setSearch] = useState('');
-  
+
   // Data state
   const [stats, setStats] = useState<TongHopStats | null>(null);
   const [xntMatHang, setXntMatHang] = useState<XuatNhapTonItem[]>([]);
-  
+
   // Paginations
   const [xntPagination, setXntPagination] = useState({ page: 1, limit: 10, total: 0, totalPages: 0 });
-  
+
   // Sync dialog
   const [showSyncDialog, setShowSyncDialog] = useState(false);
   const [syncResult, setSyncResult] = useState<SyncResult | null>(null);
@@ -160,7 +160,7 @@ export default function XuatNhapTonPage() {
       if (selectedCompanyId) params.append('congtyId', selectedCompanyId);
       if (fromDate) params.append('fromDate', fromDate);
       if (toDate) params.append('toDate', toDate);
-      
+
       const response = await fetch(`/api/tonghop?${params}`);
       const result = await response.json();
       if (result.success) {
@@ -175,7 +175,7 @@ export default function XuatNhapTonPage() {
   const fetchXNTMatHang = useCallback(async () => {
     setIsLoading(true);
     try {
-      const params = new URLSearchParams({ 
+      const params = new URLSearchParams({
         action: 'xnt-mathang',
         page: xntPagination.page.toString(),
         limit: xntPagination.limit.toString(),
@@ -184,7 +184,7 @@ export default function XuatNhapTonPage() {
       if (selectedCompanyId) params.append('congtyId', selectedCompanyId);
       if (fromDate) params.append('fromDate', fromDate);
       if (toDate) params.append('toDate', toDate);
-      
+
       const response = await fetch(`/api/tonghop?${params}`);
       const result = await response.json();
       if (result.success) {
@@ -237,10 +237,10 @@ export default function XuatNhapTonPage() {
           forceResync,
         }),
       });
-      
+
       const result = await response.json();
       setSyncResult(result);
-      
+
       if (result.success) {
         toast.success(result.message);
         handleRefresh();
@@ -265,7 +265,7 @@ export default function XuatNhapTonPage() {
           action: 'recalculate',
         }),
       });
-      
+
       const result = await response.json();
       if (result.success) {
         toast.success(result.message);
@@ -298,12 +298,12 @@ export default function XuatNhapTonPage() {
         'Giá trị xuất': item.giaTriXuat,
         'Số lần giao dịch': item.soLanGiaoDich,
       }));
-      
+
       const ws = XLSX.utils.json_to_sheet(dataToExport);
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, 'TongHopXNT');
       XLSX.writeFile(wb, `TongHop_XNT_${format(new Date(), 'yyyyMMdd')}.xlsx`);
-      
+
       toast.success('Xuất file Excel thành công');
     } catch (error) {
       console.error('Export Error:', error);
@@ -311,26 +311,39 @@ export default function XuatNhapTonPage() {
     }
   };
 
-  const handleExport12Thang = async () => {
+  const handleExportMonthly = async () => {
     setIsLoading(true);
     try {
       const params = new URLSearchParams({
         action: 'xnt-baocao-12thang',
-        nam: new Date().getFullYear().toString(),
       });
       if (selectedCompanyId) params.append('congtyId', selectedCompanyId);
+      if (fromDate) params.append('fromDate', fromDate);
+      if (toDate) params.append('toDate', toDate);
 
       const response = await fetch(`/api/tonghop?${params}`);
       const result = await response.json();
-      
+
       if (result.success) {
         const wb = XLSX.utils.book_new();
-        
-        for (let m = 1; m <= 12; m++) {
-          const monthData = result.data[m] || [];
+        const monthKeys = Object.keys(result.data);
+
+        if (monthKeys.length === 0) {
+          toast.info('Không có dữ liệu trong khoảng thời gian này');
+          return;
+        }
+
+        // Sort keys: "1/2025", "2/2025"
+        monthKeys.sort((a, b) => {
+          const [m1, y1] = a.split('/').map(Number);
+          const [m2, y2] = b.split('/').map(Number);
+          return y1 !== y2 ? y1 - y2 : m1 - m2;
+        });
+
+        for (const key of monthKeys) {
+          const monthData = result.data[key] || [];
           const formattedData = monthData.map((item: any) => ({
             'Tên mặt hàng chuẩn': item.tenMatHang,
-            'Tên mặt hàng gốc': item.tenGocList,
             'ĐVT': item.dvt,
             'Số Lượng Tồn Đầu': item.tonDauQty,
             'Thành tiền tồn đầu': item.tonDauVal,
@@ -341,18 +354,19 @@ export default function XuatNhapTonPage() {
             'Số lượng tồn cuối': item.tonCuoiQty,
             'Thành tiền tồn cuối': item.tonCuoiVal,
           }));
-          
+
           const ws = XLSX.utils.json_to_sheet(formattedData);
-          XLSX.utils.book_append_sheet(wb, ws, `Tháng ${m}`);
+          const sheetName = `Tháng ${key.replace('/', '-')}`;
+          XLSX.utils.book_append_sheet(wb, ws, sheetName);
         }
-        
-        XLSX.writeFile(wb, `BaoCao_XNT_12Thang_${new Date().getFullYear()}.xlsx`);
-        toast.success('Xuất báo cáo 12 tháng thành công');
+
+        XLSX.writeFile(wb, `BaoCao_XNT_Thang_${format(new Date(), 'yyyyMMdd')}.xlsx`);
+        toast.success('Xuất báo cáo tháng thành công');
       } else {
         toast.error('Lỗi khi lấy dữ liệu báo cáo');
       }
     } catch (error) {
-      console.error('Export 12 Months Error:', error);
+      console.error('Export Monthly Error:', error);
       toast.error('Lỗi khi xuất file Excel');
     } finally {
       setIsLoading(false);
@@ -394,20 +408,20 @@ export default function XuatNhapTonPage() {
               <Download className="h-4 w-4" />
               <span className="hidden sm:inline ml-1">Xuất Excel</span>
             </Button>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={handleExport12Thang} 
-              disabled={isLoading} 
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleExportMonthly}
+              disabled={isLoading}
               className="text-blue-600 border-blue-200 hover:bg-blue-50"
             >
               <FileIcon className="h-4 w-4" />
-              <span className="hidden sm:inline ml-1">Báo cáo 12 tháng</span>
+              <span className="hidden sm:inline ml-1">Xuất báo cáo tháng</span>
             </Button>
-            <Button 
+            <Button
               variant="outline"
-              size="sm" 
-              onClick={handleRecalculate} 
+              size="sm"
+              onClick={handleRecalculate}
               disabled={isRecalculating || isLoading}
               className="text-amber-600 border-amber-200 hover:bg-amber-50"
             >
@@ -434,7 +448,7 @@ export default function XuatNhapTonPage() {
               </div>
               <div className="text-xs text-secondary-500 dark:text-gray-400">Có phát sinh giao dịch</div>
             </div>
-            
+
             <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-3 sm:p-4">
               <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-xs sm:text-sm mb-1">
                 <TrendingDown className="h-4 w-4 text-green-500" />
@@ -447,7 +461,7 @@ export default function XuatNhapTonPage() {
                 {formatCurrency(stats.giaTriNhap ?? 0)}
               </div>
             </div>
-            
+
             <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-3 sm:p-4">
               <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-xs sm:text-sm mb-1">
                 <TrendingUp className="h-4 w-4 text-blue-500" />
@@ -460,17 +474,16 @@ export default function XuatNhapTonPage() {
                 {formatCurrency(stats.giaTriXuat ?? 0)}
               </div>
             </div>
-            
+
             <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-3 sm:p-4">
               <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-xs sm:text-sm mb-1">
                 <BarChart3 className="h-4 w-4 text-indigo-500" />
                 <span>Giá trị tồn cuối</span>
               </div>
-              <div className={`text-base sm:text-xl font-bold font-mono ${
-                (stats.giaTriTonCuoi ?? 0) >= 0 
-                  ? 'text-indigo-600 dark:text-indigo-400' 
-                  : 'text-red-600 dark:text-red-400'
-              }`}>
+              <div className={`text-base sm:text-xl font-bold font-mono ${(stats.giaTriTonCuoi ?? 0) >= 0
+                ? 'text-indigo-600 dark:text-indigo-400'
+                : 'text-red-600 dark:text-red-400'
+                }`}>
                 {formatCurrency(stats.giaTriTonCuoi ?? 0)}
               </div>
               <div className="text-xs text-secondary-500 dark:text-gray-400 font-mono">
@@ -487,27 +500,27 @@ export default function XuatNhapTonPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
               <div className="sm:col-span-2">
                 <Label className="text-xs text-secondary-500 mb-1 block font-bold">CÔNG TY</Label>
-                <Combobox 
-                  options={companyOptions} 
-                  value={selectedCompanyId} 
+                <Combobox
+                  options={companyOptions}
+                  value={selectedCompanyId}
                   onValueChange={setSelectedCompanyId}
                   placeholder="Chọn công ty..."
                 />
               </div>
               <div>
                 <Label className="text-xs text-secondary-500 mb-1 block font-bold">TỪ NGÀY</Label>
-                <Input 
-                  type="date" 
-                  value={fromDate} 
+                <Input
+                  type="date"
+                  value={fromDate}
                   onChange={(e) => setFromDate(e.target.value)}
                   className="h-9"
                 />
               </div>
               <div>
                 <Label className="text-xs text-secondary-500 mb-1 block font-bold">ĐẾN NGÀY</Label>
-                <Input 
-                  type="date" 
-                  value={toDate} 
+                <Input
+                  type="date"
+                  value={toDate}
                   onChange={(e) => setToDate(e.target.value)}
                   className="h-9"
                 />
@@ -533,12 +546,12 @@ export default function XuatNhapTonPage() {
           {/* Table Area */}
           <div className="relative">
             {isLoading && (
-               <div className="absolute inset-0 bg-white/50 dark:bg-gray-800/50 z-20 flex items-center justify-center backdrop-blur-sm">
-                 <div className="flex flex-col items-center gap-2">
-                    <RefreshCw className="h-8 w-8 text-blue-500 animate-spin" />
-                    <span className="text-sm font-medium">Đang tải dữ liệu...</span>
-                 </div>
-               </div>
+              <div className="absolute inset-0 bg-white/50 dark:bg-gray-800/50 z-20 flex items-center justify-center backdrop-blur-sm">
+                <div className="flex flex-col items-center gap-2">
+                  <RefreshCw className="h-8 w-8 text-blue-500 animate-spin" />
+                  <span className="text-sm font-medium">Đang tải dữ liệu...</span>
+                </div>
+              </div>
             )}
 
             <div className="overflow-x-auto min-h-[400px]">
@@ -582,19 +595,19 @@ export default function XuatNhapTonPage() {
                           )}
                         </td>
                         <td className="px-2 py-2 text-center border-r border-gray-100 dark:border-gray-800 font-mono text-gray-500">{item.dvtinh}</td>
-                        
+
                         {/* Tồn đầu */}
                         <td className="px-2 py-2 text-right border-r border-gray-100 dark:border-gray-800 bg-amber-50/20 dark:bg-amber-900/5 font-mono">{item.tonDauQty.toLocaleString()}</td>
                         <td className="px-2 py-2 text-right border-r border-gray-100 dark:border-gray-800 bg-amber-50/20 dark:bg-amber-900/5 font-mono">{formatCurrency(item.tonDauVal)}</td>
-                        
+
                         {/* Nhập */}
                         <td className="px-2 py-2 text-right border-r border-gray-100 dark:border-gray-800 bg-green-50/20 dark:bg-green-900/5 text-green-600 font-bold font-mono">{item.soLuongNhap.toLocaleString()}</td>
                         <td className="px-2 py-2 text-right border-r border-gray-100 dark:border-gray-800 bg-green-50/20 dark:bg-green-900/5 text-green-600 font-bold font-mono">{formatCurrency(item.giaTriNhap)}</td>
-                        
+
                         {/* Xuất */}
                         <td className="px-2 py-2 text-right border-r border-gray-100 dark:border-gray-800 bg-blue-50/20 dark:bg-blue-900/5 text-blue-600 font-bold font-mono">{item.soLuongXuat.toLocaleString()}</td>
                         <td className="px-2 py-2 text-right border-r border-gray-100 dark:border-gray-800 bg-blue-50/20 dark:bg-blue-900/5 text-blue-600 font-bold font-mono">{formatCurrency(item.giaTriXuat)}</td>
-                        
+
                         {/* Tồn cuối */}
                         <td className={`px-2 py-2 text-right border-r border-gray-100 dark:border-gray-800 bg-indigo-50/20 dark:bg-indigo-900/5 font-bold font-mono ${item.tonCuoi < 0 ? 'text-red-500' : 'text-indigo-600'}`}>
                           {item.tonCuoi.toLocaleString()}
@@ -648,7 +661,7 @@ export default function XuatNhapTonPage() {
                 </div>
                 <div className="flex items-center gap-2 text-xs font-mono text-secondary-500">
                   <span>Hiển thị:</span>
-                  <select 
+                  <select
                     className="bg-transparent border border-gray-300 dark:border-gray-600 rounded px-1.5 py-1 focus:outline-none focus:ring-1 focus:ring-blue-500"
                     value={xntPagination.limit}
                     onChange={(e) => {
@@ -662,7 +675,7 @@ export default function XuatNhapTonPage() {
                   </select>
                 </div>
               </div>
-              
+
               <div className="flex gap-2">
                 <Button
                   variant="outline"
@@ -729,11 +742,11 @@ export default function XuatNhapTonPage() {
           </DialogBody>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowSyncDialog(false)}>Đóng</Button>
-            <Button 
+            <Button
               onClick={() => {
                 const force = (document.getElementById('forceResync') as HTMLInputElement)?.checked;
                 handleSync(force);
-              }} 
+              }}
               disabled={isSyncing}
             >
               {isSyncing ? 'Đang đồng bộ...' : 'Bắt đầu đồng bộ'}
