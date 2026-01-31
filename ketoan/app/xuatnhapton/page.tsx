@@ -287,19 +287,64 @@ export default function XuatNhapTonPage() {
 
   const handleExportExcel = () => {
     try {
-      const dataToExport = xntMatHang.map((item) => ({
-        'Tên mặt hàng chuẩn': item.tenMatHang,
-        'Tên mặt hàng gốc': item.tenGocList,
-        'Đơn vị tính': item.dvtinh,
-        'Số lượng nhập': item.soLuongNhap,
-        'Số lượng xuất': item.soLuongXuat,
-        'Tồn cuối': item.tonCuoi,
-        'Giá trị nhập': item.giaTriNhap,
-        'Giá trị xuất': item.giaTriXuat,
-        'Số lần giao dịch': item.soLanGiaoDich,
-      }));
+      const headers = [
+        ['MẶT HÀNG / VT', 'ĐVT', 'TỒN ĐẦU KỲ', '', 'NHẬP TRONG KỲ', '', 'XUẤT TRONG KỲ', '', 'TỒN CUỐI KỲ', ''],
+        ['', '', 'SL', 'TIỀN', 'SL', 'TIỀN', 'SL', 'TIỀN', 'SL', 'TIỀN']
+      ];
 
-      const ws = XLSX.utils.json_to_sheet(dataToExport);
+      const data = xntMatHang.map((item) => [
+        item.tenMatHang,
+        item.dvtinh,
+        item.tonDauQty,
+        item.tonDauVal,
+        item.soLuongNhap,
+        item.giaTriNhap,
+        item.soLuongXuat,
+        item.giaTriXuat,
+        item.tonCuoi,
+        item.giaTriTon
+      ]);
+
+      // Tính dòng tổng cộng
+      const totals = xntMatHang.reduce((acc, item) => ({
+        tonDauQty: acc.tonDauQty + (item.tonDauQty || 0),
+        tonDauVal: acc.tonDauVal + (item.tonDauVal || 0),
+        soLuongNhap: acc.soLuongNhap + (item.soLuongNhap || 0),
+        giaTriNhap: acc.giaTriNhap + (item.giaTriNhap || 0),
+        soLuongXuat: acc.soLuongXuat + (item.soLuongXuat || 0),
+        giaTriXuat: acc.giaTriXuat + (item.giaTriXuat || 0),
+        tonCuoi: acc.tonCuoi + (item.tonCuoi || 0),
+        giaTriTon: acc.giaTriTon + (item.giaTriTon || 0),
+      }), {
+        tonDauQty: 0, tonDauVal: 0, soLuongNhap: 0, giaTriNhap: 0,
+        soLuongXuat: 0, giaTriXuat: 0, tonCuoi: 0, giaTriTon: 0
+      });
+
+      const totalRow = [
+        'TỔNG CỘNG',
+        '',
+        totals.tonDauQty,
+        totals.tonDauVal,
+        totals.soLuongNhap,
+        totals.giaTriNhap,
+        totals.soLuongXuat,
+        totals.giaTriXuat,
+        totals.tonCuoi,
+        totals.giaTriTon
+      ];
+
+      const ws = XLSX.utils.aoa_to_sheet([...headers, ...data, totalRow]);
+
+      // Add merges
+      ws['!merges'] = [
+        { s: { r: 0, c: 0 }, e: { r: 1, c: 0 } }, // MẶT HÀNG / VT
+        { s: { r: 0, c: 1 }, e: { r: 1, c: 1 } }, // ĐVT
+        { s: { r: 0, c: 2 }, e: { r: 0, c: 3 } }, // TỒN ĐẦU KỲ
+        { s: { r: 0, c: 4 }, e: { r: 0, c: 5 } }, // NHẬP TRONG KỲ
+        { s: { r: 0, c: 6 }, e: { r: 0, c: 7 } }, // XUẤT TRONG KỲ
+        { s: { r: 0, c: 8 }, e: { r: 0, c: 9 } }, // TỒN CUỐI KỲ
+      ];
+
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, 'TongHopXNT');
       XLSX.writeFile(wb, `TongHop_XNT_${format(new Date(), 'yyyyMMdd')}.xlsx`);
@@ -342,20 +387,65 @@ export default function XuatNhapTonPage() {
 
         for (const key of monthKeys) {
           const monthData = result.data[key] || [];
-          const formattedData = monthData.map((item: any) => ({
-            'Tên mặt hàng chuẩn': item.tenMatHang,
-            'ĐVT': item.dvt,
-            'Số Lượng Tồn Đầu': item.tonDauQty,
-            'Thành tiền tồn đầu': item.tonDauVal,
-            'Số lượng nhập': item.nhapQty,
-            'Thành tiền nhập': item.nhapVal,
-            'Số lượng xuất': item.xuatQty,
-            'Thành tiền xuất': item.xuatVal,
-            'Số lượng tồn cuối': item.tonCuoiQty,
-            'Thành tiền tồn cuối': item.tonCuoiVal,
-          }));
 
-          const ws = XLSX.utils.json_to_sheet(formattedData);
+          const headers = [
+            ['MẶT HÀNG / VT', 'ĐVT', 'TỒN ĐẦU KỲ', '', 'NHẬP TRONG KỲ', '', 'XUẤT TRONG KỲ', '', 'TỒN CUỐI KỲ', ''],
+            ['', '', 'SL', 'TIỀN', 'SL', 'TIỀN', 'SL', 'TIỀN', 'SL', 'TIỀN']
+          ];
+
+          const data = monthData.map((item: any) => [
+            item.tenMatHang,
+            item.dvt,
+            item.tonDauQty,
+            item.tonDauVal,
+            item.nhapQty,
+            item.nhapVal,
+            item.xuatQty,
+            item.xuatVal,
+            item.tonCuoiQty,
+            item.tonCuoiVal
+          ]);
+
+          // Tính dòng tổng cộng
+          const totals = monthData.reduce((acc: any, item: any) => ({
+            tonDauQty: acc.tonDauQty + (item.tonDauQty || 0),
+            tonDauVal: acc.tonDauVal + (item.tonDauVal || 0),
+            nhapQty: acc.nhapQty + (item.nhapQty || 0),
+            nhapVal: acc.nhapVal + (item.nhapVal || 0),
+            xuatQty: acc.xuatQty + (item.xuatQty || 0),
+            xuatVal: acc.xuatVal + (item.xuatVal || 0),
+            tonCuoiQty: acc.tonCuoiQty + (item.tonCuoiQty || 0),
+            tonCuoiVal: acc.tonCuoiVal + (item.tonCuoiVal || 0),
+          }), {
+            tonDauQty: 0, tonDauVal: 0, nhapQty: 0, nhapVal: 0,
+            xuatQty: 0, xuatVal: 0, tonCuoiQty: 0, tonCuoiVal: 0
+          });
+
+          const totalRow = [
+            'TỔNG CỘNG',
+            '',
+            totals.tonDauQty,
+            totals.tonDauVal,
+            totals.nhapQty,
+            totals.nhapVal,
+            totals.xuatQty,
+            totals.xuatVal,
+            totals.tonCuoiQty,
+            totals.tonCuoiVal
+          ];
+
+          const ws = XLSX.utils.aoa_to_sheet([...headers, ...data, totalRow]);
+
+          // Add merges
+          ws['!merges'] = [
+            { s: { r: 0, c: 0 }, e: { r: 1, c: 0 } }, // MẶT HÀNG / VT
+            { s: { r: 0, c: 1 }, e: { r: 1, c: 1 } }, // ĐVT
+            { s: { r: 0, c: 2 }, e: { r: 0, c: 3 } }, // TỒN ĐẦU KỲ
+            { s: { r: 0, c: 4 }, e: { r: 0, c: 5 } }, // NHẬP TRONG KỲ
+            { s: { r: 0, c: 6 }, e: { r: 0, c: 7 } }, // XUẤT TRONG KỲ
+            { s: { r: 0, c: 8 }, e: { r: 0, c: 9 } }, // TỒN CUỐI KỲ
+          ];
+
           const sheetName = `Tháng ${key.replace('/', '-')}`;
           XLSX.utils.book_append_sheet(wb, ws, sheetName);
         }
@@ -367,6 +457,106 @@ export default function XuatNhapTonPage() {
       }
     } catch (error) {
       console.error('Export Monthly Error:', error);
+      toast.error('Lỗi khi xuất file Excel');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleExportYearly = async () => {
+    setIsLoading(true);
+    try {
+      const params = new URLSearchParams({
+        action: 'xnt-baocao-nam',
+      });
+      if (selectedCompanyId) params.append('congtyId', selectedCompanyId);
+      if (fromDate) params.append('fromDate', fromDate);
+      if (toDate) params.append('toDate', toDate);
+
+      const response = await fetch(`/api/tonghop?${params}`);
+      const result = await response.json();
+
+      if (result.success) {
+        const wb = XLSX.utils.book_new();
+        const yearKeys = Object.keys(result.data).sort();
+
+        if (yearKeys.length === 0) {
+          toast.info('Không có dữ liệu trong khoảng thời gian này');
+          return;
+        }
+
+        for (const key of yearKeys) {
+          const yearData = result.data[key] || [];
+
+          const headers = [
+            ['MẶT HÀNG / VT', 'ĐVT', 'TỒN ĐẦU KỲ', '', 'NHẬP TRONG KỲ', '', 'XUẤT TRONG KỲ', '', 'TỒN CUỐI KỲ', ''],
+            ['', '', 'SL', 'TIỀN', 'SL', 'TIỀN', 'SL', 'TIỀN', 'SL', 'TIỀN']
+          ];
+
+          const data = yearData.map((item: any) => [
+            item.tenMatHang,
+            item.dvt,
+            item.tonDauQty,
+            item.tonDauVal,
+            item.nhapQty,
+            item.nhapVal,
+            item.xuatQty,
+            item.xuatVal,
+            item.tonCuoiQty,
+            item.tonCuoiVal
+          ]);
+
+          // Tính dòng tổng cộng
+          const totals = yearData.reduce((acc: any, item: any) => ({
+            tonDauQty: acc.tonDauQty + (item.tonDauQty || 0),
+            tonDauVal: acc.tonDauVal + (item.tonDauVal || 0),
+            nhapQty: acc.nhapQty + (item.nhapQty || 0),
+            nhapVal: acc.nhapVal + (item.nhapVal || 0),
+            xuatQty: acc.xuatQty + (item.xuatQty || 0),
+            xuatVal: acc.xuatVal + (item.xuatVal || 0),
+            tonCuoiQty: acc.tonCuoiQty + (item.tonCuoiQty || 0),
+            tonCuoiVal: acc.tonCuoiVal + (item.tonCuoiVal || 0),
+          }), {
+            tonDauQty: 0, tonDauVal: 0, nhapQty: 0, nhapVal: 0,
+            xuatQty: 0, xuatVal: 0, tonCuoiQty: 0, tonCuoiVal: 0
+          });
+
+          const totalRow = [
+            'TỔNG CỘNG',
+            '',
+            totals.tonDauQty,
+            totals.tonDauVal,
+            totals.nhapQty,
+            totals.nhapVal,
+            totals.xuatQty,
+            totals.xuatVal,
+            totals.tonCuoiQty,
+            totals.tonCuoiVal
+          ];
+
+          const ws = XLSX.utils.aoa_to_sheet([...headers, ...data, totalRow]);
+
+          // Add merges
+          ws['!merges'] = [
+            { s: { r: 0, c: 0 }, e: { r: 1, c: 0 } }, // MẶT HÀNG / VT
+            { s: { r: 0, c: 1 }, e: { r: 1, c: 1 } }, // ĐVT
+            { s: { r: 0, c: 2 }, e: { r: 0, c: 3 } }, // TỒN ĐẦU KỲ
+            { s: { r: 0, c: 4 }, e: { r: 0, c: 5 } }, // NHẬP TRONG KỲ
+            { s: { r: 0, c: 6 }, e: { r: 0, c: 7 } }, // XUẤT TRONG KỲ
+            { s: { r: 0, c: 8 }, e: { r: 0, c: 9 } }, // TỒN CUỐI KỲ
+          ];
+
+          const sheetName = `Năm ${key}`;
+          XLSX.utils.book_append_sheet(wb, ws, sheetName);
+        }
+
+        XLSX.writeFile(wb, `BaoCao_XNT_Nam_${format(new Date(), 'yyyyMMdd')}.xlsx`);
+        toast.success('Xuất báo cáo năm thành công');
+      } else {
+        toast.error('Lỗi khi lấy dữ liệu báo cáo');
+      }
+    } catch (error) {
+      console.error('Export Yearly Error:', error);
       toast.error('Lỗi khi xuất file Excel');
     } finally {
       setIsLoading(false);
@@ -417,6 +607,16 @@ export default function XuatNhapTonPage() {
             >
               <FileIcon className="h-4 w-4" />
               <span className="hidden sm:inline ml-1">Xuất báo cáo tháng</span>
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleExportYearly}
+              disabled={isLoading}
+              className="text-indigo-600 border-indigo-200 hover:bg-indigo-50"
+            >
+              <FileIcon className="h-4 w-4" />
+              <span className="hidden sm:inline ml-1">Xuất báo cáo năm</span>
             </Button>
             <Button
               variant="outline"
@@ -558,22 +758,22 @@ export default function XuatNhapTonPage() {
               <table className="w-full text-[11px] sm:text-xs border-collapse">
                 <thead className="bg-gray-100 dark:bg-gray-900/80 sticky top-0 z-10 text-gray-700 dark:text-gray-200 font-bold uppercase">
                   <tr className="border-b border-gray-200 dark:border-gray-700">
-                    <th rowSpan={2} className="px-2 py-3 text-left border-r border-gray-200 dark:border-gray-700 min-w-[200px]">Mặt hàng / VT</th>
+                    <th rowSpan={2} className="px-2 py-3 text-left border-r border-gray-200 dark:border-gray-700 min-w-[200px]">MẶT HÀNG / VT</th>
                     <th rowSpan={2} className="px-2 py-3 text-center border-r border-gray-200 dark:border-gray-700">ĐVT</th>
-                    <th colSpan={2} className="px-2 py-1 text-center border-r border-gray-200 dark:border-gray-700 bg-amber-50 dark:bg-amber-900/20">Tồn đầu kỳ</th>
-                    <th colSpan={2} className="px-2 py-1 text-center border-r border-gray-200 dark:border-gray-700 bg-green-50 dark:bg-green-900/20">Nhập trong kỳ</th>
-                    <th colSpan={2} className="px-2 py-1 text-center border-r border-gray-200 dark:border-gray-700 bg-blue-50 dark:bg-blue-900/20">Xuất trong kỳ</th>
-                    <th colSpan={2} className="px-2 py-1 text-center bg-indigo-50 dark:bg-indigo-900/20">Tồn cuối kỳ</th>
+                    <th colSpan={2} className="px-2 py-1 text-center border-r border-gray-200 dark:border-gray-700 bg-amber-50 dark:bg-amber-900/20">TỒN ĐẦU KỲ</th>
+                    <th colSpan={2} className="px-2 py-1 text-center border-r border-gray-200 dark:border-gray-700 bg-green-50 dark:bg-green-900/20">NHẬP TRONG KỲ</th>
+                    <th colSpan={2} className="px-2 py-1 text-center border-r border-gray-200 dark:border-gray-700 bg-blue-50 dark:bg-blue-900/20">XUẤT TRONG KỲ</th>
+                    <th colSpan={2} className="px-2 py-1 text-center bg-indigo-50 dark:bg-indigo-900/20">TỒN CUỐI KỲ</th>
                   </tr>
                   <tr className="border-b border-gray-200 dark:border-gray-700">
                     <th className="px-2 py-1 text-right border-r border-gray-200 dark:border-gray-700 bg-amber-50/50 dark:bg-amber-900/10">SL</th>
-                    <th className="px-2 py-1 text-right border-r border-gray-200 dark:border-gray-700 bg-amber-50/50 dark:bg-amber-900/10">Tiền</th>
+                    <th className="px-2 py-1 text-right border-r border-gray-200 dark:border-gray-700 bg-amber-50/50 dark:bg-amber-900/10">TIỀN</th>
                     <th className="px-2 py-1 text-right border-r border-gray-200 dark:border-gray-700 bg-green-50/50 dark:bg-green-900/10">SL</th>
-                    <th className="px-2 py-1 text-right border-r border-gray-200 dark:border-gray-700 bg-green-50/50 dark:bg-green-900/10">Tiền</th>
+                    <th className="px-2 py-1 text-right border-r border-gray-200 dark:border-gray-700 bg-green-50/50 dark:bg-green-900/10">TIỀN</th>
                     <th className="px-2 py-1 text-right border-r border-gray-200 dark:border-gray-700 bg-blue-50/50 dark:bg-blue-900/10">SL</th>
-                    <th className="px-2 py-1 text-right border-r border-gray-200 dark:border-gray-700 bg-blue-50/50 dark:bg-blue-900/10">Tiền</th>
+                    <th className="px-2 py-1 text-right border-r border-gray-200 dark:border-gray-700 bg-blue-50/50 dark:bg-blue-900/10">TIỀN</th>
                     <th className="px-2 py-1 text-right border-r border-gray-200 dark:border-gray-700 bg-indigo-50/50 dark:bg-indigo-900/10">SL</th>
-                    <th className="px-2 py-1 text-right bg-indigo-50/50 dark:bg-indigo-900/10">Tiền</th>
+                    <th className="px-2 py-1 text-right bg-indigo-50/50 dark:bg-indigo-900/10">TIỀN</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 dark:divide-gray-700">

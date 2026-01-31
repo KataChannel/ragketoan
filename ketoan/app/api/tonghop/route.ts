@@ -12,6 +12,7 @@ import {
   getXuatNhapTonByMatHang,
   getXuatNhapTonTheoThoiGian,
   getXuatNhapTonBaoCaoThang,
+  getXuatNhapTonBaoCaoNam,
   recalculateDailyInventory
 } from '@/app/services/tonghop.service'
 
@@ -75,6 +76,14 @@ export async function GET(request: NextRequest) {
           toDate: toDate || new Date()
         })
         return NextResponse.json({ success: true, data: xntBaoCao12Thang })
+
+      case 'xnt-baocao-nam':
+        const xntBaoCaoNam = await getXuatNhapTonBaoCaoNam({
+          congtyId,
+          fromDate: fromDate || new Date(new Date().getFullYear(), 0, 1),
+          toDate: toDate || new Date()
+        })
+        return NextResponse.json({ success: true, data: xntBaoCaoNam })
 
       case 'list':
       default:

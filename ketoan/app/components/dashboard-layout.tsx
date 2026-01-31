@@ -13,6 +13,7 @@ import {
   Menu,
   Package,
   Sparkles,
+  BookText,
 } from "lucide-react"
 
 import {
@@ -48,6 +49,11 @@ const menuItems = [
     title: "Xuất nhập tồn",
     icon: Package,
     href: "/xuatnhapton",
+  },
+  {
+    title: "Tổng Hợp Sổ",
+    icon: BookText,
+    href: "/tonghopso",
   },
   {
     title: "Thống kê",
@@ -106,7 +112,7 @@ export function AppSidebar() {
           </div>
         </div>
       </SidebarHeader>
-      
+
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel>Menu</SidebarGroupLabel>
@@ -129,7 +135,7 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      
+
       <SidebarFooter>
         <Separator className="bg-slate-700" />
         <div className="p-2 text-xs text-slate-400">
@@ -146,7 +152,7 @@ interface DashboardLayoutProps {
 
 export function DashboardLayout({ children }: DashboardLayoutProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false)
-  
+
   return (
     <SidebarProvider>
       {/* Mobile Menu Button - Only visible on mobile */}
@@ -166,25 +172,25 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           <span className="font-semibold text-sm">Kế Toán</span>
         </div>
       </div>
-      
+
       {/* Mobile Menu Overlay */}
       {mobileMenuOpen && (
-        <div 
+        <div
           className="fixed inset-0 z-40 bg-black/60 md:hidden"
           onClick={() => setMobileMenuOpen(false)}
         />
       )}
-      
+
       {/* Mobile Sidebar */}
       <div className={`fixed inset-y-0 left-0 z-50 w-64 transform bg-slate-900 transition-transform duration-200 ease-in-out md:hidden ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <AppSidebar />
       </div>
-      
+
       {/* Desktop Sidebar */}
       <div className="hidden md:block">
         <AppSidebar />
       </div>
-      
+
       <main className="flex-1 min-h-screen pt-14 md:pt-0">
         {/* Desktop Header */}
         <div className="hidden md:flex h-14 items-center gap-4 border-b border-gray-200 bg-white px-4 lg:px-6 dark:border-gray-700 dark:bg-gray-900">

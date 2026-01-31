@@ -45,3 +45,4 @@ export {
   SidebarTrigger,
   useSidebar,
 } from './sidebar';
+export { Tabs, TabsList, TabsTrigger, TabsContent } from './tabs';

@@ -353,11 +353,17 @@ export async function getTongHopStats(options: {
     const endOfDay = new Date(toDate);
     endOfDay.setUTCHours(0, 0, 0, 0);
     
+    const now = new Date();
+    now.setUTCHours(0, 0, 0, 0);
+    
+    // Cap at current date because we don't have future snapshots
+    const queryDate = endOfDay > now ? now : endOfDay;
+    
     const [stockAtDate, countWithBalance] = await Promise.all([
       (prisma as any).ext_daily_stock_v2.aggregate({
         where: {
           congtyId,
-          date: endOfDay
+          date: queryDate
         },
         _sum: {
           tonCuoiQty: true,
@@ -367,7 +373,7 @@ export async function getTongHopStats(options: {
       (prisma as any).ext_daily_stock_v2.count({
         where: {
           congtyId,
-          date: endOfDay,
+          date: queryDate,
           OR: [
             { tonCuoiQty: { not: 0 } },
             { tonCuoiVal: { not: 0 } }
@@ -496,6 +502,13 @@ export async function getXuatNhapTonByMatHang(options: {
   startDate.setUTCHours(0, 0, 0, 0);
   endDate.setUTCHours(0, 0, 0, 0);
 
+  const now = new Date();
+  now.setUTCHours(0, 0, 0, 0);
+  
+  // Cap at now for balance snapshots
+  const closingBalanceDate = endDate > now ? now : endDate;
+  const openingBalanceDate = startDate > now ? now : startDate;
+
   // Lấy tổng số mặt hàng (nhóm)
   const groupQuery = {
     where: {
@@ -534,7 +547,7 @@ export async function getXuatNhapTonByMatHang(options: {
         where: {
           congtyId,
           tenHangChuan: s.tenHangChuan,
-          date: startDate
+          date: openingBalanceDate
         },
         select: { tonDauQty: true, tonDauVal: true }
       }),
@@ -542,7 +555,7 @@ export async function getXuatNhapTonByMatHang(options: {
         where: {
           congtyId,
           tenHangChuan: s.tenHangChuan,
-          date: endDate
+          date: closingBalanceDate
         },
         select: { tonCuoiQty: true, tonCuoiVal: true }
       })
@@ -703,7 +716,13 @@ export async function getXuatNhapTonBaoCaoThang(options: {
     
     // Determine start and end of the month in UTC
     const startDate = new Date(Date.UTC(year, month - 1, 1));
-    const endDate = new Date(Date.UTC(year, month, 0));
+    const lastDayOfMonth = new Date(Date.UTC(year, month, 0));
+    
+    const now = new Date();
+    now.setUTCHours(0, 0, 0, 0);
+    
+    // If the month is the current month or in the future, cap the balance check at "now"
+    const balanceDate = lastDayOfMonth > now ? now : lastDayOfMonth;
     
     // 1. Sum up all activity (Nhap/Xuat) for the month
     const monthlyActivity = await (prisma as any).ext_daily_stock_v2.groupBy({
@@ -712,7 +731,7 @@ export async function getXuatNhapTonBaoCaoThang(options: {
         congtyId,
         date: {
           gte: startDate,
-          lte: endDate
+          lte: lastDayOfMonth
         }
       },
       _sum: {
@@ -736,11 +755,11 @@ export async function getXuatNhapTonBaoCaoThang(options: {
       }
     });
 
-    // 3. Get Closing Balance (TonCuoi of the last day of the month)
+    // 3. Get Closing Balance (TonCuoi of the latest available day in the month)
     const closingBalances = await (prisma as any).ext_daily_stock_v2.findMany({
       where: {
         congtyId,
-        date: endDate
+        date: balanceDate
       },
       select: {
         tenHangChuan: true,
@@ -781,6 +800,109 @@ export async function getXuatNhapTonBaoCaoThang(options: {
 
     // Move to next month
     current.setUTCMonth(current.getUTCMonth() + 1);
+  }
+
+  return report;
+}
+
+/**
+ * Lấy báo cáo xuất nhập tồn theo năm
+ */
+export async function getXuatNhapTonBaoCaoNam(options: {
+  congtyId?: string
+  fromDate: Date
+  toDate: Date
+}) {
+  const { congtyId, fromDate, toDate } = options
+  const report: Record<string, any[]> = {}
+  
+  let startYear = fromDate.getUTCFullYear();
+  const endYear = toDate.getUTCFullYear();
+
+  for (let year = startYear; year <= endYear; year++) {
+    const key = `${year}`;
+    const startDate = new Date(Date.UTC(year, 0, 1));
+    const lastDayOfYear = new Date(Date.UTC(year, 11, 31));
+    
+    const now = new Date();
+    now.setUTCHours(0, 0, 0, 0);
+    
+    // If the year is the current year or in the future, cap the balance check at "now"
+    const balanceDate = lastDayOfYear > now ? now : lastDayOfYear;
+    
+    // 1. Sum up all activity (Nhap/Xuat) for the year
+    const yearlyActivity = await (prisma as any).ext_daily_stock_v2.groupBy({
+      by: ['tenHangChuan', 'dvtinh'],
+      where: {
+        congtyId,
+        date: {
+          gte: startDate,
+          lte: lastDayOfYear
+        }
+      },
+      _sum: {
+        nhapQty: true,
+        nhapVal: true,
+        xuatQty: true,
+        xuatVal: true
+      }
+    });
+
+    // 2. Get Opening Balance (TonDau of Jan 1st)
+    const openingBalances = await (prisma as any).ext_daily_stock_v2.findMany({
+      where: {
+        congtyId,
+        date: startDate
+      },
+      select: {
+        tenHangChuan: true,
+        tonDauQty: true,
+        tonDauVal: true
+      }
+    });
+
+    // 3. Get Closing Balance (TonCuoi of Dec 31st or today)
+    const closingBalances = await (prisma as any).ext_daily_stock_v2.findMany({
+      where: {
+        congtyId,
+        date: balanceDate
+      },
+      select: {
+        tenHangChuan: true,
+        tonCuoiQty: true,
+        tonCuoiVal: true
+      }
+    });
+
+    // Create maps for quick lookup
+    const openMap = new Map<string, any>(openingBalances.map((b: any) => [b.tenHangChuan, b]));
+    const closeMap = new Map<string, any>(closingBalances.map((b: any) => [b.tenHangChuan, b]));
+    
+    // Combine into final report for the year
+    const allItemNames = new Set([
+      ...yearlyActivity.map((a: any) => a.tenHangChuan),
+      ...closingBalances.filter((b: any) => Number(b.tonCuoiQty) !== 0 || Number(b.tonCuoiVal) !== 0).map((b: any) => b.tenHangChuan),
+      ...openingBalances.filter((b: any) => Number(b.tonDauQty) !== 0 || Number(b.tonDauVal) !== 0).map((b: any) => b.tenHangChuan)
+    ]);
+
+    report[key] = Array.from(allItemNames).map(name => {
+      const act = yearlyActivity.find((a: any) => a.tenHangChuan === name);
+      const open = openMap.get(name);
+      const close = closeMap.get(name);
+
+      return {
+        tenMatHang: name,
+        dvt: act?.dvtinh || open?.dvtinh || close?.dvtinh || '',
+        tonDauQty: Number(open?.tonDauQty || 0),
+        tonDauVal: Number(open?.tonDauVal || 0),
+        nhapQty: Number(act?._sum?.nhapQty || 0),
+        nhapVal: Number(act?._sum?.nhapVal || 0),
+        xuatQty: Number(act?._sum?.xuatQty || 0),
+        xuatVal: Number(act?._sum?.xuatVal || 0),
+        tonCuoiQty: Number(close?.tonCuoiQty || 0),
+        tonCuoiVal: Number(close?.tonCuoiVal || 0)
+      };
+    }).sort((a, b) => a.tenMatHang.localeCompare(b.tenMatHang));
   }
 
   return report;
@@ -936,5 +1058,6 @@ export default {
   getXuatNhapTonByMatHang,
   getXuatNhapTonTheoThoiGian,
   getXuatNhapTonBaoCaoThang,
+  getXuatNhapTonBaoCaoNam,
   recalculateDailyInventory
 }
