@@ -12,6 +12,7 @@ export async function GET(request: NextRequest) {
     const pageSize = parseInt(searchParams.get('pageSize') || '50');
     const fromDate = searchParams.get('fromDate');
     const toDate = searchParams.get('toDate');
+    const congtyId = searchParams.get('congtyId');
     const invoiceNumber = searchParams.get('invoiceNumber');
     const taxCode = searchParams.get('taxCode');
     const status = searchParams.get('status');
@@ -21,6 +22,7 @@ export async function GET(request: NextRequest) {
     const filter = {
       ...(fromDate && { fromDate }),
       ...(toDate && { toDate }),
+      ...(congtyId && { congtyId }),
       ...(invoiceNumber && { invoiceNumber }),
       ...(taxCode && { taxCode }),
       ...(status && { status }),

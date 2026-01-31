@@ -285,7 +285,7 @@ export class TaxApiService {
     const searchQuery = this.buildSearchQuery(filter);
 
     const queryParams = new URLSearchParams({
-      sort: params.sort || 'tdlap:desc,khmshdon:asc,shdon:desc',
+      sort: params.sort || 'tdlap:desc',
       size: (params.size || 50).toString(),
       page: (params.page || 0).toString(),
       ...(searchQuery && { search: searchQuery }),
@@ -401,12 +401,12 @@ export class TaxApiService {
         
         page++;
 
-        // Progress callback
+        // Progress callback - Send update for every batch to show it's alive
         if (onProgress) {
           onProgress({
             current: allData.length,
             total: estimatedTotal || allData.length,
-            message: `Đã tải ${allData.length} hóa đơn (tháng ${processedMonths + 1}/${monthRanges.length})...`,
+            message: `Hệ thống đang tải dữ liệu: ${allData.length} hóa đơn...`,
           });
         }
 

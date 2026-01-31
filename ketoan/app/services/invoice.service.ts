@@ -102,11 +102,17 @@ export class InvoiceDbService {
     }
 
     if (filter) {
+      if (filter.congtyId) {
+        where.congtyId = filter.congtyId;
+      }
       if (filter.fromDate) {
         where.tdlap = { ...((where.tdlap as object) || {}), gte: new Date(filter.fromDate) };
       }
       if (filter.toDate) {
-        where.tdlap = { ...((where.tdlap as object) || {}), lte: new Date(filter.toDate) };
+        // Cộng thêm 1 ngày để bao gồm dữ liệu của ngày kết thúc
+        const toDate = new Date(filter.toDate);
+        toDate.setHours(23, 59, 59, 999);
+        where.tdlap = { ...((where.tdlap as object) || {}), lte: toDate };
       }
       if (filter.invoiceNumber) {
         where.shdon = { contains: filter.invoiceNumber };
@@ -803,21 +809,23 @@ export class InvoiceSyncService {
         successCount++;
         savedInvoiceIdServers.push(inputs[i].idServer);
 
-        // Gửi progress cho từng hóa đơn
-        onProgress?.({
-          type: 'invoice',
-          phase: 'save',
-          current: successCount,
-          total: inputs.length,
-          message: `Đang lưu ${successCount}/${inputs.length} hóa đơn...`,
-          percentage: 30 + Math.round((successCount / inputs.length) * (syncDetails ? 20 : 70)),
-          invoice: {
-            shdon: String(inputs[i].shdon),
-            khhdon: String(inputs[i].khhdon),
-            nbten: inputs[i].nbten,
-            nmten: inputs[i].nmten,
-          },
-        });
+        // Gửi progress mỗi 50 hóa đơn hoặc hóa đơn cuối cùng để tránh quá tải frontend
+        if (successCount % 50 === 0 || i === inputs.length - 1) {
+          onProgress?.({
+            type: 'invoice',
+            phase: 'save',
+            current: successCount,
+            total: inputs.length,
+            message: `Đang lưu hóa đơn vào hệ thống: ${successCount}/${inputs.length}...`,
+            percentage: 30 + Math.round((successCount / inputs.length) * (syncDetails ? 20 : 70)),
+            invoice: {
+              shdon: String(inputs[i].shdon),
+              khhdon: String(inputs[i].khhdon),
+              nbten: inputs[i].nbten,
+              nmten: inputs[i].nmten,
+            },
+          });
+        }
       } catch (error) {
         errorCount++;
         errors.push(`Lỗi hóa đơn ${inputs[i].shdon}: ${error instanceof Error ? error.message : 'Unknown error'}`);

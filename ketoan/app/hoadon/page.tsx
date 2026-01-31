@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { format } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { toast } from 'sonner';
@@ -62,10 +62,12 @@ interface ExtendedSyncProgress extends SyncProgress {
     totalRecords: number;
     successCount: number;
     errorCount: number;
+    errors?: string[];
     detailResult?: {
       totalRecords: number;
       successCount: number;
       errorCount: number;
+      errors?: string[];
     };
   };
 }
@@ -75,6 +77,12 @@ export default function HoaDonPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [invoiceType, setInvoiceType] = useState<InvoiceType>('banra');
   const [searchTerm, setSearchTerm] = useState('');
+  const [filterFromDate, setFilterFromDate] = useState(getDateRange(1).fromDate);
+  const [filterToDate, setFilterToDate] = useState(getDateRange(1).toDate);
+
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 50;
 
   // Company state
   const [companies, setCompanies] = useState<CongTy[]>([]);
@@ -156,12 +164,10 @@ export default function HoaDonPage() {
     }
   }, [showSyncDialog]);
 
-  // Fetch invoices when company changes
+  // Fetch invoices when filters change
   useEffect(() => {
-    if (selectedCompanyId) {
-      fetchInvoices();
-    }
-  }, [selectedCompanyId, invoiceType]);
+    fetchInvoices();
+  }, [selectedCompanyId, invoiceType, filterFromDate, filterToDate]);
 
   // Fetch companies
   const fetchCompanies = async () => {
@@ -190,30 +196,79 @@ export default function HoaDonPage() {
   }));
 
   // Filter invoices
-  const filteredInvoices = invoices.filter((inv) => {
-    if (inv.loaihd !== invoiceType) return false;
-    if (searchTerm) {
-      const term = searchTerm.toLowerCase();
-      return (
-        inv.shdon.toLowerCase().includes(term) ||
-        inv.nmten?.toLowerCase().includes(term) ||
-        inv.nmmst?.toLowerCase().includes(term) ||
-        inv.nbten?.toLowerCase().includes(term) ||
-        inv.nbmst.toLowerCase().includes(term)
-      );
-    }
-    return true;
-  });
+  const filteredInvoices = useMemo(() => {
+    return invoices.filter((inv) => {
+      if (inv.loaihd !== invoiceType) return false;
+      if (searchTerm) {
+        const term = searchTerm.toLowerCase();
+        return (
+          inv.shdon.toLowerCase().includes(term) ||
+          inv.nmten?.toLowerCase().includes(term) ||
+          inv.nmmst?.toLowerCase().includes(term) ||
+          inv.nbten?.toLowerCase().includes(term) ||
+          inv.nbmst.toLowerCase().includes(term)
+        );
+      }
+      return true;
+    });
+  }, [invoices, invoiceType, searchTerm]);
 
   // Calculate totals
-  const totals = filteredInvoices.reduce(
-    (acc, inv) => ({
-      count: acc.count + 1,
-      amount: acc.amount + inv.tgtttbso,
-      tax: acc.tax + inv.tgtthue,
-    }),
-    { count: 0, amount: 0, tax: 0 }
-  );
+  const totals = useMemo(() => {
+    return filteredInvoices.reduce(
+      (acc, inv) => ({
+        count: acc.count + 1,
+        amount: acc.amount + inv.tgtttbso,
+        tax: acc.tax + inv.tgtthue,
+      }),
+      { count: 0, amount: 0, tax: 0 }
+    );
+  }, [filteredInvoices]);
+
+  // Paginated invoices for rendering
+  const paginatedInvoices = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return filteredInvoices.slice(startIndex, startIndex + itemsPerPage);
+  }, [filteredInvoices, currentPage]);
+
+  const totalPages = Math.ceil(filteredInvoices.length / itemsPerPage);
+
+  // Reset page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [invoiceType, searchTerm, selectedCompanyId, filterFromDate, filterToDate]);
+
+  // Handle export errors
+  const handleExportErrors = () => {
+    if (!syncProgress?.result?.errors?.length && !syncProgress?.result?.detailResult?.errors?.length) {
+      toast.info('Không có lỗi để xuất');
+      return;
+    }
+
+    const rows = [['Nội dung lỗi', 'Thời gian']];
+    const timestamp = new Date().toLocaleString('vi-VN');
+
+    // Collect errors from main result
+    if (syncProgress.result?.errors) {
+      syncProgress.result.errors.forEach(err => rows.push([err, timestamp]));
+    }
+
+    // Collect errors from detail result
+    if (syncProgress.result?.detailResult?.errors) {
+      syncProgress.result.detailResult.errors.forEach(err => rows.push([err, timestamp]));
+    }
+
+    const csvContent = "data:text/csv;charset=utf-8,\uFEFF"
+      + rows.map(e => e.map(c => `"${c.replace(/"/g, '""')}"`).join(",")).join("\n");
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `loi_dong_bo_${format(new Date(), 'yyyyMMdd_HHmmss')}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   // Handle sync với streaming
   const handleSync = async () => {
@@ -276,6 +331,8 @@ export default function HoaDonPage() {
         const lines = buffer.split('\n');
         buffer = lines.pop() || ''; // Giữ lại line chưa hoàn thành
 
+        let lastProgressUpdate: any = null;
+
         for (const line of lines) {
           if (line.startsWith('data: ')) {
             try {
@@ -286,52 +343,28 @@ export default function HoaDonPage() {
                 setSyncSessionId(data.sessionId);
               }
 
-              // Handle different event types
-              switch (data.type) {
-                case 'progress':
-                case 'invoice':
-                  setSyncProgress({
-                    current: data.current || 0,
-                    total: data.total || 0,
-                    message: data.message || 'Đang xử lý...',
-                    percentage: data.percentage ?? -1,
-                    phase: data.phase,
-                    currentInvoice: data.invoice,
-                  });
-                  break;
+              // Xử lý các event đặc biệt ngay lập tức
+              if (data.type === 'complete' || data.type === 'aborted' || data.type === 'error') {
+                if (lastProgressUpdate) {
+                  setSyncProgress(lastProgressUpdate);
+                  lastProgressUpdate = null;
+                }
 
-                case 'detail':
-                  setSyncProgress({
-                    current: data.current || 0,
-                    total: data.total || 0,
-                    message: data.message || 'Đang đồng bộ chi tiết...',
-                    percentage: data.percentage ?? -1,
-                    phase: 'detail',
-                    detail: data.detail,
-                  });
-                  break;
-
-                case 'complete':
+                if (data.type === 'complete') {
                   setSyncProgress({
                     current: data.result?.successCount || 0,
                     total: data.result?.totalRecords || 0,
                     message: `Đã đồng bộ ${data.result?.successCount}/${data.result?.totalRecords} hóa đơn`,
                     percentage: 100,
-                    result: data.result, // Lưu kết quả để hiển thị
+                    result: data.result,
                   });
-
-                  // Build success message
                   let successMsg = `Đồng bộ thành công: ${data.result?.successCount}/${data.result?.totalRecords} hóa đơn`;
                   if (data.result?.detailResult) {
                     successMsg += `. Chi tiết: ${data.result.detailResult.successCount}/${data.result.detailResult.totalRecords} dòng`;
                   }
                   toast.success(successMsg);
-
-                  // Refresh invoice list
                   fetchInvoices();
-                  break;
-
-                case 'aborted':
+                } else if (data.type === 'aborted') {
                   setSyncProgress({
                     current: 0,
                     total: 0,
@@ -339,16 +372,31 @@ export default function HoaDonPage() {
                     percentage: 0,
                   });
                   toast.info('Đã dừng đồng bộ');
-                  fetchInvoices(); // Refresh để hiển thị những gì đã sync
-                  break;
-
-                case 'error':
+                  fetchInvoices();
+                } else if (data.type === 'error') {
                   throw new Error(data.error || 'Lỗi không xác định');
+                }
+              } else {
+                // Gộp các update tiến độ (progress, invoice, detail)
+                lastProgressUpdate = {
+                  current: data.current || 0,
+                  total: data.total || 0,
+                  message: data.message || (data.type === 'detail' ? 'Đang đồng bộ chi tiết...' : 'Đang xử lý...'),
+                  percentage: data.percentage ?? -1,
+                  phase: data.type === 'detail' ? 'detail' : data.phase,
+                  currentInvoice: data.invoice,
+                  detail: data.detail,
+                };
               }
             } catch (parseError) {
               // Ignore parse errors for incomplete data
             }
           }
+        }
+
+        // Cập nhật progress cuối cùng của chunk này
+        if (lastProgressUpdate) {
+          setSyncProgress(lastProgressUpdate);
         }
       }
     } catch (error) {
@@ -474,7 +522,18 @@ export default function HoaDonPage() {
   const fetchInvoices = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(`/api/invoices?loaihd=${invoiceType}&pageSize=100`);
+      const params = new URLSearchParams({
+        loaihd: invoiceType,
+        pageSize: '1000', // Tăng lên để lấy nhiều hơn hoặc dùng pagination
+        fromDate: filterFromDate,
+        toDate: filterToDate,
+      });
+
+      if (selectedCompanyId) {
+        params.append('congtyId', selectedCompanyId);
+      }
+
+      const response = await fetch(`/api/invoices?${params.toString()}`);
       const result = await response.json();
       if (result.success) {
         setInvoices(result.data);
@@ -775,8 +834,8 @@ export default function HoaDonPage() {
         {/* Filters - Mobile First */}
         <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-3 sm:p-4">
           <div className="flex flex-col gap-3 sm:gap-4">
-            {/* First row - Company & Invoice Type */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+            {/* First row - Filters */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
               <div>
                 <Label className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mb-1.5 block">
                   Công ty
@@ -813,6 +872,26 @@ export default function HoaDonPage() {
                   />
                 </div>
               </div>
+              <div>
+                <Label className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mb-1.5 block">
+                  Từ ngày
+                </Label>
+                <Input
+                  type="date"
+                  value={filterFromDate}
+                  onChange={(e) => setFilterFromDate(e.target.value)}
+                />
+              </div>
+              <div>
+                <Label className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mb-1.5 block">
+                  Đến ngày
+                </Label>
+                <Input
+                  type="date"
+                  value={filterToDate}
+                  onChange={(e) => setFilterToDate(e.target.value)}
+                />
+              </div>
             </div>
             {/* Second row - Action buttons */}
             <div className="flex flex-wrap items-center gap-2">
@@ -843,7 +922,7 @@ export default function HoaDonPage() {
                 Không có hóa đơn nào
               </div>
             ) : (
-              filteredInvoices.map((invoice) => (
+              paginatedInvoices.map((invoice) => (
                 <div
                   key={invoice.id}
                   className="p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer active:bg-gray-100 dark:active:bg-gray-700"
@@ -909,14 +988,14 @@ export default function HoaDonPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                {filteredInvoices.length === 0 ? (
+                {paginatedInvoices.length === 0 ? (
                   <tr>
                     <td colSpan={6} className="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
                       Không có hóa đơn nào
                     </td>
                   </tr>
                 ) : (
-                  filteredInvoices.map((invoice) => (
+                  paginatedInvoices.map((invoice) => (
                     <tr
                       key={invoice.id}
                       className="hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer"
@@ -953,6 +1032,41 @@ export default function HoaDonPage() {
               </tbody>
             </table>
           </div>
+
+          {/* Pagination Footer */}
+          {totalPages > 1 && (
+            <div className="px-4 py-3 flex items-center justify-between border-t border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50">
+              <div className="flex-1 flex justify-between sm:hidden">
+                <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}>
+                  Trước
+                </Button>
+                <div className="text-xs text-gray-500 flex items-center">Trang {currentPage}/{totalPages}</div>
+                <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}>
+                  Sau
+                </Button>
+              </div>
+              <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-sm text-gray-700 dark:text-gray-300">
+                    Hiển thị <span className="font-medium">{(currentPage - 1) * itemsPerPage + 1}</span> đến <span className="font-medium">{Math.min(currentPage * itemsPerPage, filteredInvoices.length)}</span> của <span className="font-medium">{filteredInvoices.length}</span> hóa đơn
+                  </p>
+                </div>
+                <div>
+                  <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                    <Button variant="outline" size="sm" className="rounded-r-none" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}>
+                      Trước
+                    </Button>
+                    <div className="px-4 py-2 bg-white dark:bg-gray-800 border-y border-gray-300 dark:border-gray-600 text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Trang {currentPage} / {totalPages}
+                    </div>
+                    <Button variant="outline" size="sm" className="rounded-l-none" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}>
+                      Sau
+                    </Button>
+                  </nav>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -1166,22 +1280,27 @@ export default function HoaDonPage() {
 
                   {/* Detail Sync Progress */}
                   {syncProgress.phase === 'detail' && syncProgress.detail && (
-                    <div className="bg-green-50 dark:bg-green-900/20 rounded-md p-2 border border-green-200 dark:border-green-700">
-                      <div className="flex items-center justify-between mb-1">
-                        <div className="flex items-center gap-2 text-xs text-green-600 dark:text-green-400">
-                          <Download className="h-3 w-3" />
-                          <span>Đang lấy chi tiết hóa đơn #{syncProgress.detail.invoiceShdon}</span>
+                    <div className="bg-green-50 dark:bg-green-900/20 rounded-md p-3 border border-green-200 dark:border-green-700 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2 text-xs font-semibold text-green-700 dark:text-green-300">
+                          <Download className="h-4 w-4" />
+                          <span>Chi tiết HĐ #{syncProgress.detail.invoiceShdon}</span>
                         </div>
-                        <span className="text-xs text-green-600 dark:text-green-400">
-                          {syncProgress.detail.current}/{syncProgress.detail.total}
+                        <span className="text-xs font-bold text-green-600 dark:text-green-400">
+                          {syncProgress.detail.current} / {syncProgress.detail.total} HĐ
                         </span>
                       </div>
-                      <div className="w-full bg-green-200 dark:bg-green-800 rounded-full h-1.5">
+
+                      <div className="w-full bg-green-200 dark:bg-green-800 rounded-full h-2">
                         <div
-                          className="bg-green-600 dark:bg-green-400 h-1.5 rounded-full transition-all duration-300"
+                          className="bg-green-600 dark:bg-green-400 h-2 rounded-full transition-all duration-500"
                           style={{ width: `${(syncProgress.detail.current / syncProgress.detail.total) * 100}%` }}
                         />
                       </div>
+
+                      <p className="text-[10px] text-green-600 dark:text-green-400 italic">
+                        * Tự động điều tiết tốc độ để tránh bị chặn từ API Thuế...
+                      </p>
                     </div>
                   )}
 
@@ -1255,6 +1374,21 @@ export default function HoaDonPage() {
                               <span className="text-gray-500 dark:text-gray-400"> lỗi</span>
                             </div>
                           </div>
+                        </div>
+                      )}
+
+                      {/* Nút xuất lỗi nếu có */}
+                      {(syncProgress.result.errorCount > 0 || (syncProgress.result.detailResult && syncProgress.result.detailResult.errorCount > 0)) && (
+                        <div className="flex justify-end pt-2">
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={handleExportErrors}
+                            className="flex items-center gap-2"
+                          >
+                            <Download className="h-4 w-4" />
+                            Xuất file lỗi ({syncProgress.result.errorCount + (syncProgress.result.detailResult?.errorCount || 0)})
+                          </Button>
                         </div>
                       )}
                     </div>
