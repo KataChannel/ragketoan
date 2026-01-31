@@ -179,6 +179,7 @@ export interface CongTyInput {
 export interface InvoiceFilter {
   fromDate: string;       // YYYY-MM-DD
   toDate: string;         // YYYY-MM-DD
+  congtyId?: string;      // ID công ty
   invoiceNumber?: string; // Số hóa đơn
   taxCode?: string;       // MST
   amountFrom?: number;    // Số tiền từ
