@@ -4,10 +4,10 @@ import { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { toast } from 'sonner';
-import { 
-  RefreshCw, 
-  Download, 
-  Settings, 
+import {
+  RefreshCw,
+  Download,
+  Settings,
   FileText,
   TrendingUp,
   Calendar,
@@ -75,7 +75,7 @@ export default function HoaDonPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [invoiceType, setInvoiceType] = useState<InvoiceType>('banra');
   const [searchTerm, setSearchTerm] = useState('');
-  
+
   // Company state
   const [companies, setCompanies] = useState<CongTy[]>([]);
   const [selectedCompanyId, setSelectedCompanyId] = useState<string>('');
@@ -91,7 +91,7 @@ export default function HoaDonPage() {
     isDefault: false,
   });
   const [isSavingCompany, setIsSavingCompany] = useState(false);
-  
+
   // Sync dialog state
   const [showSyncDialog, setShowSyncDialog] = useState(false);
   const [syncSavedConfigs, setSyncSavedConfigs] = useState<ApiConfig[]>([]);
@@ -225,12 +225,12 @@ export default function HoaDonPage() {
 
     setIsSyncing(true);
     setIsStopping(false);
-    setSyncProgress({ 
-      current: 0, 
-      total: 0, 
-      message: syncConfig.syncDetails 
-        ? 'Đang kết nối đến API Thuế Điện Tử...' 
-        : 'Đang kết nối...', 
+    setSyncProgress({
+      current: 0,
+      total: 0,
+      message: syncConfig.syncDetails
+        ? 'Đang kết nối đến API Thuế Điện Tử...'
+        : 'Đang kết nối...',
       percentage: -1 // -1 = indeterminate (hiệu ứng chạy liên tục)
     });
 
@@ -265,27 +265,27 @@ export default function HoaDonPage() {
       }
 
       let buffer = '';
-      
+
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
-        
+
         buffer += decoder.decode(value, { stream: true });
-        
+
         // Parse SSE events
         const lines = buffer.split('\n');
         buffer = lines.pop() || ''; // Giữ lại line chưa hoàn thành
-        
+
         for (const line of lines) {
           if (line.startsWith('data: ')) {
             try {
               const data: StreamProgress = JSON.parse(line.slice(6));
-              
+
               // Update session ID if present
               if (data.sessionId && !syncSessionId) {
                 setSyncSessionId(data.sessionId);
               }
-              
+
               // Handle different event types
               switch (data.type) {
                 case 'progress':
@@ -299,7 +299,7 @@ export default function HoaDonPage() {
                     currentInvoice: data.invoice,
                   });
                   break;
-                  
+
                 case 'detail':
                   setSyncProgress({
                     current: data.current || 0,
@@ -310,7 +310,7 @@ export default function HoaDonPage() {
                     detail: data.detail,
                   });
                   break;
-                  
+
                 case 'complete':
                   setSyncProgress({
                     current: data.result?.successCount || 0,
@@ -319,18 +319,18 @@ export default function HoaDonPage() {
                     percentage: 100,
                     result: data.result, // Lưu kết quả để hiển thị
                   });
-                  
+
                   // Build success message
                   let successMsg = `Đồng bộ thành công: ${data.result?.successCount}/${data.result?.totalRecords} hóa đơn`;
                   if (data.result?.detailResult) {
                     successMsg += `. Chi tiết: ${data.result.detailResult.successCount}/${data.result.detailResult.totalRecords} dòng`;
                   }
                   toast.success(successMsg);
-                  
+
                   // Refresh invoice list
                   fetchInvoices();
                   break;
-                  
+
                 case 'aborted':
                   setSyncProgress({
                     current: 0,
@@ -341,7 +341,7 @@ export default function HoaDonPage() {
                   toast.info('Đã dừng đồng bộ');
                   fetchInvoices(); // Refresh để hiển thị những gì đã sync
                   break;
-                  
+
                 case 'error':
                   throw new Error(data.error || 'Lỗi không xác định');
               }
@@ -364,7 +364,7 @@ export default function HoaDonPage() {
   // Handle stop sync
   const handleStopSync = async () => {
     if (!syncSessionId) return;
-    
+
     setIsStopping(true);
     try {
       await fetch(`/api/invoices/sync-stream?sessionId=${syncSessionId}`, {
@@ -380,7 +380,7 @@ export default function HoaDonPage() {
   // Handle sync detail for single invoice
   const handleSyncInvoiceDetail = async () => {
     if (!selectedInvoice) return;
-    
+
     // Kiểm tra có config để lấy token
     if (syncSavedConfigs.length === 0) {
       toast.warning('Chưa có cấu hình API. Vui lòng vào Cài đặt để tạo cấu hình.');
@@ -391,7 +391,7 @@ export default function HoaDonPage() {
     try {
       // Lấy config đầu tiên để dùng token
       const configId = syncSavedConfigs[0].id;
-      
+
       const response = await fetch(`/api/invoices/${selectedInvoice.id}/sync-details`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -429,7 +429,8 @@ export default function HoaDonPage() {
         setSyncSavedConfigs(result.data);
         // Auto select first config if available
         if (result.data.length > 0) {
-          setSyncSelectedConfigId(result.data[0].id);
+          const firstConfigId = result.data[0].id;
+          handleSelectSyncConfig(firstConfigId);
         } else {
           setSyncSelectedConfigId('');
         }
@@ -442,7 +443,7 @@ export default function HoaDonPage() {
   // Handle select config for sync
   const handleSelectSyncConfig = async (configId: string) => {
     setSyncSelectedConfigId(configId);
-    
+
     if (configId) {
       // Fetch full config detail to get brandname
       try {
@@ -452,6 +453,7 @@ export default function HoaDonPage() {
           setSyncConfig(prev => ({
             ...prev,
             configId: configId,
+            bearerToken: result.data.bearerToken || '',
             brandname: result.data.brandname || '',
           }));
         }
@@ -500,11 +502,11 @@ export default function HoaDonPage() {
     setIsSavingConfig(true);
     try {
       // Nếu đang edit thì dùng PUT, ngược lại dùng POST
-      const url = isEditingConfig && apiConfig.id 
-        ? `/api/config/${apiConfig.id}` 
+      const url = isEditingConfig && apiConfig.id
+        ? `/api/config/${apiConfig.id}`
         : '/api/config';
       const method = isEditingConfig && apiConfig.id ? 'PUT' : 'POST';
-      
+
       const response = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
@@ -601,7 +603,7 @@ export default function HoaDonPage() {
   // Handle delete config
   const handleDeleteConfig = async () => {
     if (!selectedConfigId) return;
-    
+
     setIsDeletingConfig(true);
     try {
       const response = await fetch(`/api/config/${selectedConfigId}`, {
@@ -627,7 +629,7 @@ export default function HoaDonPage() {
   // Fetch API config for selected company (old function - updated)
   const fetchApiConfig = async () => {
     if (!selectedCompanyId) return;
-    
+
     try {
       const response = await fetch(`/api/config?congtyId=${selectedCompanyId}`);
       const result = await response.json();
@@ -814,10 +816,10 @@ export default function HoaDonPage() {
             </div>
             {/* Second row - Action buttons */}
             <div className="flex flex-wrap items-center gap-2">
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 size="sm"
-                onClick={fetchInvoices} 
+                onClick={fetchInvoices}
                 disabled={isLoading}
                 className="flex-1 sm:flex-none"
               >
@@ -842,7 +844,7 @@ export default function HoaDonPage() {
               </div>
             ) : (
               filteredInvoices.map((invoice) => (
-                <div 
+                <div
                   key={invoice.id}
                   className="p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer active:bg-gray-100 dark:active:bg-gray-700"
                   onClick={() => setSelectedInvoice(invoice)}
@@ -915,8 +917,8 @@ export default function HoaDonPage() {
                   </tr>
                 ) : (
                   filteredInvoices.map((invoice) => (
-                    <tr 
-                      key={invoice.id} 
+                    <tr
+                      key={invoice.id}
                       className="hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer"
                       onClick={() => setSelectedInvoice(invoice)}
                     >
@@ -1045,10 +1047,16 @@ export default function HoaDonPage() {
 
               {/* Thông báo đang dùng config đã lưu */}
               {syncSelectedConfigId && (
-                <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-3">
-                  <p className="text-sm text-green-700 dark:text-green-300">
-                    ✓ Sử dụng Bearer Token từ cấu hình đã lưu
+                <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-3 space-y-2">
+                  <p className="text-sm font-medium text-green-700 dark:text-green-300 flex items-center gap-1.5">
+                    <Settings className="h-4 w-4" />
+                    Sử dụng Bearer Token từ cấu hình đã lưu
                   </p>
+                  <div className="bg-white/50 dark:bg-black/20 rounded border border-green-100 dark:border-green-900/50 p-2 overflow-hidden">
+                    <p className="text-[10px] font-mono break-all text-gray-500 dark:text-gray-400">
+                      {syncConfig.bearerToken || 'Đang tải token...'}
+                    </p>
+                  </div>
                 </div>
               )}
 
@@ -1148,8 +1156,8 @@ export default function HoaDonPage() {
                       </div>
                       {(syncProgress.currentInvoice.nbten || syncProgress.currentInvoice.nmten) && (
                         <div className="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5">
-                          {invoiceType === 'banra' 
-                            ? syncProgress.currentInvoice.nmten 
+                          {invoiceType === 'banra'
+                            ? syncProgress.currentInvoice.nmten
                             : syncProgress.currentInvoice.nbten}
                         </div>
                       )}
@@ -1220,7 +1228,7 @@ export default function HoaDonPage() {
                           <div className="text-xs text-gray-500 dark:text-gray-400">Lỗi</div>
                         </div>
                       </div>
-                      
+
                       {/* Chi tiết hàng hóa nếu có */}
                       {syncProgress.result.detailResult && (
                         <div className="bg-green-50 dark:bg-green-900/20 rounded-md p-2 border border-green-200 dark:border-green-700">
@@ -1256,8 +1264,8 @@ export default function HoaDonPage() {
             </div>
           </DialogBody>
           <DialogFooter>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={() => {
                 if (isSyncing) {
                   handleStopSync();
@@ -1364,21 +1372,21 @@ export default function HoaDonPage() {
               </div>
               <div>
                 <Label className="text-sm">Tên cấu hình</Label>
-                <Input 
-                  placeholder="thue_dienttu" 
+                <Input
+                  placeholder="thue_dienttu"
                   value={apiConfig.name}
                   onChange={(e) => setApiConfig({ ...apiConfig, name: e.target.value })}
-                  className="mt-1.5" 
+                  className="mt-1.5"
                 />
               </div>
               <div>
                 <Label className="text-sm">Bearer Token *</Label>
-                <Input 
-                  type="password" 
-                  placeholder="eyJhbGciOiJIUzUxMiJ9..." 
+                <Input
+                  type="password"
+                  placeholder="eyJhbGciOiJIUzUxMiJ9..."
                   value={apiConfig.bearerToken}
                   onChange={(e) => setApiConfig({ ...apiConfig, bearerToken: e.target.value })}
-                  className="mt-1.5" 
+                  className="mt-1.5"
                 />
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                   Lấy token từ cổng thuế điện tử
@@ -1386,8 +1394,8 @@ export default function HoaDonPage() {
               </div>
               <div>
                 <Label className="text-sm">Base URL</Label>
-                <Input 
-                  placeholder="https://hoadondientu.gdt.gov.vn:30000" 
+                <Input
+                  placeholder="https://hoadondientu.gdt.gov.vn:30000"
                   value={apiConfig.baseUrl}
                   onChange={(e) => setApiConfig({ ...apiConfig, baseUrl: e.target.value })}
                   className="mt-1.5"
@@ -1396,20 +1404,20 @@ export default function HoaDonPage() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <Label className="text-sm">Batch Size</Label>
-                  <Input 
-                    type="number" 
+                  <Input
+                    type="number"
                     value={apiConfig.batchSize}
                     onChange={(e) => setApiConfig({ ...apiConfig, batchSize: parseInt(e.target.value) || 3 })}
-                    className="mt-1.5" 
+                    className="mt-1.5"
                   />
                 </div>
                 <div>
                   <Label className="text-sm">Delay (ms)</Label>
-                  <Input 
-                    type="number" 
+                  <Input
+                    type="number"
                     value={apiConfig.delayBetweenBatches}
                     onChange={(e) => setApiConfig({ ...apiConfig, delayBetweenBatches: parseInt(e.target.value) || 3000 })}
-                    className="mt-1.5" 
+                    className="mt-1.5"
                   />
                 </div>
               </div>
@@ -1417,9 +1425,9 @@ export default function HoaDonPage() {
           </DialogBody>
           <DialogFooter>
             {isEditingConfig && selectedConfigId && (
-              <Button 
-                variant="destructive" 
-                onClick={handleDeleteConfig} 
+              <Button
+                variant="destructive"
+                onClick={handleDeleteConfig}
                 disabled={isDeletingConfig}
                 className="mr-auto"
               >
@@ -1595,68 +1603,68 @@ export default function HoaDonPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <Label className="text-sm">Mã số thuế *</Label>
-                  <Input 
-                    placeholder="5900363291" 
+                  <Input
+                    placeholder="5900363291"
                     value={companyForm.mst}
                     onChange={(e) => setCompanyForm({ ...companyForm, mst: e.target.value })}
-                    className="mt-1.5" 
+                    className="mt-1.5"
                   />
                 </div>
                 <div>
                   <Label className="text-sm">Tên viết tắt</Label>
-                  <Input 
-                    placeholder="VD: Huy Vũ" 
+                  <Input
+                    placeholder="VD: Huy Vũ"
                     value={companyForm.tenVietTat}
                     onChange={(e) => setCompanyForm({ ...companyForm, tenVietTat: e.target.value })}
-                    className="mt-1.5" 
+                    className="mt-1.5"
                   />
                 </div>
               </div>
               <div>
                 <Label className="text-sm">Tên công ty *</Label>
-                <Input 
-                  placeholder="Công ty TNHH Huy Vũ" 
+                <Input
+                  placeholder="Công ty TNHH Huy Vũ"
                   value={companyForm.ten}
                   onChange={(e) => setCompanyForm({ ...companyForm, ten: e.target.value })}
-                  className="mt-1.5" 
+                  className="mt-1.5"
                 />
               </div>
               <div>
                 <Label className="text-sm">Địa chỉ</Label>
-                <Input 
-                  placeholder="Số 123, Đường ABC, Quận XYZ" 
+                <Input
+                  placeholder="Số 123, Đường ABC, Quận XYZ"
                   value={companyForm.diaChi}
                   onChange={(e) => setCompanyForm({ ...companyForm, diaChi: e.target.value })}
-                  className="mt-1.5" 
+                  className="mt-1.5"
                 />
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <Label className="text-sm">Điện thoại</Label>
-                  <Input 
-                    placeholder="0901234567" 
+                  <Input
+                    placeholder="0901234567"
                     value={companyForm.dienThoai}
                     onChange={(e) => setCompanyForm({ ...companyForm, dienThoai: e.target.value })}
-                    className="mt-1.5" 
+                    className="mt-1.5"
                   />
                 </div>
                 <div>
                   <Label className="text-sm">Email</Label>
-                  <Input 
-                    placeholder="contact@company.com" 
+                  <Input
+                    placeholder="contact@company.com"
                     value={companyForm.email}
                     onChange={(e) => setCompanyForm({ ...companyForm, email: e.target.value })}
-                    className="mt-1.5" 
+                    className="mt-1.5"
                   />
                 </div>
               </div>
               <div>
                 <Label className="text-sm">Người đại diện</Label>
-                <Input 
-                  placeholder="Nguyễn Văn A" 
+                <Input
+                  placeholder="Nguyễn Văn A"
                   value={companyForm.nguoiDaiDien}
                   onChange={(e) => setCompanyForm({ ...companyForm, nguoiDaiDien: e.target.value })}
-                  className="mt-1.5" 
+                  className="mt-1.5"
                 />
               </div>
               <div className="flex items-center gap-2">
