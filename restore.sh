@@ -81,7 +81,7 @@ echo ""
 
 # Tạo thư mục tạm
 TEMP_DIR=$(mktemp -d)
-echo "[1/5] Giải nén backup..."
+echo "[1/6] Giải nén backup..."
 tar -xzf "$BACKUP_FILE" -C "$TEMP_DIR"
 BACKUP_FOLDER=$(ls "$TEMP_DIR")
 EXTRACTED="$TEMP_DIR/$BACKUP_FOLDER"
@@ -90,7 +90,7 @@ echo "✓ Đã giải nén backup"
 # =============================================================================
 # 2. Restore .env (tuỳ chọn)
 # =============================================================================
-echo "[2/5] Kiểm tra .env..."
+echo "[2/6] Kiểm tra .env..."
 if [ -f "$EXTRACTED/.env" ]; then
     if [ "$AUTO_YES" = true ]; then
         cp "$EXTRACTED/.env" "$SCRIPT_DIR/.env"
@@ -111,7 +111,7 @@ fi
 # =============================================================================
 # 3. Restore Prisma schema (tuỳ chọn)
 # =============================================================================
-echo "[3/5] Kiểm tra Prisma schema..."
+echo "[3/6] Kiểm tra Prisma schema..."
 if [ -f "$EXTRACTED/ketoan_prisma/schema.prisma" ]; then
     if [ "$AUTO_YES" = true ]; then
         cp "$EXTRACTED/ketoan_prisma/schema.prisma" "$SCRIPT_DIR/ketoan/prisma/"
@@ -132,7 +132,7 @@ fi
 # =============================================================================
 # 4. Restore n8n demo data (tuỳ chọn)
 # =============================================================================
-echo "[4/5] Kiểm tra n8n demo data..."
+echo "[4/6] Kiểm tra n8n demo data..."
 if [ -d "$EXTRACTED/n8n_demo_data" ]; then
     if [ "$AUTO_YES" = true ]; then
         rm -rf "$SCRIPT_DIR/n8n/demo-data"
@@ -153,9 +153,30 @@ else
 fi
 
 # =============================================================================
-# 5. Restore PostgreSQL databases
+# 5. Restore shared folder (tuỳ chọn)
 # =============================================================================
-echo "[5/5] Restore PostgreSQL databases..."
+echo "[5/6] Kiểm tra shared folder..."
+if [ -d "$EXTRACTED/shared" ]; then
+    if [ "$AUTO_YES" = true ]; then
+        cp -r "$EXTRACTED/shared/"* "$SCRIPT_DIR/shared/" 2>/dev/null || true
+        echo "✓ shared folder đã được restore"
+    else
+        read -p "      Bạn có muốn restore shared folder? (y/N): " restore_shared
+        if [ "$restore_shared" = "y" ] || [ "$restore_shared" = "Y" ]; then
+            cp -r "$EXTRACTED/shared/"* "$SCRIPT_DIR/shared/" 2>/dev/null || true
+            echo "✓ shared folder đã được restore"
+        else
+            echo "→ Giữ nguyên shared folder hiện tại"
+        fi
+    fi
+else
+    echo "→ Không có shared folder trong backup"
+fi
+
+# =============================================================================
+# 6. Restore PostgreSQL databases
+# =============================================================================
+echo "[6/6] Restore PostgreSQL databases..."
 
 # 5a. Restore database n8n
 if [ -f "$EXTRACTED/postgres_n8n.dump" ]; then
