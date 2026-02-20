@@ -45,14 +45,14 @@ echo ""
 # =============================================================================
 # 1. Backup .env file
 # =============================================================================
-echo -e "${YELLOW}[1/5] Backup .env file...${NC}"
+echo -e "${YELLOW}[1/6] Backup .env file...${NC}"
 cp "$SCRIPT_DIR/.env" "$TEMP_DIR/.env"
 echo -e "${GREEN}      ✓ .env${NC}"
 
 # =============================================================================
 # 2. Backup Prisma schema
 # =============================================================================
-echo -e "${YELLOW}[2/5] Backup Prisma schema...${NC}"
+echo -e "${YELLOW}[2/6] Backup Prisma schema...${NC}"
 mkdir -p "$TEMP_DIR/ketoan_prisma"
 cp "$SCRIPT_DIR/ketoan/prisma/schema.prisma" "$TEMP_DIR/ketoan_prisma/"
 echo -e "${GREEN}      ✓ ketoan/prisma/schema.prisma${NC}"
@@ -60,7 +60,7 @@ echo -e "${GREEN}      ✓ ketoan/prisma/schema.prisma${NC}"
 # =============================================================================
 # 3. Backup n8n demo data
 # =============================================================================
-echo -e "${YELLOW}[3/5] Backup n8n demo data...${NC}"
+echo -e "${YELLOW}[3/6] Backup n8n demo data...${NC}"
 if [ -d "$SCRIPT_DIR/n8n/demo-data" ]; then
     cp -r "$SCRIPT_DIR/n8n/demo-data" "$TEMP_DIR/n8n_demo_data"
     echo -e "${GREEN}      ✓ n8n/demo-data/${NC}"
@@ -71,7 +71,7 @@ fi
 # =============================================================================
 # 4. Backup PostgreSQL databases
 # =============================================================================
-echo -e "${YELLOW}[4/5] Backup PostgreSQL databases...${NC}"
+echo -e "${YELLOW}[4/6] Backup PostgreSQL databases...${NC}"
 
 # 4a. Backup database n8n
 echo -e "${CYAN}      → Backup database: n8n${NC}"
@@ -100,9 +100,20 @@ else
 fi
 
 # =============================================================================
-# 5. Tạo file tar.gz
+# 5. Backup shared folder
 # =============================================================================
-echo -e "${YELLOW}[5/5] Đang nén backup...${NC}"
+echo -e "${YELLOW}[5/6] Backup shared folder...${NC}"
+if [ -d "$SCRIPT_DIR/shared" ]; then
+    cp -r "$SCRIPT_DIR/shared" "$TEMP_DIR/shared"
+    echo -e "${GREEN}      ✓ shared/${NC}"
+else
+    echo -e "${YELLOW}      ⚠ shared/ không tồn tại, bỏ qua${NC}"
+fi
+
+# =============================================================================
+# 6. Tạo file tar.gz
+# =============================================================================
+echo -e "${YELLOW}[6/6] Đang nén backup...${NC}"
 cd "$BACKUP_DIR"
 tar -czf "$BACKUP_NAME.tar.gz" "$BACKUP_NAME"
 rm -rf "$TEMP_DIR"

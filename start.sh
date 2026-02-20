@@ -41,6 +41,7 @@ show_menu() {
     echo ""
     echo -e "  ${GREEN}1)${NC} 🤖 N8N + AI Stack     (n8n, Ollama, Qdrant, PostgreSQL)"
     echo -e "  ${GREEN}2)${NC} 📊 Ketoan Frontend    (Next.js App)"
+    echo -e "  ${GREEN}p)${NC} 🗄️  Ketoan + DB Push   (Push Prisma & Next.js)"
     echo -e "  ${GREEN}3)${NC} 🧠 RAG Service        (Python FastAPI RAG)"
     echo -e "  ${GREEN}4)${NC} 🔥 Tất cả             (N8N + AI + RAG + Ketoan)"
     echo -e "  ${GREEN}5)${NC} 🛑 Dừng tất cả        (Stop all services)"
@@ -305,6 +306,7 @@ update_env_var() {
 
 # Function to start Ketoan
 start_ketoan() {
+    local push_db=$1
     echo -e "${GREEN}[INFO] Đang khởi động Ketoan Frontend...${NC}"
     echo ""
     
@@ -315,6 +317,8 @@ start_ketoan() {
     pkill -9 -f "next dev" 2>/dev/null || true
     pkill -9 -f "next-server" 2>/dev/null || true
     pkill -9 -f "next-router-worker" 2>/dev/null || true
+    pkill -9 -f "bun dev" 2>/dev/null || true
+    pkill -9 -f "bun run dev" 2>/dev/null || true
     
     # Kill port 3000 if in use
     local port_pids=$(lsof -t -i:3000 2>/dev/null)
@@ -337,12 +341,37 @@ start_ketoan() {
     # Check if node_modules exists
     if [ ! -d "node_modules" ]; then
         echo -e "${YELLOW}[INFO] Đang cài đặt dependencies...${NC}"
-        npm install
+        if command -v bun &> /dev/null; then
+            bun install
+        else
+            npm install
+        fi
+    fi
+    
+    if [ "$push_db" == "true" ]; then
+        echo -e "${YELLOW}[INFO] Đang khởi động database PostgreSQL...${NC}"
+        cd "$SCRIPT_DIR"
+        docker compose up -d postgres
+        sleep 2
+        
+        cd "$SCRIPT_DIR/ketoan"
+        echo -e "${YELLOW}[INFO] Đang push Prisma database schema...${NC}"
+        if command -v bun &> /dev/null; then
+            bun run prisma db push
+            bun run prisma generate
+        else
+            npx prisma db push
+            npx prisma generate
+        fi
     fi
     
     # Start Next.js dev server in background
     echo -e "${GREEN}[INFO] Đang khởi động Next.js development server...${NC}"
-    npm run dev &
+    if command -v bun &> /dev/null; then
+        bun dev &
+    else
+        npm run dev &
+    fi
     KETOAN_PID=$!
     echo $KETOAN_PID > "$SCRIPT_DIR/.ketoan.pid"
     
@@ -691,6 +720,10 @@ while [[ $# -gt 0 ]]; do
             SERVICE="ketoan"
             shift
             ;;
+        --ketoan-db)
+            SERVICE="ketoan-db"
+            shift
+            ;;
         --all)
             SERVICE="all"
             shift
@@ -701,6 +734,7 @@ while [[ $# -gt 0 ]]; do
             echo "Service Options:"
             echo "  --n8n       Chạy N8N + AI Stack"
             echo "  --ketoan    Chạy Ketoan Frontend"
+            echo "  --ketoan-db Chạy Ketoan Frontend và push db (Prisma)"
             echo "  --rag       Chạy RAG Service (Python FastAPI)"
             echo "  --all       Chạy tất cả services"
             echo ""
@@ -797,6 +831,9 @@ if [ -n "$SERVICE" ]; then
         ketoan)
             start_ketoan
             ;;
+        ketoan-db)
+            start_ketoan "true"
+            ;;
         rag)
             start_rag_service
             ;;
@@ -830,7 +867,7 @@ fi
 # Interactive mode
 while true; do
     show_menu
-    read -p "Nhập lựa chọn của bạn [0-9, r, l, g]: " choice
+    read -p "Nhập lựa chọn của bạn [0-9, p, r, l, g]: " choice
     echo ""
     
     case $choice in
@@ -850,6 +887,10 @@ while true; do
             ;;
         2)
             start_ketoan
+            break
+            ;;
+        p|P)
+            start_ketoan "true"
             break
             ;;
         3)
@@ -916,7 +957,7 @@ while true; do
             exit 0
             ;;
         *)
-            echo -e "${RED}Lựa chọn không hợp lệ. Vui lòng chọn 0-9, r, l hoặc g.${NC}"
+            echo -e "${RED}Lựa chọn không hợp lệ. Vui lòng chọn 0-9, p, r, l hoặc g.${NC}"
             echo ""
             ;;
     esac
@@ -928,6 +969,7 @@ echo -e "${YELLOW}[TIP] Dùng './logs.sh' để xem logs${NC}"
 echo -e "${YELLOW}[TIP] Dùng './status.sh' để xem trạng thái${NC}"
 echo -e "${YELLOW}[TIP] Dùng './start.sh --backup' để backup dữ liệu${NC}"
 echo -e "${YELLOW}[TIP] Dùng './start.sh --restore' để restore dữ liệu${NC}"
+echo -e "${YELLOW}[TIP] Dùng './start.sh --ketoan-db' để chạy Ketoan & Push DB${NC}"
 echo -e "${YELLOW}[TIP] Dùng './start.sh --rag' để chạy RAG Service${NC}"
 echo -e "${YELLOW}[TIP] Dùng './start.sh --llm-google' để chuyển sang Google AI${NC}"
 echo -e "${YELLOW}[TIP] Dùng './start.sh --git' để auto git commit & push${NC}"
