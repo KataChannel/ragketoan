@@ -58,6 +58,11 @@ export type ext_sanpham_dictionary = $Result.DefaultSelection<Prisma.$ext_sanpha
  * Bảng lưu trữ tồn kho hàng ngày để tăng tốc báo cáo
  */
 export type ext_daily_stock_v2 = $Result.DefaultSelection<Prisma.$ext_daily_stock_v2Payload>
+/**
+ * Model ext_mapping_queue
+ * Bảng lưu các đề xuất từ AI chờ con người duyệt (Độ tin cậy thấp)
+ */
+export type ext_mapping_queue = $Result.DefaultSelection<Prisma.$ext_mapping_queuePayload>
 
 /**
  * ##  Prisma Client ʲˢ
@@ -266,6 +271,16 @@ export class PrismaClient<
     * ```
     */
   get ext_daily_stock_v2(): Prisma.ext_daily_stock_v2Delegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.ext_mapping_queue`: Exposes CRUD operations for the **ext_mapping_queue** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Ext_mapping_queues
+    * const ext_mapping_queues = await prisma.ext_mapping_queue.findMany()
+    * ```
+    */
+  get ext_mapping_queue(): Prisma.ext_mapping_queueDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -715,7 +730,8 @@ export namespace Prisma {
     ext_synclog: 'ext_synclog',
     ext_tonghop: 'ext_tonghop',
     ext_sanpham_dictionary: 'ext_sanpham_dictionary',
-    ext_daily_stock_v2: 'ext_daily_stock_v2'
+    ext_daily_stock_v2: 'ext_daily_stock_v2',
+    ext_mapping_queue: 'ext_mapping_queue'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -734,7 +750,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "ext_congty" | "ext_listhoadon" | "ext_detailhoadon" | "ext_sanphamhoadon" | "ext_apiconfig" | "ext_synclog" | "ext_tonghop" | "ext_sanpham_dictionary" | "ext_daily_stock_v2"
+      modelProps: "ext_congty" | "ext_listhoadon" | "ext_detailhoadon" | "ext_sanphamhoadon" | "ext_apiconfig" | "ext_synclog" | "ext_tonghop" | "ext_sanpham_dictionary" | "ext_daily_stock_v2" | "ext_mapping_queue"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1404,6 +1420,80 @@ export namespace Prisma {
           }
         }
       }
+      ext_mapping_queue: {
+        payload: Prisma.$ext_mapping_queuePayload<ExtArgs>
+        fields: Prisma.ext_mapping_queueFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.ext_mapping_queueFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ext_mapping_queuePayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.ext_mapping_queueFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ext_mapping_queuePayload>
+          }
+          findFirst: {
+            args: Prisma.ext_mapping_queueFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ext_mapping_queuePayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.ext_mapping_queueFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ext_mapping_queuePayload>
+          }
+          findMany: {
+            args: Prisma.ext_mapping_queueFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ext_mapping_queuePayload>[]
+          }
+          create: {
+            args: Prisma.ext_mapping_queueCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ext_mapping_queuePayload>
+          }
+          createMany: {
+            args: Prisma.ext_mapping_queueCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.ext_mapping_queueCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ext_mapping_queuePayload>[]
+          }
+          delete: {
+            args: Prisma.ext_mapping_queueDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ext_mapping_queuePayload>
+          }
+          update: {
+            args: Prisma.ext_mapping_queueUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ext_mapping_queuePayload>
+          }
+          deleteMany: {
+            args: Prisma.ext_mapping_queueDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.ext_mapping_queueUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.ext_mapping_queueUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ext_mapping_queuePayload>[]
+          }
+          upsert: {
+            args: Prisma.ext_mapping_queueUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ext_mapping_queuePayload>
+          }
+          aggregate: {
+            args: Prisma.Ext_mapping_queueAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateExt_mapping_queue>
+          }
+          groupBy: {
+            args: Prisma.ext_mapping_queueGroupByArgs<ExtArgs>
+            result: $Utils.Optional<Ext_mapping_queueGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.ext_mapping_queueCountArgs<ExtArgs>
+            result: $Utils.Optional<Ext_mapping_queueCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -1509,6 +1599,7 @@ export namespace Prisma {
     ext_tonghop?: ext_tonghopOmit
     ext_sanpham_dictionary?: ext_sanpham_dictionaryOmit
     ext_daily_stock_v2?: ext_daily_stock_v2Omit
+    ext_mapping_queue?: ext_mapping_queueOmit
   }
 
   /* Types for Logging */
@@ -13100,6 +13191,1100 @@ export namespace Prisma {
 
 
   /**
+   * Model ext_mapping_queue
+   */
+
+  export type AggregateExt_mapping_queue = {
+    _count: Ext_mapping_queueCountAggregateOutputType | null
+    _avg: Ext_mapping_queueAvgAggregateOutputType | null
+    _sum: Ext_mapping_queueSumAggregateOutputType | null
+    _min: Ext_mapping_queueMinAggregateOutputType | null
+    _max: Ext_mapping_queueMaxAggregateOutputType | null
+  }
+
+  export type Ext_mapping_queueAvgAggregateOutputType = {
+    aiConfidence: number | null
+  }
+
+  export type Ext_mapping_queueSumAggregateOutputType = {
+    aiConfidence: number | null
+  }
+
+  export type Ext_mapping_queueMinAggregateOutputType = {
+    id: string | null
+    tenGoc: string | null
+    dvtGoc: string | null
+    aiSuggestedName: string | null
+    aiConfidence: number | null
+    aiReasoning: string | null
+    status: string | null
+    congtyId: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type Ext_mapping_queueMaxAggregateOutputType = {
+    id: string | null
+    tenGoc: string | null
+    dvtGoc: string | null
+    aiSuggestedName: string | null
+    aiConfidence: number | null
+    aiReasoning: string | null
+    status: string | null
+    congtyId: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type Ext_mapping_queueCountAggregateOutputType = {
+    id: number
+    tenGoc: number
+    dvtGoc: number
+    aiSuggestedName: number
+    aiConfidence: number
+    aiReasoning: number
+    status: number
+    congtyId: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type Ext_mapping_queueAvgAggregateInputType = {
+    aiConfidence?: true
+  }
+
+  export type Ext_mapping_queueSumAggregateInputType = {
+    aiConfidence?: true
+  }
+
+  export type Ext_mapping_queueMinAggregateInputType = {
+    id?: true
+    tenGoc?: true
+    dvtGoc?: true
+    aiSuggestedName?: true
+    aiConfidence?: true
+    aiReasoning?: true
+    status?: true
+    congtyId?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type Ext_mapping_queueMaxAggregateInputType = {
+    id?: true
+    tenGoc?: true
+    dvtGoc?: true
+    aiSuggestedName?: true
+    aiConfidence?: true
+    aiReasoning?: true
+    status?: true
+    congtyId?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type Ext_mapping_queueCountAggregateInputType = {
+    id?: true
+    tenGoc?: true
+    dvtGoc?: true
+    aiSuggestedName?: true
+    aiConfidence?: true
+    aiReasoning?: true
+    status?: true
+    congtyId?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type Ext_mapping_queueAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ext_mapping_queue to aggregate.
+     */
+    where?: ext_mapping_queueWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ext_mapping_queues to fetch.
+     */
+    orderBy?: ext_mapping_queueOrderByWithRelationInput | ext_mapping_queueOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: ext_mapping_queueWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ext_mapping_queues from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ext_mapping_queues.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned ext_mapping_queues
+    **/
+    _count?: true | Ext_mapping_queueCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: Ext_mapping_queueAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: Ext_mapping_queueSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: Ext_mapping_queueMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: Ext_mapping_queueMaxAggregateInputType
+  }
+
+  export type GetExt_mapping_queueAggregateType<T extends Ext_mapping_queueAggregateArgs> = {
+        [P in keyof T & keyof AggregateExt_mapping_queue]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateExt_mapping_queue[P]>
+      : GetScalarType<T[P], AggregateExt_mapping_queue[P]>
+  }
+
+
+
+
+  export type ext_mapping_queueGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ext_mapping_queueWhereInput
+    orderBy?: ext_mapping_queueOrderByWithAggregationInput | ext_mapping_queueOrderByWithAggregationInput[]
+    by: Ext_mapping_queueScalarFieldEnum[] | Ext_mapping_queueScalarFieldEnum
+    having?: ext_mapping_queueScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: Ext_mapping_queueCountAggregateInputType | true
+    _avg?: Ext_mapping_queueAvgAggregateInputType
+    _sum?: Ext_mapping_queueSumAggregateInputType
+    _min?: Ext_mapping_queueMinAggregateInputType
+    _max?: Ext_mapping_queueMaxAggregateInputType
+  }
+
+  export type Ext_mapping_queueGroupByOutputType = {
+    id: string
+    tenGoc: string
+    dvtGoc: string | null
+    aiSuggestedName: string | null
+    aiConfidence: number | null
+    aiReasoning: string | null
+    status: string
+    congtyId: string | null
+    createdAt: Date
+    updatedAt: Date
+    _count: Ext_mapping_queueCountAggregateOutputType | null
+    _avg: Ext_mapping_queueAvgAggregateOutputType | null
+    _sum: Ext_mapping_queueSumAggregateOutputType | null
+    _min: Ext_mapping_queueMinAggregateOutputType | null
+    _max: Ext_mapping_queueMaxAggregateOutputType | null
+  }
+
+  type GetExt_mapping_queueGroupByPayload<T extends ext_mapping_queueGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<Ext_mapping_queueGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof Ext_mapping_queueGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], Ext_mapping_queueGroupByOutputType[P]>
+            : GetScalarType<T[P], Ext_mapping_queueGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type ext_mapping_queueSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    tenGoc?: boolean
+    dvtGoc?: boolean
+    aiSuggestedName?: boolean
+    aiConfidence?: boolean
+    aiReasoning?: boolean
+    status?: boolean
+    congtyId?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["ext_mapping_queue"]>
+
+  export type ext_mapping_queueSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    tenGoc?: boolean
+    dvtGoc?: boolean
+    aiSuggestedName?: boolean
+    aiConfidence?: boolean
+    aiReasoning?: boolean
+    status?: boolean
+    congtyId?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["ext_mapping_queue"]>
+
+  export type ext_mapping_queueSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    tenGoc?: boolean
+    dvtGoc?: boolean
+    aiSuggestedName?: boolean
+    aiConfidence?: boolean
+    aiReasoning?: boolean
+    status?: boolean
+    congtyId?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["ext_mapping_queue"]>
+
+  export type ext_mapping_queueSelectScalar = {
+    id?: boolean
+    tenGoc?: boolean
+    dvtGoc?: boolean
+    aiSuggestedName?: boolean
+    aiConfidence?: boolean
+    aiReasoning?: boolean
+    status?: boolean
+    congtyId?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type ext_mapping_queueOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "tenGoc" | "dvtGoc" | "aiSuggestedName" | "aiConfidence" | "aiReasoning" | "status" | "congtyId" | "createdAt" | "updatedAt", ExtArgs["result"]["ext_mapping_queue"]>
+
+  export type $ext_mapping_queuePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "ext_mapping_queue"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      tenGoc: string
+      dvtGoc: string | null
+      aiSuggestedName: string | null
+      aiConfidence: number | null
+      aiReasoning: string | null
+      status: string
+      congtyId: string | null
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["ext_mapping_queue"]>
+    composites: {}
+  }
+
+  type ext_mapping_queueGetPayload<S extends boolean | null | undefined | ext_mapping_queueDefaultArgs> = $Result.GetResult<Prisma.$ext_mapping_queuePayload, S>
+
+  type ext_mapping_queueCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<ext_mapping_queueFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: Ext_mapping_queueCountAggregateInputType | true
+    }
+
+  export interface ext_mapping_queueDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['ext_mapping_queue'], meta: { name: 'ext_mapping_queue' } }
+    /**
+     * Find zero or one Ext_mapping_queue that matches the filter.
+     * @param {ext_mapping_queueFindUniqueArgs} args - Arguments to find a Ext_mapping_queue
+     * @example
+     * // Get one Ext_mapping_queue
+     * const ext_mapping_queue = await prisma.ext_mapping_queue.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends ext_mapping_queueFindUniqueArgs>(args: SelectSubset<T, ext_mapping_queueFindUniqueArgs<ExtArgs>>): Prisma__ext_mapping_queueClient<$Result.GetResult<Prisma.$ext_mapping_queuePayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one Ext_mapping_queue that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {ext_mapping_queueFindUniqueOrThrowArgs} args - Arguments to find a Ext_mapping_queue
+     * @example
+     * // Get one Ext_mapping_queue
+     * const ext_mapping_queue = await prisma.ext_mapping_queue.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends ext_mapping_queueFindUniqueOrThrowArgs>(args: SelectSubset<T, ext_mapping_queueFindUniqueOrThrowArgs<ExtArgs>>): Prisma__ext_mapping_queueClient<$Result.GetResult<Prisma.$ext_mapping_queuePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Ext_mapping_queue that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ext_mapping_queueFindFirstArgs} args - Arguments to find a Ext_mapping_queue
+     * @example
+     * // Get one Ext_mapping_queue
+     * const ext_mapping_queue = await prisma.ext_mapping_queue.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends ext_mapping_queueFindFirstArgs>(args?: SelectSubset<T, ext_mapping_queueFindFirstArgs<ExtArgs>>): Prisma__ext_mapping_queueClient<$Result.GetResult<Prisma.$ext_mapping_queuePayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Ext_mapping_queue that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ext_mapping_queueFindFirstOrThrowArgs} args - Arguments to find a Ext_mapping_queue
+     * @example
+     * // Get one Ext_mapping_queue
+     * const ext_mapping_queue = await prisma.ext_mapping_queue.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends ext_mapping_queueFindFirstOrThrowArgs>(args?: SelectSubset<T, ext_mapping_queueFindFirstOrThrowArgs<ExtArgs>>): Prisma__ext_mapping_queueClient<$Result.GetResult<Prisma.$ext_mapping_queuePayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more Ext_mapping_queues that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ext_mapping_queueFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all Ext_mapping_queues
+     * const ext_mapping_queues = await prisma.ext_mapping_queue.findMany()
+     * 
+     * // Get first 10 Ext_mapping_queues
+     * const ext_mapping_queues = await prisma.ext_mapping_queue.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const ext_mapping_queueWithIdOnly = await prisma.ext_mapping_queue.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends ext_mapping_queueFindManyArgs>(args?: SelectSubset<T, ext_mapping_queueFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ext_mapping_queuePayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a Ext_mapping_queue.
+     * @param {ext_mapping_queueCreateArgs} args - Arguments to create a Ext_mapping_queue.
+     * @example
+     * // Create one Ext_mapping_queue
+     * const Ext_mapping_queue = await prisma.ext_mapping_queue.create({
+     *   data: {
+     *     // ... data to create a Ext_mapping_queue
+     *   }
+     * })
+     * 
+     */
+    create<T extends ext_mapping_queueCreateArgs>(args: SelectSubset<T, ext_mapping_queueCreateArgs<ExtArgs>>): Prisma__ext_mapping_queueClient<$Result.GetResult<Prisma.$ext_mapping_queuePayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many Ext_mapping_queues.
+     * @param {ext_mapping_queueCreateManyArgs} args - Arguments to create many Ext_mapping_queues.
+     * @example
+     * // Create many Ext_mapping_queues
+     * const ext_mapping_queue = await prisma.ext_mapping_queue.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends ext_mapping_queueCreateManyArgs>(args?: SelectSubset<T, ext_mapping_queueCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many Ext_mapping_queues and returns the data saved in the database.
+     * @param {ext_mapping_queueCreateManyAndReturnArgs} args - Arguments to create many Ext_mapping_queues.
+     * @example
+     * // Create many Ext_mapping_queues
+     * const ext_mapping_queue = await prisma.ext_mapping_queue.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many Ext_mapping_queues and only return the `id`
+     * const ext_mapping_queueWithIdOnly = await prisma.ext_mapping_queue.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends ext_mapping_queueCreateManyAndReturnArgs>(args?: SelectSubset<T, ext_mapping_queueCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ext_mapping_queuePayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a Ext_mapping_queue.
+     * @param {ext_mapping_queueDeleteArgs} args - Arguments to delete one Ext_mapping_queue.
+     * @example
+     * // Delete one Ext_mapping_queue
+     * const Ext_mapping_queue = await prisma.ext_mapping_queue.delete({
+     *   where: {
+     *     // ... filter to delete one Ext_mapping_queue
+     *   }
+     * })
+     * 
+     */
+    delete<T extends ext_mapping_queueDeleteArgs>(args: SelectSubset<T, ext_mapping_queueDeleteArgs<ExtArgs>>): Prisma__ext_mapping_queueClient<$Result.GetResult<Prisma.$ext_mapping_queuePayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one Ext_mapping_queue.
+     * @param {ext_mapping_queueUpdateArgs} args - Arguments to update one Ext_mapping_queue.
+     * @example
+     * // Update one Ext_mapping_queue
+     * const ext_mapping_queue = await prisma.ext_mapping_queue.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends ext_mapping_queueUpdateArgs>(args: SelectSubset<T, ext_mapping_queueUpdateArgs<ExtArgs>>): Prisma__ext_mapping_queueClient<$Result.GetResult<Prisma.$ext_mapping_queuePayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more Ext_mapping_queues.
+     * @param {ext_mapping_queueDeleteManyArgs} args - Arguments to filter Ext_mapping_queues to delete.
+     * @example
+     * // Delete a few Ext_mapping_queues
+     * const { count } = await prisma.ext_mapping_queue.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends ext_mapping_queueDeleteManyArgs>(args?: SelectSubset<T, ext_mapping_queueDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Ext_mapping_queues.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ext_mapping_queueUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many Ext_mapping_queues
+     * const ext_mapping_queue = await prisma.ext_mapping_queue.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends ext_mapping_queueUpdateManyArgs>(args: SelectSubset<T, ext_mapping_queueUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Ext_mapping_queues and returns the data updated in the database.
+     * @param {ext_mapping_queueUpdateManyAndReturnArgs} args - Arguments to update many Ext_mapping_queues.
+     * @example
+     * // Update many Ext_mapping_queues
+     * const ext_mapping_queue = await prisma.ext_mapping_queue.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more Ext_mapping_queues and only return the `id`
+     * const ext_mapping_queueWithIdOnly = await prisma.ext_mapping_queue.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends ext_mapping_queueUpdateManyAndReturnArgs>(args: SelectSubset<T, ext_mapping_queueUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ext_mapping_queuePayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one Ext_mapping_queue.
+     * @param {ext_mapping_queueUpsertArgs} args - Arguments to update or create a Ext_mapping_queue.
+     * @example
+     * // Update or create a Ext_mapping_queue
+     * const ext_mapping_queue = await prisma.ext_mapping_queue.upsert({
+     *   create: {
+     *     // ... data to create a Ext_mapping_queue
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the Ext_mapping_queue we want to update
+     *   }
+     * })
+     */
+    upsert<T extends ext_mapping_queueUpsertArgs>(args: SelectSubset<T, ext_mapping_queueUpsertArgs<ExtArgs>>): Prisma__ext_mapping_queueClient<$Result.GetResult<Prisma.$ext_mapping_queuePayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of Ext_mapping_queues.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ext_mapping_queueCountArgs} args - Arguments to filter Ext_mapping_queues to count.
+     * @example
+     * // Count the number of Ext_mapping_queues
+     * const count = await prisma.ext_mapping_queue.count({
+     *   where: {
+     *     // ... the filter for the Ext_mapping_queues we want to count
+     *   }
+     * })
+    **/
+    count<T extends ext_mapping_queueCountArgs>(
+      args?: Subset<T, ext_mapping_queueCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], Ext_mapping_queueCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a Ext_mapping_queue.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {Ext_mapping_queueAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends Ext_mapping_queueAggregateArgs>(args: Subset<T, Ext_mapping_queueAggregateArgs>): Prisma.PrismaPromise<GetExt_mapping_queueAggregateType<T>>
+
+    /**
+     * Group by Ext_mapping_queue.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ext_mapping_queueGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends ext_mapping_queueGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: ext_mapping_queueGroupByArgs['orderBy'] }
+        : { orderBy?: ext_mapping_queueGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, ext_mapping_queueGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetExt_mapping_queueGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the ext_mapping_queue model
+   */
+  readonly fields: ext_mapping_queueFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for ext_mapping_queue.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__ext_mapping_queueClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the ext_mapping_queue model
+   */
+  interface ext_mapping_queueFieldRefs {
+    readonly id: FieldRef<"ext_mapping_queue", 'String'>
+    readonly tenGoc: FieldRef<"ext_mapping_queue", 'String'>
+    readonly dvtGoc: FieldRef<"ext_mapping_queue", 'String'>
+    readonly aiSuggestedName: FieldRef<"ext_mapping_queue", 'String'>
+    readonly aiConfidence: FieldRef<"ext_mapping_queue", 'Float'>
+    readonly aiReasoning: FieldRef<"ext_mapping_queue", 'String'>
+    readonly status: FieldRef<"ext_mapping_queue", 'String'>
+    readonly congtyId: FieldRef<"ext_mapping_queue", 'String'>
+    readonly createdAt: FieldRef<"ext_mapping_queue", 'DateTime'>
+    readonly updatedAt: FieldRef<"ext_mapping_queue", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * ext_mapping_queue findUnique
+   */
+  export type ext_mapping_queueFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ext_mapping_queue
+     */
+    select?: ext_mapping_queueSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ext_mapping_queue
+     */
+    omit?: ext_mapping_queueOmit<ExtArgs> | null
+    /**
+     * Filter, which ext_mapping_queue to fetch.
+     */
+    where: ext_mapping_queueWhereUniqueInput
+  }
+
+  /**
+   * ext_mapping_queue findUniqueOrThrow
+   */
+  export type ext_mapping_queueFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ext_mapping_queue
+     */
+    select?: ext_mapping_queueSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ext_mapping_queue
+     */
+    omit?: ext_mapping_queueOmit<ExtArgs> | null
+    /**
+     * Filter, which ext_mapping_queue to fetch.
+     */
+    where: ext_mapping_queueWhereUniqueInput
+  }
+
+  /**
+   * ext_mapping_queue findFirst
+   */
+  export type ext_mapping_queueFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ext_mapping_queue
+     */
+    select?: ext_mapping_queueSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ext_mapping_queue
+     */
+    omit?: ext_mapping_queueOmit<ExtArgs> | null
+    /**
+     * Filter, which ext_mapping_queue to fetch.
+     */
+    where?: ext_mapping_queueWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ext_mapping_queues to fetch.
+     */
+    orderBy?: ext_mapping_queueOrderByWithRelationInput | ext_mapping_queueOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ext_mapping_queues.
+     */
+    cursor?: ext_mapping_queueWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ext_mapping_queues from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ext_mapping_queues.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ext_mapping_queues.
+     */
+    distinct?: Ext_mapping_queueScalarFieldEnum | Ext_mapping_queueScalarFieldEnum[]
+  }
+
+  /**
+   * ext_mapping_queue findFirstOrThrow
+   */
+  export type ext_mapping_queueFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ext_mapping_queue
+     */
+    select?: ext_mapping_queueSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ext_mapping_queue
+     */
+    omit?: ext_mapping_queueOmit<ExtArgs> | null
+    /**
+     * Filter, which ext_mapping_queue to fetch.
+     */
+    where?: ext_mapping_queueWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ext_mapping_queues to fetch.
+     */
+    orderBy?: ext_mapping_queueOrderByWithRelationInput | ext_mapping_queueOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ext_mapping_queues.
+     */
+    cursor?: ext_mapping_queueWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ext_mapping_queues from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ext_mapping_queues.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ext_mapping_queues.
+     */
+    distinct?: Ext_mapping_queueScalarFieldEnum | Ext_mapping_queueScalarFieldEnum[]
+  }
+
+  /**
+   * ext_mapping_queue findMany
+   */
+  export type ext_mapping_queueFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ext_mapping_queue
+     */
+    select?: ext_mapping_queueSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ext_mapping_queue
+     */
+    omit?: ext_mapping_queueOmit<ExtArgs> | null
+    /**
+     * Filter, which ext_mapping_queues to fetch.
+     */
+    where?: ext_mapping_queueWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ext_mapping_queues to fetch.
+     */
+    orderBy?: ext_mapping_queueOrderByWithRelationInput | ext_mapping_queueOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing ext_mapping_queues.
+     */
+    cursor?: ext_mapping_queueWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ext_mapping_queues from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ext_mapping_queues.
+     */
+    skip?: number
+    distinct?: Ext_mapping_queueScalarFieldEnum | Ext_mapping_queueScalarFieldEnum[]
+  }
+
+  /**
+   * ext_mapping_queue create
+   */
+  export type ext_mapping_queueCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ext_mapping_queue
+     */
+    select?: ext_mapping_queueSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ext_mapping_queue
+     */
+    omit?: ext_mapping_queueOmit<ExtArgs> | null
+    /**
+     * The data needed to create a ext_mapping_queue.
+     */
+    data: XOR<ext_mapping_queueCreateInput, ext_mapping_queueUncheckedCreateInput>
+  }
+
+  /**
+   * ext_mapping_queue createMany
+   */
+  export type ext_mapping_queueCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many ext_mapping_queues.
+     */
+    data: ext_mapping_queueCreateManyInput | ext_mapping_queueCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * ext_mapping_queue createManyAndReturn
+   */
+  export type ext_mapping_queueCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ext_mapping_queue
+     */
+    select?: ext_mapping_queueSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the ext_mapping_queue
+     */
+    omit?: ext_mapping_queueOmit<ExtArgs> | null
+    /**
+     * The data used to create many ext_mapping_queues.
+     */
+    data: ext_mapping_queueCreateManyInput | ext_mapping_queueCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * ext_mapping_queue update
+   */
+  export type ext_mapping_queueUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ext_mapping_queue
+     */
+    select?: ext_mapping_queueSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ext_mapping_queue
+     */
+    omit?: ext_mapping_queueOmit<ExtArgs> | null
+    /**
+     * The data needed to update a ext_mapping_queue.
+     */
+    data: XOR<ext_mapping_queueUpdateInput, ext_mapping_queueUncheckedUpdateInput>
+    /**
+     * Choose, which ext_mapping_queue to update.
+     */
+    where: ext_mapping_queueWhereUniqueInput
+  }
+
+  /**
+   * ext_mapping_queue updateMany
+   */
+  export type ext_mapping_queueUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update ext_mapping_queues.
+     */
+    data: XOR<ext_mapping_queueUpdateManyMutationInput, ext_mapping_queueUncheckedUpdateManyInput>
+    /**
+     * Filter which ext_mapping_queues to update
+     */
+    where?: ext_mapping_queueWhereInput
+    /**
+     * Limit how many ext_mapping_queues to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * ext_mapping_queue updateManyAndReturn
+   */
+  export type ext_mapping_queueUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ext_mapping_queue
+     */
+    select?: ext_mapping_queueSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the ext_mapping_queue
+     */
+    omit?: ext_mapping_queueOmit<ExtArgs> | null
+    /**
+     * The data used to update ext_mapping_queues.
+     */
+    data: XOR<ext_mapping_queueUpdateManyMutationInput, ext_mapping_queueUncheckedUpdateManyInput>
+    /**
+     * Filter which ext_mapping_queues to update
+     */
+    where?: ext_mapping_queueWhereInput
+    /**
+     * Limit how many ext_mapping_queues to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * ext_mapping_queue upsert
+   */
+  export type ext_mapping_queueUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ext_mapping_queue
+     */
+    select?: ext_mapping_queueSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ext_mapping_queue
+     */
+    omit?: ext_mapping_queueOmit<ExtArgs> | null
+    /**
+     * The filter to search for the ext_mapping_queue to update in case it exists.
+     */
+    where: ext_mapping_queueWhereUniqueInput
+    /**
+     * In case the ext_mapping_queue found by the `where` argument doesn't exist, create a new ext_mapping_queue with this data.
+     */
+    create: XOR<ext_mapping_queueCreateInput, ext_mapping_queueUncheckedCreateInput>
+    /**
+     * In case the ext_mapping_queue was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<ext_mapping_queueUpdateInput, ext_mapping_queueUncheckedUpdateInput>
+  }
+
+  /**
+   * ext_mapping_queue delete
+   */
+  export type ext_mapping_queueDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ext_mapping_queue
+     */
+    select?: ext_mapping_queueSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ext_mapping_queue
+     */
+    omit?: ext_mapping_queueOmit<ExtArgs> | null
+    /**
+     * Filter which ext_mapping_queue to delete.
+     */
+    where: ext_mapping_queueWhereUniqueInput
+  }
+
+  /**
+   * ext_mapping_queue deleteMany
+   */
+  export type ext_mapping_queueDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ext_mapping_queues to delete
+     */
+    where?: ext_mapping_queueWhereInput
+    /**
+     * Limit how many ext_mapping_queues to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * ext_mapping_queue without action
+   */
+  export type ext_mapping_queueDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ext_mapping_queue
+     */
+    select?: ext_mapping_queueSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ext_mapping_queue
+     */
+    omit?: ext_mapping_queueOmit<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -13319,6 +14504,22 @@ export namespace Prisma {
   };
 
   export type Ext_daily_stock_v2ScalarFieldEnum = (typeof Ext_daily_stock_v2ScalarFieldEnum)[keyof typeof Ext_daily_stock_v2ScalarFieldEnum]
+
+
+  export const Ext_mapping_queueScalarFieldEnum: {
+    id: 'id',
+    tenGoc: 'tenGoc',
+    dvtGoc: 'dvtGoc',
+    aiSuggestedName: 'aiSuggestedName',
+    aiConfidence: 'aiConfidence',
+    aiReasoning: 'aiReasoning',
+    status: 'status',
+    congtyId: 'congtyId',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type Ext_mapping_queueScalarFieldEnum = (typeof Ext_mapping_queueScalarFieldEnum)[keyof typeof Ext_mapping_queueScalarFieldEnum]
 
 
   export const SortOrder: {
@@ -14495,6 +15696,85 @@ export namespace Prisma {
     tonCuoiVal?: DecimalWithAggregatesFilter<"ext_daily_stock_v2"> | Decimal | DecimalJsLike | number | string
     createdAt?: DateTimeWithAggregatesFilter<"ext_daily_stock_v2"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"ext_daily_stock_v2"> | Date | string
+  }
+
+  export type ext_mapping_queueWhereInput = {
+    AND?: ext_mapping_queueWhereInput | ext_mapping_queueWhereInput[]
+    OR?: ext_mapping_queueWhereInput[]
+    NOT?: ext_mapping_queueWhereInput | ext_mapping_queueWhereInput[]
+    id?: StringFilter<"ext_mapping_queue"> | string
+    tenGoc?: StringFilter<"ext_mapping_queue"> | string
+    dvtGoc?: StringNullableFilter<"ext_mapping_queue"> | string | null
+    aiSuggestedName?: StringNullableFilter<"ext_mapping_queue"> | string | null
+    aiConfidence?: FloatNullableFilter<"ext_mapping_queue"> | number | null
+    aiReasoning?: StringNullableFilter<"ext_mapping_queue"> | string | null
+    status?: StringFilter<"ext_mapping_queue"> | string
+    congtyId?: StringNullableFilter<"ext_mapping_queue"> | string | null
+    createdAt?: DateTimeFilter<"ext_mapping_queue"> | Date | string
+    updatedAt?: DateTimeFilter<"ext_mapping_queue"> | Date | string
+  }
+
+  export type ext_mapping_queueOrderByWithRelationInput = {
+    id?: SortOrder
+    tenGoc?: SortOrder
+    dvtGoc?: SortOrderInput | SortOrder
+    aiSuggestedName?: SortOrderInput | SortOrder
+    aiConfidence?: SortOrderInput | SortOrder
+    aiReasoning?: SortOrderInput | SortOrder
+    status?: SortOrder
+    congtyId?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ext_mapping_queueWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    tenGoc?: string
+    AND?: ext_mapping_queueWhereInput | ext_mapping_queueWhereInput[]
+    OR?: ext_mapping_queueWhereInput[]
+    NOT?: ext_mapping_queueWhereInput | ext_mapping_queueWhereInput[]
+    dvtGoc?: StringNullableFilter<"ext_mapping_queue"> | string | null
+    aiSuggestedName?: StringNullableFilter<"ext_mapping_queue"> | string | null
+    aiConfidence?: FloatNullableFilter<"ext_mapping_queue"> | number | null
+    aiReasoning?: StringNullableFilter<"ext_mapping_queue"> | string | null
+    status?: StringFilter<"ext_mapping_queue"> | string
+    congtyId?: StringNullableFilter<"ext_mapping_queue"> | string | null
+    createdAt?: DateTimeFilter<"ext_mapping_queue"> | Date | string
+    updatedAt?: DateTimeFilter<"ext_mapping_queue"> | Date | string
+  }, "id" | "tenGoc">
+
+  export type ext_mapping_queueOrderByWithAggregationInput = {
+    id?: SortOrder
+    tenGoc?: SortOrder
+    dvtGoc?: SortOrderInput | SortOrder
+    aiSuggestedName?: SortOrderInput | SortOrder
+    aiConfidence?: SortOrderInput | SortOrder
+    aiReasoning?: SortOrderInput | SortOrder
+    status?: SortOrder
+    congtyId?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: ext_mapping_queueCountOrderByAggregateInput
+    _avg?: ext_mapping_queueAvgOrderByAggregateInput
+    _max?: ext_mapping_queueMaxOrderByAggregateInput
+    _min?: ext_mapping_queueMinOrderByAggregateInput
+    _sum?: ext_mapping_queueSumOrderByAggregateInput
+  }
+
+  export type ext_mapping_queueScalarWhereWithAggregatesInput = {
+    AND?: ext_mapping_queueScalarWhereWithAggregatesInput | ext_mapping_queueScalarWhereWithAggregatesInput[]
+    OR?: ext_mapping_queueScalarWhereWithAggregatesInput[]
+    NOT?: ext_mapping_queueScalarWhereWithAggregatesInput | ext_mapping_queueScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"ext_mapping_queue"> | string
+    tenGoc?: StringWithAggregatesFilter<"ext_mapping_queue"> | string
+    dvtGoc?: StringNullableWithAggregatesFilter<"ext_mapping_queue"> | string | null
+    aiSuggestedName?: StringNullableWithAggregatesFilter<"ext_mapping_queue"> | string | null
+    aiConfidence?: FloatNullableWithAggregatesFilter<"ext_mapping_queue"> | number | null
+    aiReasoning?: StringNullableWithAggregatesFilter<"ext_mapping_queue"> | string | null
+    status?: StringWithAggregatesFilter<"ext_mapping_queue"> | string
+    congtyId?: StringNullableWithAggregatesFilter<"ext_mapping_queue"> | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"ext_mapping_queue"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"ext_mapping_queue"> | Date | string
   }
 
   export type ext_congtyCreateInput = {
@@ -15782,6 +17062,97 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type ext_mapping_queueCreateInput = {
+    id?: string
+    tenGoc: string
+    dvtGoc?: string | null
+    aiSuggestedName?: string | null
+    aiConfidence?: number | null
+    aiReasoning?: string | null
+    status?: string
+    congtyId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ext_mapping_queueUncheckedCreateInput = {
+    id?: string
+    tenGoc: string
+    dvtGoc?: string | null
+    aiSuggestedName?: string | null
+    aiConfidence?: number | null
+    aiReasoning?: string | null
+    status?: string
+    congtyId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ext_mapping_queueUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenGoc?: StringFieldUpdateOperationsInput | string
+    dvtGoc?: NullableStringFieldUpdateOperationsInput | string | null
+    aiSuggestedName?: NullableStringFieldUpdateOperationsInput | string | null
+    aiConfidence?: NullableFloatFieldUpdateOperationsInput | number | null
+    aiReasoning?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    congtyId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ext_mapping_queueUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenGoc?: StringFieldUpdateOperationsInput | string
+    dvtGoc?: NullableStringFieldUpdateOperationsInput | string | null
+    aiSuggestedName?: NullableStringFieldUpdateOperationsInput | string | null
+    aiConfidence?: NullableFloatFieldUpdateOperationsInput | number | null
+    aiReasoning?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    congtyId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ext_mapping_queueCreateManyInput = {
+    id?: string
+    tenGoc: string
+    dvtGoc?: string | null
+    aiSuggestedName?: string | null
+    aiConfidence?: number | null
+    aiReasoning?: string | null
+    status?: string
+    congtyId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ext_mapping_queueUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenGoc?: StringFieldUpdateOperationsInput | string
+    dvtGoc?: NullableStringFieldUpdateOperationsInput | string | null
+    aiSuggestedName?: NullableStringFieldUpdateOperationsInput | string | null
+    aiConfidence?: NullableFloatFieldUpdateOperationsInput | number | null
+    aiReasoning?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    congtyId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ext_mapping_queueUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenGoc?: StringFieldUpdateOperationsInput | string
+    dvtGoc?: NullableStringFieldUpdateOperationsInput | string | null
+    aiSuggestedName?: NullableStringFieldUpdateOperationsInput | string | null
+    aiConfidence?: NullableFloatFieldUpdateOperationsInput | number | null
+    aiReasoning?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    congtyId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type StringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -16733,6 +18104,80 @@ export namespace Prisma {
     tonCuoiVal?: SortOrder
   }
 
+  export type FloatNullableFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatNullableFilter<$PrismaModel> | number | null
+  }
+
+  export type ext_mapping_queueCountOrderByAggregateInput = {
+    id?: SortOrder
+    tenGoc?: SortOrder
+    dvtGoc?: SortOrder
+    aiSuggestedName?: SortOrder
+    aiConfidence?: SortOrder
+    aiReasoning?: SortOrder
+    status?: SortOrder
+    congtyId?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ext_mapping_queueAvgOrderByAggregateInput = {
+    aiConfidence?: SortOrder
+  }
+
+  export type ext_mapping_queueMaxOrderByAggregateInput = {
+    id?: SortOrder
+    tenGoc?: SortOrder
+    dvtGoc?: SortOrder
+    aiSuggestedName?: SortOrder
+    aiConfidence?: SortOrder
+    aiReasoning?: SortOrder
+    status?: SortOrder
+    congtyId?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ext_mapping_queueMinOrderByAggregateInput = {
+    id?: SortOrder
+    tenGoc?: SortOrder
+    dvtGoc?: SortOrder
+    aiSuggestedName?: SortOrder
+    aiConfidence?: SortOrder
+    aiReasoning?: SortOrder
+    status?: SortOrder
+    congtyId?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ext_mapping_queueSumOrderByAggregateInput = {
+    aiConfidence?: SortOrder
+  }
+
+  export type FloatNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatNullableWithAggregatesFilter<$PrismaModel> | number | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedFloatNullableFilter<$PrismaModel>
+    _sum?: NestedFloatNullableFilter<$PrismaModel>
+    _min?: NestedFloatNullableFilter<$PrismaModel>
+    _max?: NestedFloatNullableFilter<$PrismaModel>
+  }
+
   export type ext_apiconfigCreateNestedManyWithoutCongtyInput = {
     create?: XOR<ext_apiconfigCreateWithoutCongtyInput, ext_apiconfigUncheckedCreateWithoutCongtyInput> | ext_apiconfigCreateWithoutCongtyInput[] | ext_apiconfigUncheckedCreateWithoutCongtyInput[]
     connectOrCreate?: ext_apiconfigCreateOrConnectWithoutCongtyInput | ext_apiconfigCreateOrConnectWithoutCongtyInput[]
@@ -17120,6 +18565,14 @@ export namespace Prisma {
     push?: string | string[]
   }
 
+  export type NullableFloatFieldUpdateOperationsInput = {
+    set?: number | null
+    increment?: number
+    decrement?: number
+    multiply?: number
+    divide?: number
+  }
+
   export type NestedStringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -17319,6 +18772,33 @@ export namespace Prisma {
     _count?: NestedIntNullableFilter<$PrismaModel>
     _min?: NestedDateTimeNullableFilter<$PrismaModel>
     _max?: NestedDateTimeNullableFilter<$PrismaModel>
+  }
+
+  export type NestedFloatNullableFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatNullableFilter<$PrismaModel> | number | null
+  }
+
+  export type NestedFloatNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatNullableWithAggregatesFilter<$PrismaModel> | number | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedFloatNullableFilter<$PrismaModel>
+    _sum?: NestedFloatNullableFilter<$PrismaModel>
+    _min?: NestedFloatNullableFilter<$PrismaModel>
+    _max?: NestedFloatNullableFilter<$PrismaModel>
   }
 
   export type ext_apiconfigCreateWithoutCongtyInput = {

@@ -6,6 +6,7 @@
 
 import prisma from '@/app/lib/prisma'
 import { Decimal } from '@prisma/client/runtime/library'
+import { pushToMappingQueue } from './rag-worker.service'
 
 // ============================================================================
 // Types
@@ -154,6 +155,8 @@ export async function syncTongHop(options: TongHopSyncOptions = {}): Promise<Ton
     const dictMap = new Map<string, any>()
     dictionary.forEach((d: any) => dictMap.set(d.tenGoc, d))
 
+    const unknownItems: { tenGoc: string, dvtGoc: string | null }[] = []
+
     // Xử lý từng chi tiết
     let index = await prisma.ext_tonghop.count()
     
@@ -258,11 +261,21 @@ export async function syncTongHop(options: TongHopSyncOptions = {}): Promise<Ton
           await prisma.ext_tonghop.create({ data })
           inserted++
         }
+
+        // Đẩy mặt hàng chưa xác định vào danh sách chờ
+        if (!dictMap.has(detail.ten)) {
+          unknownItems.push({ tenGoc: detail.ten, dvtGoc: detail.dvtinh })
+        }
       } catch (err) {
         const errorMsg = `Lỗi xử lý detail ${detail.idServer}: ${err instanceof Error ? err.message : 'Unknown'}`
         errors.push(errorMsg)
         console.error(errorMsg)
       }
+    }
+
+    // Đẩy các mặt hàng vào hàng đợi AI HITL để xử lý nền
+    if (unknownItems.length > 0) {
+      pushToMappingQueue(unknownItems).catch(console.error);
     }
 
     return {
