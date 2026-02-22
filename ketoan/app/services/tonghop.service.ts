@@ -151,11 +151,12 @@ export async function syncTongHop(options: TongHopSyncOptions = {}): Promise<Ton
     )
 
     // Lấy từ điển chuẩn hóa để map tự động
-    const dictionary = await (prisma as any).ext_sanpham_dictionary.findMany()
+    const dictWhere = congtyId ? { congtyId } : undefined;
+    const dictionary = await (prisma as any).ext_sanpham_dictionary.findMany({ where: dictWhere })
     const dictMap = new Map<string, any>()
-    dictionary.forEach((d: any) => dictMap.set(d.tenGoc, d))
+    dictionary.forEach((d: any) => dictMap.set(`${d.congtyId || 'NULL'}||${d.tenGoc}`, d))
 
-    const unknownItems: { tenGoc: string, dvtGoc: string | null }[] = []
+    const unknownItems: { tenGoc: string, dvtGoc: string | null, congtyId: string | null }[] = []
 
     // Xử lý từng chi tiết
     let index = await prisma.ext_tonghop.count()
@@ -216,9 +217,9 @@ export async function syncTongHop(options: TongHopSyncOptions = {}): Promise<Ton
           // Chi tiết hàng hóa
           stt: detail.stt,
           tenHang: detail.ten,
-          tenHangChuan: dictMap.get(detail.ten)?.tenChuan || tenHangChuan,
-          maHang: dictMap.get(detail.ten)?.maHang || sinhMaHang(detail.ten, ++index),
-          nhomHang: dictMap.get(detail.ten)?.nhomHang || null,
+          tenHangChuan: dictMap.get(`${congty?.id || 'NULL'}||${detail.ten}`)?.tenChuan || tenHangChuan,
+          maHang: dictMap.get(`${congty?.id || 'NULL'}||${detail.ten}`)?.maHang || sinhMaHang(detail.ten, ++index),
+          nhomHang: dictMap.get(`${congty?.id || 'NULL'}||${detail.ten}`)?.nhomHang || null,
           dvtinh: detail.dvtinh,
           
           // Số liệu
@@ -263,8 +264,8 @@ export async function syncTongHop(options: TongHopSyncOptions = {}): Promise<Ton
         }
 
         // Đẩy mặt hàng chưa xác định vào danh sách chờ
-        if (!dictMap.has(detail.ten)) {
-          unknownItems.push({ tenGoc: detail.ten, dvtGoc: detail.dvtinh })
+        if (!dictMap.has(`${congty?.id || 'NULL'}||${detail.ten}`)) {
+          unknownItems.push({ tenGoc: detail.ten, dvtGoc: detail.dvtinh, congtyId: congty?.id || null })
         }
       } catch (err) {
         const errorMsg = `Lỗi xử lý detail ${detail.idServer}: ${err instanceof Error ? err.message : 'Unknown'}`

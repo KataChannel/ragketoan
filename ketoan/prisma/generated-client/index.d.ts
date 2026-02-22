@@ -15540,10 +15540,11 @@ export namespace Prisma {
 
   export type ext_sanpham_dictionaryWhereUniqueInput = Prisma.AtLeast<{
     id?: string
-    tenGoc?: string
+    congtyId_tenGoc?: ext_sanpham_dictionaryCongtyIdTenGocCompoundUniqueInput
     AND?: ext_sanpham_dictionaryWhereInput | ext_sanpham_dictionaryWhereInput[]
     OR?: ext_sanpham_dictionaryWhereInput[]
     NOT?: ext_sanpham_dictionaryWhereInput | ext_sanpham_dictionaryWhereInput[]
+    tenGoc?: StringFilter<"ext_sanpham_dictionary"> | string
     tenChuan?: StringFilter<"ext_sanpham_dictionary"> | string
     maHang?: StringNullableFilter<"ext_sanpham_dictionary"> | string | null
     nhomHang?: StringNullableFilter<"ext_sanpham_dictionary"> | string | null
@@ -15552,7 +15553,7 @@ export namespace Prisma {
     frequency?: IntFilter<"ext_sanpham_dictionary"> | number
     createdAt?: DateTimeFilter<"ext_sanpham_dictionary"> | Date | string
     updatedAt?: DateTimeFilter<"ext_sanpham_dictionary"> | Date | string
-  }, "id" | "tenGoc">
+  }, "id" | "congtyId_tenGoc">
 
   export type ext_sanpham_dictionaryOrderByWithAggregationInput = {
     id?: SortOrder
@@ -15729,10 +15730,11 @@ export namespace Prisma {
 
   export type ext_mapping_queueWhereUniqueInput = Prisma.AtLeast<{
     id?: string
-    tenGoc?: string
+    congtyId_tenGoc?: ext_mapping_queueCongtyIdTenGocCompoundUniqueInput
     AND?: ext_mapping_queueWhereInput | ext_mapping_queueWhereInput[]
     OR?: ext_mapping_queueWhereInput[]
     NOT?: ext_mapping_queueWhereInput | ext_mapping_queueWhereInput[]
+    tenGoc?: StringFilter<"ext_mapping_queue"> | string
     dvtGoc?: StringNullableFilter<"ext_mapping_queue"> | string | null
     aiSuggestedName?: StringNullableFilter<"ext_mapping_queue"> | string | null
     aiConfidence?: FloatNullableFilter<"ext_mapping_queue"> | number | null
@@ -15741,7 +15743,7 @@ export namespace Prisma {
     congtyId?: StringNullableFilter<"ext_mapping_queue"> | string | null
     createdAt?: DateTimeFilter<"ext_mapping_queue"> | Date | string
     updatedAt?: DateTimeFilter<"ext_mapping_queue"> | Date | string
-  }, "id" | "tenGoc">
+  }, "id" | "congtyId_tenGoc">
 
   export type ext_mapping_queueOrderByWithAggregationInput = {
     id?: SortOrder
@@ -17972,6 +17974,11 @@ export namespace Prisma {
     quy?: SortOrder
   }
 
+  export type ext_sanpham_dictionaryCongtyIdTenGocCompoundUniqueInput = {
+    congtyId: string
+    tenGoc: string
+  }
+
   export type ext_sanpham_dictionaryCountOrderByAggregateInput = {
     id?: SortOrder
     tenGoc?: SortOrder
@@ -18113,6 +18120,11 @@ export namespace Prisma {
     gt?: number | FloatFieldRefInput<$PrismaModel>
     gte?: number | FloatFieldRefInput<$PrismaModel>
     not?: NestedFloatNullableFilter<$PrismaModel> | number | null
+  }
+
+  export type ext_mapping_queueCongtyIdTenGocCompoundUniqueInput = {
+    congtyId: string
+    tenGoc: string
   }
 
   export type ext_mapping_queueCountOrderByAggregateInput = {

@@ -11,6 +11,9 @@ import { toast } from 'sonner'
 
 export default function AiMappingQueuePage() {
     const [items, setItems] = useState<any[]>([])
+    const [companies, setCompanies] = useState<any[]>([])
+    const [selectedCompanyId, setSelectedCompanyId] = useState<string>('all')
+    const [isScanning, setIsScanning] = useState(false)
     const [loading, setLoading] = useState(true)
     const [customInputs, setCustomInputs] = useState<Record<string, { tenChuan: string, maHang: string, dvt: string }>>({})
 
@@ -29,9 +32,44 @@ export default function AiMappingQueuePage() {
         }
     }
 
+    const fetchCompanies = async () => {
+        try {
+            const res = await fetch('/api/congty');
+            const data = await res.json();
+            if (data.success) setCompanies(data.data);
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
     useEffect(() => {
+        fetchCompanies()
         fetchQueue()
     }, [])
+
+    const handleScanExisting = async () => {
+        if (!confirm('Bạn có chắc muốn tự động quét lại toàn bộ lịch sử mặt hàng từ 01/01/2023? AI sẽ mất vài phút để học và xử lý.')) return;
+        setIsScanning(true);
+        const toastId = toast.loading('Đang quét hóa đơn cũ và đẩy vào Agent...');
+        try {
+            const res = await fetch('/api/ai-mapping-queue/scan-existing', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ congtyId: selectedCompanyId })
+            });
+            const data = await res.json();
+            if (data.success) {
+                toast.success(data.message, { id: toastId });
+                fetchQueue();
+            } else {
+                toast.error(data.error || 'Lỗi quét dữ liệu', { id: toastId });
+            }
+        } catch (err) {
+            toast.error('Lỗi kết nối API', { id: toastId });
+        } finally {
+            setIsScanning(false);
+        }
+    }
 
     const handleAction = async (id: string, action: 'APPROVE' | 'REJECT') => {
         try {
@@ -79,9 +117,24 @@ export default function AiMappingQueuePage() {
                             Danh sách mặt hàng mới xuất hiện trên hóa đơn mà trí tuệ nhân tạo (AI) không đủ độ tự tin để tự động ánh xạ. Vui lòng kiểm tra và duyệt thủ công. Các mặt hàng "Mới hoàn toàn" nên được Tùy chỉnh Mã/Tên thay vì dùng Đề xuất nếu Đề xuất sai.
                         </p>
                     </div>
-                    <Button onClick={fetchQueue} variant="outline" className="border-slate-700 bg-slate-800 text-slate-200">
-                        <RefreshCw className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`} /> Làm mới
-                    </Button>
+                    <div className="flex gap-2 items-center">
+                        <select
+                            className="bg-slate-900 border border-slate-700 text-slate-200 text-sm p-2 rounded focus-visible:ring-emerald-500"
+                            value={selectedCompanyId}
+                            onChange={(e) => setSelectedCompanyId(e.target.value)}
+                        >
+                            <option value="all">Tất cả công ty</option>
+                            {companies.map(c => (
+                                <option key={c.id} value={c.id}>{c.tenVietTat || c.ten}</option>
+                            ))}
+                        </select>
+                        <Button onClick={handleScanExisting} disabled={isScanning} className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold shadow-md">
+                            Quét Lịch Sử (Từ 2023)
+                        </Button>
+                        <Button onClick={fetchQueue} variant="outline" className="border-slate-700 bg-slate-800 text-slate-200">
+                            <RefreshCw className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`} /> Làm mới
+                        </Button>
+                    </div>
                 </div>
 
                 {loading ? (
