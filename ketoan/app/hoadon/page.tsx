@@ -524,7 +524,7 @@ export default function HoaDonPage() {
     try {
       const params = new URLSearchParams({
         loaihd: invoiceType,
-        pageSize: '1000', // Tăng lên để lấy nhiều hơn hoặc dùng pagination
+        pageSize: '100000', // Đặt số lớn để lấy toàn bộ danh sách cho filter và tính tổng ở client-side
         fromDate: filterFromDate,
         toDate: filterToDate,
       });

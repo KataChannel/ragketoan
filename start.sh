@@ -262,17 +262,20 @@ configure_google_ai() {
     echo -e "    ${GREEN}1)${NC} gemini-1.5-flash       (Nhanh, free tier lớn)"
     echo -e "    ${GREEN}2)${NC} gemini-1.5-pro         (Chất lượng cao nhất)"
     echo -e "    ${GREEN}3)${NC} gemini-2.0-flash-exp   (Mới nhất, experimental)"
+    echo -e "    ${GREEN}4)${NC} gemini-2.5-flash       (Ultra fast, next gen)"
     echo ""
     
-    read -p "Chọn model [1-3]: " model_choice
+    read -p "Chọn model [1-4]: " model_choice
     
     local model=""
     case $model_choice in
         1) model="gemini-1.5-flash" ;;
         2) model="gemini-1.5-pro" ;;
         3) model="gemini-2.0-flash-exp" ;;
+        4) model="gemini-2.5-flash" ;;
         *) model="gemini-1.5-flash" ;;
     esac
+
     
     # Update .env file
     update_env_var "LLM_PROVIDER" "google"

@@ -19,15 +19,7 @@ const prismaClientFactory = () => {
   });
 };
 
-// Trong môi trường dev, thỉnh thoảng ta cần force tạo mới khi schema thay đổi 
-// (đặc biệt khi dùng Turbopack/Next.js cache bộ nhớ)
-export const prisma = process.env.NODE_ENV === 'development'
-  ? prismaClientFactory()
-  : (globalForPrisma.prisma ?? prismaClientFactory());
-
-// Add a dummy version to force module reload: v4
-console.log('[Prisma] Client loaded at: ' + new Date().toISOString());
-console.log('[Prisma] Available models:', Object.keys(prisma).filter(k => k.startsWith('ext_')));
+export const prisma = globalForPrisma.prisma ?? prismaClientFactory();
 
 if (process.env.NODE_ENV !== 'production') {
   globalForPrisma.prisma = prisma;

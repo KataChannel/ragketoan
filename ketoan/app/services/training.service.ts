@@ -1,5 +1,6 @@
 import prisma from '@/app/lib/prisma'
 import { Decimal } from '@prisma/client/runtime/library'
+import { getEmbedding } from './rag-agent.service'
 
 export interface TrainingItem {
   tenGoc: string
@@ -33,7 +34,9 @@ export async function getItemsForTraining(options: {
 
   // 1. Lấy thống kê từ ext_tonghop
   const where: any = {}
-  if (congtyId) where.congtyId = congtyId
+  if (congtyId && congtyId !== 'all' && congtyId !== 'null' && congtyId !== 'undefined') {
+    where.congtyId = congtyId
+  }
   if (search) {
     where.tenHang = { contains: search, mode: 'insensitive' }
   }
@@ -54,7 +57,7 @@ export async function getItemsForTraining(options: {
     }
   })
 
-  // 2. Lấy từ điển hiện tại
+  // 2. Lấy từ điển hiện tại - Fix type to allow dynamic model access if needed, but ext_sanpham_dictionary should be visible
   const dictionary = await (prisma as any).ext_sanpham_dictionary.findMany()
   const dictMap = new Map<string, any>()
   dictionary.forEach((d: any) => dictMap.set(d.tenGoc, d))
@@ -158,8 +161,8 @@ export async function updateTrainingMapping(items: string[], standardName: strin
     }
   })
 
-  // Sinh embedding ngầm cho tên gốc để phục vụ tìm kiếm Vector sau này (bỏ qua await để không chặn UI)
-  import('./rag-agent.service').then(async ({ getEmbedding }) => {
+  // Sinh embedding ngầm cho tên gốc để phục vụ tìm kiếm Vector sau này
+  const generateEmbeddingsSafely = async () => {
      for (const tenGoc of items) {
        try {
          const vector = await getEmbedding(tenGoc);
@@ -171,10 +174,13 @@ export async function updateTrainingMapping(items: string[], standardName: strin
               AND ("congtyId" = ${additionalInfo.congtyId || null} OR ("congtyId" IS NULL AND ${additionalInfo.congtyId || null}::text IS NULL))
          `;
        } catch (err) {
-         console.error('Lỗi khi sinh embedding thủ công cho:', tenGoc, err);
+         console.error('Lỗi khi sinh embedding cho:', tenGoc, err);
        }
      }
-  }).catch(console.error);
+  };
+  
+  // Chạy background không await
+  generateEmbeddingsSafely().catch(console.error);
 
   return { success: true, message: `Đã cập nhật chuẩn hóa cho ${items.length} mặt hàng` }
 }
@@ -184,21 +190,26 @@ export async function updateTrainingMapping(items: string[], standardName: strin
  */
 export async function autoSuggestGrouping(
   congtyId?: string, 
-  onProgress?: (percent: number, message: string) => void
+  onProgress?: (percent: number, message: string) => void,
+  limit: number = 80,
+  apiKey?: string
 ) {
-  if (onProgress) onProgress(10, 'Đang trích xuất dữ liệu rác từ CSDL...');
+  console.log("autoSuggestGrouping called for company:", congtyId || "ALL");
+  const isStrictCompany = congtyId && congtyId !== 'all' && congtyId !== 'null' && congtyId !== 'undefined' && congtyId !== '';
+
+  if (onProgress) onProgress(10, `Đang trích xuất dữ liệu ${isStrictCompany ? 'của công ty' : 'toàn hệ thống'}...`);
 
   // Lấy các mặt hàng đã chuẩn hóa để loại trừ
   const dictionary = await (prisma as any).ext_sanpham_dictionary.findMany({ 
      select: { tenGoc: true },
-     ...(congtyId ? { where: { congtyId } } : {})
+     ...(isStrictCompany ? { where: { congtyId } } : {})
   });
   const mappedNames = new Set(dictionary.map((d: any) => d.tenGoc));
 
   // Lấy danh sách các mặt hàng gốc, sắp xếp theo số lượng xuất hiện nhiều nhất
   const allGroups = await prisma.ext_tonghop.groupBy({
     by: ['tenHang'],
-    where: congtyId ? { congtyId } : undefined,
+    where: isStrictCompany ? { congtyId } : undefined,
     _count: {
       tenHang: true
     },
@@ -210,8 +221,8 @@ export async function autoSuggestGrouping(
     take: 500 // Lấy dư ra 500 mục để đảm bảo sau khi lọc xong vẫn đủ
   });
 
-  // Lọc lấy 150 items chưa map
-  const unmapped = allGroups.filter(g => !mappedNames.has(g.tenHang)).slice(0, 150);
+  // Sử dụng batch size động từ người dùng (mặc định 80, tối đa nên là 200-300 để tránh truncation)
+  const unmapped = allGroups.filter(g => !mappedNames.has(g.tenHang)).slice(0, limit);
 
   if (unmapped.length === 0) {
     if (onProgress) onProgress(100, 'Tuyệt vời, không có mặt hàng nào cần chuẩn hóa!');
@@ -220,83 +231,112 @@ export async function autoSuggestGrouping(
 
   const itemsList = unmapped.map(i => i.tenHang);
 
-  if (onProgress) onProgress(30, `Đã trích xuất ${itemsList.length} mặt hàng rác. Đang đẩy lên AI để phân cụm...`);
+  if (onProgress) onProgress(30, `Đã trích xuất ${itemsList.length} mặt hàng. Đang phân tích bằng Gemini 2.5 Flash...`);
 
-  const prompt = `Bạn là một chuyên gia AI xuất sắc về xử lý và chuẩn hóa dữ liệu kế toán kho.
-Nhiệm vụ: Phân cụm (cluster) danh sách tên mặt hàng thô (sai chính tả, thiếu dấu, đảo ngữ, viết tắt) thành các nhóm tương đồng về ý nghĩa sản phẩm thực tế. Sau đó tạo ra 1 Tên Chuẩn (Standard Name) hoàn hảo cho mỗi nhóm.
+  // Tối ưu hóa Token và yêu cầu AI trả về mảng phẳng để tiết kiệm
+  const prompt = `Bạn là chuyên gia chuẩn hóa dữ liệu kho. Gộp danh sách tên mặt hàng thô thành các nhóm cùng loại sản phẩm.
+Yêu cầu:
+1. Chỉ gộp nếu chắc chắn cùng 1 sản phẩm.
+2. Mỗi nhóm phải có ít nhất 2 mặt hàng.
+3. Tạo 1 "standard" name ngắn gọn, chuyên nghiệp.
+4. Trả về mảng JSON: [{"standard": "Tên Chuẩn", "variants": ["Tên 1", "Tên 2"]}]
 
-Danh sách ${itemsList.length} mặt hàng gốc trên hóa đơn:
-${itemsList.map((item, idx) => `${idx + 1}. ${item}`).join('\n')}
+Danh sách: ${JSON.stringify(itemsList)}`;
 
-QUY TẮC NGHIÊM NGẶT:
-1. Chỉ gộp các mục chắc chắn 100% là CÙNG 1 sản phẩm. Đừng gộp sai chủng loại thép với nhau.
-2. Một nhóm (cluster) phải có ÍT NHẤT TỪ 2 MẶT HÀNG TRỞ LÊN. Nếu mặt hàng nào không giống với ai trong danh sách này, HÃY BỎ QUA NÓ (Không xuất ra).
-3. Tên chuẩn phải ngắn gọn, đúng chính tả, in hoa chữ cái đầu và có vẻ chuyên nghiệp.
-4. Trả kết quả DUY NHẤT bằng JSON (không markdown, không giải thích).
+  if (onProgress) onProgress(45, `Đang gửi ${itemsList.length} mục lên AI...`);
 
-CẤU TRÚC JSON ĐẦU RA BẮT BUỘC:
-[
-  {
-    "standard": "Đá Xây Dựng 1x2",
-    "variants": ["Da 1x2", "đá1x2", "Da xay dung loai 1x2"]
-  }
-]`;
-
-  if (onProgress) onProgress(45, `Đang kết nối đến LLM (Google Gemini / Ollama). Tiến trình này mất khoảng 10-20s...`);
-
-  // Có thể dùng gemini (GOOGLE_API_KEY) hoặc local (OLLAMA_HOST)
-  const LLM_PROVIDER = process.env.LLM_PROVIDER || 'ollama';
-  const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY || '';
-  const GOOGLE_MODEL = process.env.GOOGLE_MODEL || 'gemini-1.5-flash';
-
-  let resultJsonStr = "";
+  const { generateContent } = await import('./ai-config');
 
   try {
-     if (LLM_PROVIDER === 'google' || GOOGLE_API_KEY) {
-        if (onProgress) onProgress(65, `Đang phân tích ngữ nghĩa 150 mặt hàng bằng Google Gemini 1.5...`);
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/${GOOGLE_MODEL}:generateContent?key=${GOOGLE_API_KEY}`;
-        const res = await fetch(url, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: prompt }] }],
-            generationConfig: { response_mime_type: "application/json", temperature: 0.1 }
-          })
-        });
-        if (!res.ok) throw new Error(`Gemini API Error: ${await res.text()}`);
-        const data = await res.json();
-        resultJsonStr = data.candidates?.[0]?.content?.parts?.[0]?.text || "[]";
-     } else {
-        const OLLAMA_HOST = process.env.OLLAMA_HOST || 'http://localhost:11434';
-        const OLLAMA_MODEL = process.env.OLLAMA_MODEL || 'llama3.2:latest';
-        if (onProgress) onProgress(65, `Đang phân tích ngữ nghĩa bằng Local AI (${OLLAMA_MODEL})...`);
-        const url = `${OLLAMA_HOST.includes('http') ? OLLAMA_HOST : `http://${OLLAMA_HOST}`}/api/generate`;
-        const res = await fetch(url, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            model: OLLAMA_MODEL,
-            prompt: prompt,
-            format: "json",
-            stream: false
-          })
-        });
-        if (!res.ok) throw new Error(`Ollama API Error: ${await res.text()}`);
-        const data = await res.json();
-        resultJsonStr = data.response || "[]";
+     const data = await generateContent(prompt, { 
+       response_mime_type: "application/json", 
+       temperature: 0.1,
+       max_output_tokens: 8192
+     }, apiKey);
+     
+     let resultJsonStr = data.candidates?.[0]?.content?.parts?.[0]?.text || "[]";
+     
+     // Làm sạch chuỗi JSON
+     resultJsonStr = resultJsonStr.replace(/```json/g, '').replace(/```/g, '').trim();
+
+     if (onProgress) onProgress(85, `Đã nhận kết quả. Đang xử lý...`);
+
+     let suggestions;
+     try {
+        suggestions = JSON.parse(resultJsonStr);
+     } catch (e) {
+        console.warn("JSON Parse Error, attempting repair. String length:", resultJsonStr.length);
+        
+        // Cố gắng sửa lỗi JSON bị cắt ngang (truncated)
+        let repairedStr = resultJsonStr;
+        
+        // Đếm số lượng ngoặc để đóng lại
+        const openBraces = (repairedStr.match(/\{/g) || []).length;
+        const closeBraces = (repairedStr.match(/\}/g) || []).length;
+        const openBrackets = (repairedStr.match(/\[/g) || []).length;
+        const closeBrackets = (repairedStr.match(/\]/g) || []).length;
+        
+        // Nếu bị cắt ngang ở giữa một string hoặc mảng, ta cần đóng chúng lại
+        if (repairedStr.endsWith('"') || repairedStr.endsWith('variants":') || repairedStr.endsWith('variants": [')) {
+            // Không làm gì thêm, chỉ cố gắng đóng ngoặc
+        }
+        
+        try {
+           // Thử đóng các thành phần còn thiếu
+           if (openBrackets > closeBrackets) {
+              // Có thể đang ở trong mảng variants của item cuối cùng
+              const diffBraces = openBraces - closeBraces;
+              for (let i = 0; i < diffBraces; i++) {
+                 // Nếu item cuối chưa đóng } thì xóa phần lửng lơ của nó đi cho an toàn
+                 if (i === 0 && !repairedStr.trim().endsWith('}')) {
+                    const lastBraceIdx = repairedStr.lastIndexOf('{');
+                    if (lastBraceIdx > repairedStr.lastIndexOf('}')) {
+                        repairedStr = repairedStr.substring(0, lastBraceIdx).trim();
+                        // Xóa dấu phẩy thừa nếu có
+                        if (repairedStr.endsWith(',')) repairedStr = repairedStr.slice(0, -1);
+                    }
+                 }
+              }
+              // Đảm bảo đóng mảng chính
+              repairedStr = repairedStr.trim();
+              if (!repairedStr.endsWith(']')) repairedStr += ']';
+              suggestions = JSON.parse(repairedStr);
+           } else {
+              throw e;
+           }
+        } catch (repairError) {
+           console.error("Repair failed:", repairError);
+           const match = resultJsonStr.match(/\[\s*\{[\s\S]*\}\s*\]/);
+           if (match) {
+             suggestions = JSON.parse(match[0]);
+           } else {
+             // Cố gắng lấy phần JSON hợp lệ cuối cùng (hacky)
+             const lastValidIndex = resultJsonStr.lastIndexOf('}');
+             if (lastValidIndex !== -1) {
+                try {
+                   const partial = resultJsonStr.substring(0, lastValidIndex + 1);
+                   suggestions = JSON.parse(partial + ']');
+                } catch {
+                   throw new Error("AI phản hồi không đúng định dạng JSON và không thể sửa lỗi.");
+                }
+             } else {
+                throw new Error("AI phản hồi không đúng định dạng JSON.");
+             }
+           }
+        }
      }
 
-     if (onProgress) onProgress(90, `Đã nhận kết quả cụm từ AI. Đang chuẩn hóa cấu trúc DOM...`);
-
-     let suggestions = JSON.parse(resultJsonStr);
      if (!Array.isArray(suggestions)) {
         if (suggestions.suggestions && Array.isArray(suggestions.suggestions)) suggestions = suggestions.suggestions;
         else if (suggestions.data && Array.isArray(suggestions.data)) suggestions = suggestions.data;
         else suggestions = [];
      }
 
-     // Lọc lại chắc chắn variants có >= 2 length
-     suggestions = suggestions.filter((s: any) => s.variants && Array.isArray(s.variants) && s.variants.length > 1);
+     console.log(`AI found ${suggestions.length} raw clusters.`);
+     suggestions = suggestions.filter((s: any) => s && s.standard && s.variants && Array.isArray(s.variants) && s.variants.length > 1);
+     console.log(`Filtered to ${suggestions.length} valid clusters.`);
+
+     if (onProgress) onProgress(99, `Đang chuẩn bị ${suggestions.length} bản ghi...`);
 
      return suggestions;
   } catch (error: any) {
@@ -332,4 +372,19 @@ export async function applyTrainingToDatabase() {
   }
 
   return { success: true, count, message: `Đã đồng bộ ${count} dòng dữ liệu dựa trên training data` }
+}
+
+/**
+ * Chấp nhận hàng loạt các gợi ý từ AI
+ */
+export async function bulkUpdateTrainingMapping(suggestions: any[], congtyId?: string) {
+  let count = 0;
+  for (const s of suggestions) {
+    if (s.standard && s.variants && Array.isArray(s.variants) && s.variants.length > 0) {
+      // Gọi update cho từng nhóm
+      await updateTrainingMapping(s.variants, s.standard, { congtyId });
+      count++;
+    }
+  }
+  return { success: true, message: `Đã áp dụng thành công ${count} nhóm chuẩn hóa từ AI.` };
 }
