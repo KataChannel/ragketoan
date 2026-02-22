@@ -2,13 +2,15 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client-js"
-  output   = "./generated-client"
+  provider        = "prisma-client-js"
+  output          = "./generated-client"
+  previewFeatures = ["postgresqlExtensions"]
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [vector]
 }
 
 // ============================================================================
@@ -344,6 +346,9 @@ model ext_sanpham_dictionary {
   nhomHang     String?  // Nhóm hàng
   dvtinh       String?  // Đơn vị tính chuẩn
   
+  // AI Vector representation for similarity search
+  embedding    Unsupported("vector(768)")? 
+  
   // Metadata
   congtyId     String?  // Nếu map riêng cho từng công ty
   frequency    Int      @default(1) // Số lần xuất hiện
@@ -388,4 +393,32 @@ model ext_daily_stock_v2 {
   @@index([congtyId])
   @@index([date])
   @@index([tenHangChuan])
+}
+
+// ============================================================================
+// Hàng đợi Ánh xạ Mặt hàng bởi AI (Human-in-the-Loop)
+// ============================================================================
+
+/// Bảng lưu các đề xuất từ AI chờ con người duyệt (Độ tin cậy thấp)
+model ext_mapping_queue {
+  id              String   @id @default(uuid())
+  
+  tenGoc          String   @unique // Tên trên hóa đơn
+  dvtGoc          String?  // Đơn vị tính gốc trên hóa đơn
+  
+  // AI Suggestions
+  aiSuggestedName String?  // Tên chuẩn mà AI muốn ánh xạ
+  aiConfidence    Float?   // Độ tự tin (0.0 -> 1.0)
+  aiReasoning     String?  // Lập luận AI
+  
+  // PENDING | APPROVED | REJECTED 
+  status          String   @default("PENDING") 
+  
+  // Metadata
+  congtyId        String?  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([status])
+  @@index([congtyId])
 }

@@ -302,6 +302,19 @@ exports.Prisma.Ext_daily_stock_v2ScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.Ext_mapping_queueScalarFieldEnum = {
+  id: 'id',
+  tenGoc: 'tenGoc',
+  dvtGoc: 'dvtGoc',
+  aiSuggestedName: 'aiSuggestedName',
+  aiConfidence: 'aiConfidence',
+  aiReasoning: 'aiReasoning',
+  status: 'status',
+  congtyId: 'congtyId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -327,7 +340,8 @@ exports.Prisma.ModelName = {
   ext_synclog: 'ext_synclog',
   ext_tonghop: 'ext_tonghop',
   ext_sanpham_dictionary: 'ext_sanpham_dictionary',
-  ext_daily_stock_v2: 'ext_daily_stock_v2'
+  ext_daily_stock_v2: 'ext_daily_stock_v2',
+  ext_mapping_queue: 'ext_mapping_queue'
 };
 
 /**

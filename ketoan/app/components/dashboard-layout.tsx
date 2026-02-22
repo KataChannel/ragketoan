@@ -14,6 +14,7 @@ import {
   Package,
   Sparkles,
   BookText,
+  Bot,
 } from "lucide-react"
 
 import {
@@ -69,6 +70,11 @@ const menuItems = [
     title: "Chuẩn hóa",
     icon: Sparkles,
     href: "/training",
+  },
+  {
+    title: "Duyệt Mặt Hàng (AI)",
+    icon: Bot,
+    href: "/ai-mapping",
   },
   {
     title: "Cài đặt",
