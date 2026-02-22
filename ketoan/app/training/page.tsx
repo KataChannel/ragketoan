@@ -42,21 +42,21 @@ export default function TrainingPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [items, setItems] = useState<TrainingItem[]>([]);
   const [pagination, setPagination] = useState({ page: 1, limit: 10, total: 0, totalPages: 0 });
-  
+
   // Filters
   const [companies, setCompanies] = useState<any[]>([]);
   const [selectedCompanyId, setSelectedCompanyId] = useState<string>('');
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [onlyUnmapped, setOnlyUnmapped] = useState(true);
-  
+
   // Sorting
   const [orderBy, setOrderBy] = useState<'tenGoc' | 'frequency' | 'isMapped' | 'tenChuan'>('frequency');
   const [order, setOrder] = useState<'asc' | 'desc'>('desc');
-  
+
   // Selection
   const [selectedNames, setSelectedNames] = useState<string[]>([]);
-  
+
   // Update Dialog
   const [showUpdateDialog, setShowUpdateDialog] = useState(false);
   const [standardName, setStandardName] = useState('');
@@ -67,6 +67,7 @@ export default function TrainingPage() {
   // Suggestions
   const [suggestions, setSuggestions] = useState<any[]>([]);
   const [isSuggesting, setIsSuggesting] = useState(false);
+  const [suggestProgress, setSuggestProgress] = useState({ percent: 0, message: '' });
 
   const fetchCompanies = useCallback(async () => {
     try {
@@ -93,7 +94,7 @@ export default function TrainingPage() {
         order
       });
       if (selectedCompanyId) params.append('congtyId', selectedCompanyId);
-      
+
       const response = await fetch(`/api/training?${params}`);
       const result = await response.json();
       if (result.success) {
@@ -168,8 +169,8 @@ export default function TrainingPage() {
           action: 'update',
           items: selectedNames,
           standardName,
-          info: { 
-            maHang, 
+          info: {
+            maHang,
             nhomHang,
             congtyId: selectedCompanyId || undefined
           }
@@ -212,24 +213,41 @@ export default function TrainingPage() {
 
   const handleAutoTraining = async () => {
     setIsSuggesting(true);
+    setSuggestions([]);
+    setSuggestProgress({ percent: 5, message: 'Khởi tạo tiến trình phân tích AI...' });
+
     try {
-      const params = new URLSearchParams({ action: 'suggest' });
+      const params = new URLSearchParams({ action: 'suggest_stream' });
       if (selectedCompanyId) params.append('congtyId', selectedCompanyId);
-      
-      const response = await fetch(`/api/training?${params}`);
-      const result = await response.json();
-      if (result.success) {
-        setSuggestions(result.data);
-        if (result.data.length === 0) {
-          toast.info('Không tìm thấy gợi ý tương đồng mới');
-        } else {
-          toast.success(`Tìm thấy ${result.data.length} nhóm mặt hàng tương đồng`);
+
+      const eventSource = new EventSource(`/api/training?${params}`);
+
+      eventSource.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        setSuggestProgress({ percent: data.percent, message: data.message });
+
+        if (data.percent === 100) {
+          eventSource.close();
+          setIsSuggesting(false);
+          if (data.data && data.data.length > 0) {
+            setSuggestions(data.data);
+            toast.success(`AI đã tìm thấy ${data.data.length} nhóm mặt hàng tương đồng`);
+          } else if (data.data && data.data.length === 0) {
+            toast.info(data.message || 'Không tìm thấy gợi ý tương đồng mới');
+          } else {
+            toast.error(data.message || 'Lỗi khi nhận dữ liệu từ AI');
+          }
         }
-      }
+      };
+
+      eventSource.onerror = (error) => {
+        eventSource.close();
+        setIsSuggesting(false);
+        toast.error('Mất kết nối với dịch vụ AI');
+      };
     } catch (error) {
-      toast.error('Lỗi khi chạy training tự động');
-    } finally {
       setIsSuggesting(false);
+      toast.error('Lỗi khi chạy training tự động');
     }
   };
 
@@ -268,9 +286,9 @@ export default function TrainingPage() {
               <Database className="h-4 w-4 mr-1" />
               Lưu & Đồng bộ bảng kê
             </Button>
-            <Button 
-              size="sm" 
-              onClick={() => setShowUpdateDialog(true)} 
+            <Button
+              size="sm"
+              onClick={() => setShowUpdateDialog(true)}
               disabled={selectedNames.length === 0}
             >
               <CheckCircle2 className="h-4 w-4 mr-1" />
@@ -304,11 +322,11 @@ export default function TrainingPage() {
                 />
               </div>
             </div>
-            
+
             <div className="flex items-center gap-2 lg:mt-6 px-2 py-2 bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-transparent hover:border-gray-200 dark:hover:border-gray-700 transition-all">
-              <Checkbox 
-                id="unmapped" 
-                checked={onlyUnmapped} 
+              <Checkbox
+                id="unmapped"
+                checked={onlyUnmapped}
                 onCheckedChange={(v: boolean) => setOnlyUnmapped(!!v)}
                 className="data-[state=checked]:bg-blue-500 data-[state=checked]:border-blue-500"
               />
@@ -317,10 +335,10 @@ export default function TrainingPage() {
               </Label>
             </div>
 
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={() => fetchItems()} 
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => fetchItems()}
               className="lg:mt-6 h-10 border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 font-bold"
             >
               <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
@@ -336,13 +354,13 @@ export default function TrainingPage() {
               <thead className="bg-gray-50 dark:bg-gray-900/50">
                 <tr>
                   <th className="px-4 py-3 w-10">
-                    <Checkbox 
+                    <Checkbox
                       checked={selectedNames.length === items.length && items.length > 0}
                       onCheckedChange={(v: boolean) => handleSelectAll(!!v)}
                     />
                   </th>
                   <th className="px-4 py-3 text-left">
-                    <button 
+                    <button
                       className="flex items-center gap-1 text-xs font-medium text-gray-500 uppercase hover:text-blue-600 transition-colors"
                       onClick={() => toggleSort('tenGoc')}
                     >
@@ -351,7 +369,7 @@ export default function TrainingPage() {
                     </button>
                   </th>
                   <th className="px-4 py-3 text-left">
-                    <button 
+                    <button
                       className="flex items-center gap-1 text-xs font-medium text-gray-500 uppercase hover:text-blue-600 transition-colors"
                       onClick={() => toggleSort('tenChuan')}
                     >
@@ -360,7 +378,7 @@ export default function TrainingPage() {
                     </button>
                   </th>
                   <th className="px-4 py-3 text-center">
-                    <button 
+                    <button
                       className="flex items-center gap-1 text-xs font-medium text-gray-500 uppercase hover:text-blue-600 transition-colors mx-auto"
                       onClick={() => toggleSort('frequency')}
                     >
@@ -369,7 +387,7 @@ export default function TrainingPage() {
                     </button>
                   </th>
                   <th className="px-4 py-3 text-center">
-                    <button 
+                    <button
                       className="flex items-center gap-1 text-xs font-medium text-gray-500 uppercase hover:text-blue-600 transition-colors mx-auto"
                       onClick={() => toggleSort('isMapped')}
                     >
@@ -390,7 +408,7 @@ export default function TrainingPage() {
                   items.map((item) => (
                     <tr key={item.tenGoc} className={`hover:bg-gray-50 dark:hover:bg-gray-700/50 ${selectedNames.includes(item.tenGoc) ? 'bg-blue-50/50 dark:bg-blue-900/20' : ''}`}>
                       <td className="px-4 py-3 text-center">
-                        <Checkbox 
+                        <Checkbox
                           checked={selectedNames.includes(item.tenGoc)}
                           onCheckedChange={(v: boolean) => handleSelectItem(item.tenGoc, !!v)}
                         />
@@ -402,7 +420,7 @@ export default function TrainingPage() {
                       <td className="px-4 py-3">
                         {item.tenChuan ? (
                           <div className="flex items-center gap-2 text-blue-600 font-medium">
-                             {item.tenChuan}
+                            {item.tenChuan}
                           </div>
                         ) : (
                           <span className="text-gray-400 italic text-xs">Chưa có mapping</span>
@@ -434,8 +452,8 @@ export default function TrainingPage() {
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
                 <span className="text-gray-500">Hiển thị:</span>
-                <select 
-                  value={pagination.limit} 
+                <select
+                  value={pagination.limit}
                   onChange={(e) => setPagination(p => ({ ...p, limit: Number(e.target.value), page: 1 }))}
                   className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded px-1 py-0.5 focus:outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer"
                 >
@@ -477,7 +495,7 @@ export default function TrainingPage() {
           <div className="absolute top-0 right-0 p-10 opacity-5 pointer-events-none">
             <Sparkles className="h-40 w-40 text-blue-600" />
           </div>
-          
+
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-8 relative z-10">
             <div className="flex items-center gap-4">
               <div className="bg-blue-600 dark:bg-blue-500 rounded-2xl p-3 shadow-lg shadow-blue-500/30">
@@ -488,8 +506,8 @@ export default function TrainingPage() {
                 <p className="text-sm text-blue-700/70 dark:text-blue-300/60">Hệ thống AI sẽ quét và tự động phát hiện các mặt hàng có cùng gốc từ.</p>
               </div>
             </div>
-            <Button 
-              className="bg-blue-600 hover:bg-blue-700 text-white" 
+            <Button
+              className="bg-blue-600 hover:bg-blue-700 text-white"
               size="sm"
               onClick={handleAutoTraining}
               disabled={isSuggesting}
@@ -498,7 +516,21 @@ export default function TrainingPage() {
               {isSuggesting ? 'Đang phân tích...' : 'Chạy Training Tự Động'}
             </Button>
           </div>
-          
+
+          {isSuggesting && (
+            <div className="mb-8 w-full bg-blue-100/50 dark:bg-blue-900/30 p-4 rounded-xl border border-blue-200 dark:border-blue-800">
+              <div className="flex justify-between text-sm font-semibold text-blue-700 dark:text-blue-300 mb-2">
+                <span>Tiến trình: {suggestProgress.message}</span>
+                <span>{suggestProgress.percent}%</span>
+              </div>
+              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 overflow-hidden">
+                <div className="bg-blue-600 h-2.5 rounded-full transition-all duration-500 ease-out relative" style={{ width: `${suggestProgress.percent}%` }}>
+                  <div className="absolute top-0 left-0 w-full h-full bg-white/20 animate-pulse"></div>
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {suggestions.length === 0 ? (
               <div className="bg-white/40 dark:bg-gray-800/40 p-10 rounded-xl border-2 border-dashed border-blue-200/50 dark:border-blue-700/30 col-span-full">
@@ -514,10 +546,10 @@ export default function TrainingPage() {
               suggestions.map((s, idx) => (
                 <div key={idx} className="group bg-white dark:bg-gray-800 p-5 rounded-xl border border-blue-100 dark:border-blue-800 shadow-sm hover:shadow-xl hover:border-blue-300 dark:hover:border-blue-600 transition-all duration-300 transform hover:-translate-y-1">
                   <div className="flex items-center justify-between mb-3">
-                     <span className="text-[10px] font-bold text-blue-600 bg-blue-50 dark:bg-blue-900/40 px-3 py-1 rounded-full border border-blue-100 dark:border-blue-800">GỢI Ý #{idx + 1}</span>
-                     <Button 
-                      variant="ghost" 
-                      size="sm" 
+                    <span className="text-[10px] font-bold text-blue-600 bg-blue-50 dark:bg-blue-900/40 px-3 py-1 rounded-full border border-blue-100 dark:border-blue-800">GỢI Ý #{idx + 1}</span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
                       className="h-7 text-[10px] font-bold text-blue-600 hover:text-white hover:bg-blue-600 rounded-lg group-hover:scale-105 transition-all"
                       onClick={() => handleApplySuggestion(s)}
                     >
@@ -572,8 +604,8 @@ export default function TrainingPage() {
 
               <div className="space-y-1.5">
                 <Label>Tên mặt hàng chuẩn (Standard Name)</Label>
-                <Input 
-                  placeholder="Vd: Thép Hòa Phát Phi 10" 
+                <Input
+                  placeholder="Vd: Thép Hòa Phát Phi 10"
                   value={standardName}
                   onChange={(e) => setStandardName(e.target.value)}
                 />
@@ -582,16 +614,16 @@ export default function TrainingPage() {
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
                   <Label>Mã hàng (Tùy chọn)</Label>
-                  <Input 
-                    placeholder="Vd: THEP-HP-10" 
+                  <Input
+                    placeholder="Vd: THEP-HP-10"
                     value={maHang}
                     onChange={(e) => setMaHang(e.target.value)}
                   />
                 </div>
                 <div className="space-y-1.5">
                   <Label>Nhóm hàng (Tùy chọn)</Label>
-                  <Input 
-                    placeholder="Vd: Vật dụng xây dựng" 
+                  <Input
+                    placeholder="Vd: Vật dụng xây dựng"
                     value={nhomHang}
                     onChange={(e) => setNhomHang(e.target.value)}
                   />

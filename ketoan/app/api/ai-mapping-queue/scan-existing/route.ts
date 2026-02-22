@@ -7,7 +7,7 @@ export async function POST(request: NextRequest) {
     const { congtyId } = await request.json();
 
     const whereClause: any = {
-      tdlap: { gte: new Date('2023-01-01T00:00:00Z') }
+      tdlap: { gte: new Date('2020-01-01T00:00:00Z') }
     };
 
     if (congtyId && congtyId !== 'all') {
@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ 
       success: true, 
-      message: `Đã phát hiện và đẩy ${itemsToQueue.length} mặt hàng độc nhất từ 01/01/2023 vào Hàng Đợi. AI đang phân tích, vui lòng chờ...`,
+      message: `Đã phát hiện và đẩy ${itemsToQueue.length} mặt hàng độc nhất từ 01/01/2020 vào Hàng Đợi. AI đang phân tích, vui lòng chờ...`,
       count: itemsToQueue.length
     });
   } catch (error) {
