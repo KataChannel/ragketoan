@@ -89,18 +89,18 @@ export function AppSidebar() {
     <Sidebar>
       <SidebarHeader>
         <div className="flex items-center gap-2 px-2 py-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600">
+          <div className="flex h-8 w-8 items-center justify-center rounded-[8px] shrink-0 bg-blue-600">
             <FileText className="h-4 w-4 text-white" />
           </div>
-          <div className="flex flex-col">
+          <div className="group-data-[collapsible=icon]:hidden flex flex-col">
             <span className="font-semibold text-sm text-white">Kế Toán</span>
-            <span className="text-xs text-slate-400">
+            <span className="text-[10px] text-slate-400">
               Quản lý hóa đơn
             </span>
           </div>
         </div>
-        <Separator className="bg-slate-700" />
-        <div className="px-2 py-2">
+        <Separator className="bg-slate-700 group-data-[collapsible=icon]:hidden" />
+        <div className="px-2 py-2 group-data-[collapsible=icon]:hidden">
           <div className="relative">
             <Search className="absolute left-2 top-2.5 h-4 w-4 text-slate-400" />
             <SidebarInput
@@ -137,8 +137,8 @@ export function AppSidebar() {
       </SidebarContent>
 
       <SidebarFooter>
-        <Separator className="bg-slate-700" />
-        <div className="p-2 text-xs text-slate-400">
+        <Separator className="bg-slate-700 group-data-[collapsible=icon]:hidden" />
+        <div className="p-2 text-xs text-slate-400 group-data-[collapsible=icon]:hidden">
           © 2025 Kế Toán App
         </div>
       </SidebarFooter>

@@ -203,7 +203,7 @@ const Sidebar = React.forwardRef<
           className
         )}
       >
-        <div className="flex h-full w-[--sidebar-width] flex-col border-r border-slate-700 bg-slate-900 text-slate-100">
+        <div className="flex h-full w-[--sidebar-width] flex-col border-r border-slate-700 bg-slate-900 text-slate-100 group-data-[collapsible=icon]:w-[--sidebar-width-icon] overflow-hidden transition-[width] duration-200 ease-linear">
           {children}
         </div>
       </div>
