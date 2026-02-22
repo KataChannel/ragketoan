@@ -1,4 +1,5 @@
 import prisma from '@/app/lib/prisma';
+import { embedText, generateContent } from './ai-config';
 
 export interface AgentDecision {
   status: 'CONFIDENT_MATCH' | 'UNCERTAIN';
@@ -17,47 +18,14 @@ export interface SimilarItem {
   similarity: number;
 }
 
-// Lấy Provider từ env
-const LLM_PROVIDER = process.env.LLM_PROVIDER || 'ollama';
-const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY || '';
-const GOOGLE_MODEL = process.env.GOOGLE_MODEL || 'gemini-1.5-flash';
-
-const OLLAMA_HOST = process.env.OLLAMA_HOST || 'http://localhost:11434';
-const OLLAMA_MODEL = process.env.OLLAMA_MODEL || 'llama3.2:latest';
-const OLLAMA_EMBED_MODEL = process.env.OLLAMA_EMBED_MODEL || 'nomic-embed-text:latest';
-
 /**
  * 1. Hàm Sinh Embedding cho một Text (Tên Hàng Gốc)
  */
 export async function getEmbedding(text: string): Promise<number[]> {
   try {
-    if (LLM_PROVIDER === 'google') {
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:embedContent?key=${GOOGLE_API_KEY}`;
-      const res = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: 'models/text-embedding-004',
-          content: { parts: [{ text }] }
-        })
-      });
-      if (!res.ok) throw new Error(await res.text());
-      const data = await res.json();
-      return data.embedding.values;
-    } else {
-      // OLLAMA
-      const url = `${OLLAMA_HOST.includes('http') ? OLLAMA_HOST : `http://${OLLAMA_HOST}`}/api/embeddings`;
-      const res = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ model: OLLAMA_EMBED_MODEL, prompt: text }) // Giả định dùng nomic-embed-text (dim: 768)
-      });
-      if (!res.ok) throw new Error(await res.text());
-      const data = await res.json();
-      return data.embedding;
-    }
+    return await embedText(text);
   } catch (error) {
-    console.error('Error generating embedding:', error);
+    console.error('Error generating embedding with Google API:', error);
     throw error;
   }
 }
@@ -114,43 +82,30 @@ Trả về dạng JSON thuần tuý bao gồm các field sau (KHÔNG giải thí
   "reasoning": "Lý do vì sao bạn chọn mã này hoặc vì sao bạn không tự tin (bằng tiếng Việt)"
 }`;
 
-  if (LLM_PROVIDER === 'google') {
-    return _askGoogleGemini(systemInstruction);
-  } else {
-    return _askOllama(systemInstruction);
-  }
+  return _askGoogleGemini(systemInstruction);
 }
 
 // Helpers gọi nội bộ
 async function _askGoogleGemini(prompt: string): Promise<AgentDecision> {
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${GOOGLE_MODEL}:generateContent?key=${GOOGLE_API_KEY}`;
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      contents: [{ parts: [{ text: prompt }] }],
-      generationConfig: { response_mime_type: "application/json" }
-    })
+  const data = await generateContent(prompt, { 
+    response_mime_type: "application/json",
+    temperature: 0.1
   });
-  if (!res.ok) throw new Error(await res.text());
-  const data = await res.json();
-  const resText = data.candidates?.[0]?.content?.parts?.[0]?.text;
-  return JSON.parse(resText || "{}") as AgentDecision;
+  let resText = data.candidates?.[0]?.content?.parts?.[0]?.text || "{}";
+  
+  // Clean markdown if any
+  resText = resText.replace(/```json/g, '').replace(/```/g, '').trim();
+  
+  try {
+    return JSON.parse(resText) as AgentDecision;
+  } catch (e) {
+    console.error("JSON Parse Error in Agent Decision:", resText);
+    const match = resText.match(/\{[\s\S]*\}/);
+    if (match) {
+      return JSON.parse(match[0]) as AgentDecision;
+    }
+    throw e;
+  }
 }
 
-async function _askOllama(prompt: string): Promise<AgentDecision> {
-  const url = `${OLLAMA_HOST.includes('http') ? OLLAMA_HOST : `http://${OLLAMA_HOST}`}/api/generate`;
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      model: OLLAMA_MODEL,
-      prompt: prompt,
-      format: "json",
-      stream: false
-    })
-  });
-  if (!res.ok) throw new Error(await res.text());
-  const data = await res.json();
-  return JSON.parse(data.response || "{}") as AgentDecision;
-}
+

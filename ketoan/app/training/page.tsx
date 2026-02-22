@@ -13,7 +13,9 @@ import {
   RefreshCw,
   Plus,
   ArrowUpDown,
+  StopCircle,
 } from 'lucide-react';
+import { useRef } from 'react';
 import { DashboardLayout } from '@/app/components/dashboard-layout';
 import { Button } from '@/app/components/ui/button';
 import { Input } from '@/app/components/ui/input';
@@ -68,6 +70,9 @@ export default function TrainingPage() {
   const [suggestions, setSuggestions] = useState<any[]>([]);
   const [isSuggesting, setIsSuggesting] = useState(false);
   const [suggestProgress, setSuggestProgress] = useState({ percent: 0, message: '' });
+  const [aiLimit, setAiLimit] = useState<number>(80);
+  const [apiKey, setApiKey] = useState<string>('');
+  const eventSourceRef = useRef<EventSource | null>(null);
 
   const fetchCompanies = useCallback(async () => {
     try {
@@ -212,38 +217,61 @@ export default function TrainingPage() {
   };
 
   const handleAutoTraining = async () => {
+    if (!apiKey || apiKey.trim() === '') {
+      toast.error('Vui lòng nhập API Key để chạy AI Training');
+      return;
+    }
+
     setIsSuggesting(true);
     setSuggestions([]);
     setSuggestProgress({ percent: 5, message: 'Khởi tạo tiến trình phân tích AI...' });
 
     try {
-      const params = new URLSearchParams({ action: 'suggest_stream' });
+      const params = new URLSearchParams({
+        action: 'suggest_stream',
+        aiLimit: aiLimit.toString()
+      });
       if (selectedCompanyId) params.append('congtyId', selectedCompanyId);
+      if (apiKey) params.append('apiKey', apiKey);
 
       const eventSource = new EventSource(`/api/training?${params}`);
+      eventSourceRef.current = eventSource;
 
       eventSource.onmessage = (event) => {
-        const data = JSON.parse(event.data);
-        setSuggestProgress({ percent: data.percent, message: data.message });
+        try {
+          const data = JSON.parse(event.data);
+          console.log('AI Training Progress:', data);
+          setSuggestProgress({ percent: data.percent, message: data.message });
 
-        if (data.percent === 100) {
-          eventSource.close();
-          setIsSuggesting(false);
-          if (data.data && data.data.length > 0) {
-            setSuggestions(data.data);
-            toast.success(`AI đã tìm thấy ${data.data.length} nhóm mặt hàng tương đồng`);
-          } else if (data.data && data.data.length === 0) {
-            toast.info(data.message || 'Không tìm thấy gợi ý tương đồng mới');
-          } else {
-            toast.error(data.message || 'Lỗi khi nhận dữ liệu từ AI');
+          if (data.percent === 100) {
+            eventSource.close();
+            eventSourceRef.current = null;
+            setIsSuggesting(false);
+
+            if (data.data && Array.isArray(data.data) && data.data.length > 0) {
+              setSuggestions(data.data);
+              toast.success(`AI đã tìm thấy ${data.data.length} nhóm mặt hàng tương đồng`);
+            } else {
+              // Nếu data rỗng nhưng success thì báo tin nhắn của server
+              if (data.message && data.message.includes('Lỗi')) {
+                toast.error(data.message);
+              } else {
+                toast.info(data.message || 'Không tìm thấy thêm gợi ý tương đồng mới');
+              }
+            }
           }
+        } catch (e) {
+          console.error("Error parsing SSE data:", e);
         }
       };
 
       eventSource.onerror = (error) => {
-        eventSource.close();
-        setIsSuggesting(false);
-        toast.error('Mất kết nối với dịch vụ AI');
+        if (eventSourceRef.current) {
+          eventSource.close();
+          eventSourceRef.current = null;
+          setIsSuggesting(false);
+          toast.error('Mất kết nối với dịch vụ AI hoặc bạn đã dừng tiến trình');
+        }
       };
     } catch (error) {
       setIsSuggesting(false);
@@ -251,10 +279,53 @@ export default function TrainingPage() {
     }
   };
 
+  const handleStopAutoTraining = () => {
+    if (eventSourceRef.current) {
+      eventSourceRef.current.close();
+      eventSourceRef.current = null;
+      setIsSuggesting(false);
+      setSuggestProgress({ percent: 0, message: 'Đã dừng theo yêu cầu người dùng' });
+      toast.info('Đã dừng tiến trình AI');
+    }
+  };
+
   const handleApplySuggestion = (suggestion: any) => {
     setSelectedNames(suggestion.variants);
     setStandardName(suggestion.standard);
     setShowUpdateDialog(true);
+  };
+
+  const [isBulkUpdating, setIsBulkUpdating] = useState(false);
+
+  const handleApplyAllSuggestions = async () => {
+    if (suggestions.length === 0) return;
+
+    if (!confirm(`Bạn có chắc muốn áp dụng tất cả ${suggestions.length} nhóm gợi ý từ AI?`)) {
+      return;
+    }
+
+    setIsBulkUpdating(true);
+    try {
+      const response = await fetch('/api/training', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'bulk_update',
+          suggestions,
+          congtyId: selectedCompanyId || undefined
+        }),
+      });
+      const result = await response.json();
+      if (result.success) {
+        toast.success(result.message);
+        setSuggestions([]);
+        fetchItems();
+      }
+    } catch (error) {
+      toast.error('Lỗi khi áp dụng hàng loạt');
+    } finally {
+      setIsBulkUpdating(false);
+    }
   };
 
   const toggleSort = (field: 'tenGoc' | 'frequency' | 'isMapped' | 'tenChuan') => {
@@ -506,15 +577,61 @@ export default function TrainingPage() {
                 <p className="text-sm text-blue-700/70 dark:text-blue-300/60">Hệ thống AI sẽ quét và tự động phát hiện các mặt hàng có cùng gốc từ.</p>
               </div>
             </div>
-            <Button
-              className="bg-blue-600 hover:bg-blue-700 text-white"
-              size="sm"
-              onClick={handleAutoTraining}
-              disabled={isSuggesting}
-            >
-              <RefreshCw className={`h-4 w-4 mr-1 ${isSuggesting ? 'animate-spin' : ''}`} />
-              {isSuggesting ? 'Đang phân tích...' : 'Chạy Training Tự Động'}
-            </Button>
+            <div className="flex gap-2">
+              <div className="flex items-center gap-2 bg-white dark:bg-gray-800 px-3 py-1 rounded-lg border border-blue-200 dark:border-blue-800">
+                <Label className="text-[10px] uppercase font-bold text-gray-400 whitespace-nowrap">API Key:</Label>
+                <input
+                  type="password"
+                  value={apiKey}
+                  onChange={(e) => setApiKey(e.target.value)}
+                  placeholder="Nhập API Key..."
+                  className="w-32 bg-transparent text-sm text-blue-600 focus:outline-none placeholder:text-gray-300 dark:placeholder:text-gray-600"
+                />
+              </div>
+              <div className="flex items-center gap-2 bg-white dark:bg-gray-800 px-3 py-1 rounded-lg border border-blue-200 dark:border-blue-800">
+                <Label className="text-[10px] uppercase font-bold text-gray-400 whitespace-nowrap">Số lượng quét:</Label>
+                <input
+                  type="number"
+                  value={aiLimit}
+                  onChange={(e) => setAiLimit(Math.min(500, Math.max(10, parseInt(e.target.value) || 0)))}
+                  className="w-16 bg-transparent text-sm font-bold text-blue-600 focus:outline-none"
+                />
+              </div>
+
+              {suggestions.length > 0 && (
+                <Button
+                  className="bg-green-600 hover:bg-green-700 text-white font-bold"
+                  size="sm"
+                  onClick={handleApplyAllSuggestions}
+                  disabled={isBulkUpdating || isSuggesting}
+                >
+                  <CheckCircle2 className="h-4 w-4 mr-1" />
+                  {isBulkUpdating ? 'Đang áp dụng...' : `Áp dụng tất cả ${suggestions.length} gợi ý`}
+                </Button>
+              )}
+
+              {isSuggesting ? (
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={handleStopAutoTraining}
+                  className="font-bold border-2 border-red-500 hover:bg-red-600 animate-pulse"
+                >
+                  <StopCircle className="h-4 w-4 mr-1" />
+                  DỪNG LẠI
+                </Button>
+              ) : (
+                <Button
+                  className="bg-blue-600 hover:bg-blue-700 text-white font-bold"
+                  size="sm"
+                  onClick={handleAutoTraining}
+                  disabled={isSuggesting}
+                >
+                  <RefreshCw className="h-4 w-4 mr-1" />
+                  Chạy Training Tự Động
+                </Button>
+              )}
+            </div>
           </div>
 
           {isSuggesting && (

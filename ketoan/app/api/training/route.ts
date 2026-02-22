@@ -3,7 +3,8 @@ import {
   getItemsForTraining, 
   updateTrainingMapping, 
   autoSuggestGrouping, 
-  applyTrainingToDatabase 
+  applyTrainingToDatabase,
+  bulkUpdateTrainingMapping
 } from '@/app/services/training.service'
 import prisma from '@/app/lib/prisma'
 
@@ -21,25 +22,44 @@ export async function GET(request: NextRequest) {
 
     switch (action) {
       case 'suggest':
-        const suggestions = await autoSuggestGrouping(congtyId)
+        const apiKeySuggest = searchParams.get('apiKey') || undefined;
+        const suggestions = await autoSuggestGrouping(congtyId, undefined, 80, apiKeySuggest)
         return NextResponse.json({ success: true, data: suggestions })
         
       case 'suggest_stream':
         const congtyIdStream = congtyId;
+        const limitStream = parseInt(searchParams.get('aiLimit') || '80');
+        const apiKeyStream = searchParams.get('apiKey') || undefined;
         const encoder = new TextEncoder();
         
         const stream = new ReadableStream({
           async start(controller) {
             const sendProgress = (percent: number, message: string, data?: any) => {
-               const payload = JSON.stringify({ percent, message, data: data || null });
-               controller.enqueue(encoder.encode(`data: ${payload}\n\n`));
+               try {
+                 const payload = JSON.stringify({ percent, message, data: data || null });
+                 controller.enqueue(encoder.encode(`data: ${payload}\n\n`));
+               } catch (e) {
+                 console.error("Error sending progress:", e);
+               }
             };
 
+            // Heartbeat để giữ connection không bị timeout trong lúc chờ AI phân tích lâu (3-4 phút)
+            const heartbeat = setInterval(() => {
+               try {
+                 controller.enqueue(encoder.encode(`: heartbeat\n\n`));
+               } catch (e) {
+                 clearInterval(heartbeat);
+               }
+            }, 15000);
+
             try {
-              const result = await autoSuggestGrouping(congtyIdStream, sendProgress);
+              const result = await autoSuggestGrouping(congtyIdStream, sendProgress, limitStream, apiKeyStream);
+              clearInterval(heartbeat);
+              // Đảm bảo message cuối cùng có đầy đủ dữ liệu
               sendProgress(100, "Hoàn tất phân tích", result);
               controller.close();
             } catch (err: any) {
+              clearInterval(heartbeat);
               sendProgress(100, `Lỗi: ${err.message}`, []);
               controller.close();
             }
@@ -77,8 +97,9 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  let body: any = {};
   try {
-    const body = await request.json()
+    body = await request.json()
     const { action } = body
 
     switch (action) {
@@ -91,11 +112,20 @@ export async function POST(request: NextRequest) {
         const syncResult = await applyTrainingToDatabase()
         return NextResponse.json(syncResult)
 
+      case 'bulk_update':
+        const { suggestions, congtyId: bulkCongtyId } = body
+        const bulkResult = await bulkUpdateTrainingMapping(suggestions, bulkCongtyId)
+        return NextResponse.json(bulkResult)
+
       default:
         return NextResponse.json({ success: false, message: 'Invalid action' }, { status: 400 })
     }
-  } catch (error) {
-    console.error('Training API POST Error:', error)
+  } catch (error: any) {
+    console.error('Training API POST Error details:', {
+      message: error.message,
+      stack: error.stack,
+      action: (body as any)?.action
+    })
     return NextResponse.json({ 
       success: false, 
       message: error instanceof Error ? error.message : 'Unknown error' 

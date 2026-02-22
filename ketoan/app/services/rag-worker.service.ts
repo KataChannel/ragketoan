@@ -57,18 +57,32 @@ export async function processMappingQueue(limit: number = 10) {
 
   if (pendingItems.length === 0) return;
 
+  const itemsWithVectors: (typeof pendingItems[0] & { vector?: number[] })[] = [];
+
+  // BƯỚC 1: Tạo Embedding hàng loạt. 
+  // (Giúp Ollama giữ mô hình embed trong RAM không bị đẩy ra ngoài liên tục)
   for (const item of pendingItems) {
     try {
-      // 1. Tạo vector
       const vector = await getEmbedding(item.tenGoc);
-      
-      // 2. Tìm top k ngữ nghĩa gần nhất (5 kết quả) dựa theo công ty
-      const contextItems = await findSimilarItems(vector, item.congtyId, 5);
+      itemsWithVectors.push({ ...item, vector });
+    } catch (err) {
+      console.error(`Lỗi sinh Embedding cho mặt hàng: ${item.tenGoc}`, err);
+    }
+  }
 
-      // 3. AI Evaluate
+  // BƯỚC 2: Rút trích Vector Similarity và Đánh giá ngữ nghĩa hàng loạt 
+  // (Lúc này Ollama mới load mô hình Llama3.2/Reasoning lên RAM)
+  for (const item of itemsWithVectors) {
+    if (!item.vector) continue;
+
+    try {
+      // Tìm top k ngữ nghĩa gần nhất (5 kết quả) dựa theo công ty
+      const contextItems = await findSimilarItems(item.vector, item.congtyId, 5);
+
+      // AI Evaluate
       const decision = await evaluateMapping(item.tenGoc, item.dvtGoc, contextItems);
 
-      // 4. Quyết định
+      // Quyết định
       if (decision.status === 'CONFIDENT_MATCH' && decision.confidence_score >= 0.95 && decision.mapped_tenChuan) {
          // Auto Approve!
          // Cập nhật Dictionary và chuyển status
@@ -78,7 +92,7 @@ export async function processMappingQueue(limit: number = 10) {
            // Lưu từ điển
            prisma.$executeRaw`
              INSERT INTO "ext_sanpham_dictionary" ("id", "tenGoc", "tenChuan", "maHang", "dvtinh", "embedding", "updatedAt", "congtyId")
-             VALUES (gen_random_uuid(), ${item.tenGoc}, ${decision.mapped_tenChuan}, ${decision.mapped_maHang}, ${item.dvtGoc}, ${`[${vector.join(',')}]`}::vector, NOW(), ${item.congtyId})
+             VALUES (gen_random_uuid(), ${item.tenGoc}, ${decision.mapped_tenChuan}, ${decision.mapped_maHang}, ${item.dvtGoc}, ${`[${item.vector.join(',')}]`}::vector, NOW(), ${item.congtyId})
            `,
            // Cập nhật Queue status
            prisma.ext_mapping_queue.update({
@@ -104,7 +118,7 @@ export async function processMappingQueue(limit: number = 10) {
         });
       }
     } catch (err) {
-      console.error(`Lỗi xử lý AI Agent cho mặt hàng: ${item.tenGoc}`, err);
+      console.error(`Lỗi xử lý LLM Agent cho mặt hàng: ${item.tenGoc}`, err);
     }
   }
 }

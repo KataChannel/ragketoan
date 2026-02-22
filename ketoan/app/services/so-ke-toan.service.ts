@@ -39,20 +39,30 @@ export interface JournalOptions {
 /**
  * Xác định tài khoản hạch toán dựa trên loại hóa đơn và tên hàng
  */
-function getAccountMapping(loaihd: string, tenHang: string): { no: string, co: string } {
+function getAccountMapping(loaihd: string, tenHang: string): { no: string, co: string, isDiscount?: boolean } {
   const tenUpper = tenHang.toUpperCase()
   
   if (loaihd === 'banra') {
-    // Bán hàng: Nợ 131 / Có 511
+    // Kiểm tra hàng giảm giá/chiết khấu
+    if (tenUpper.includes('CHIET KHAU') || tenUpper.includes(' CK ') || tenUpper.startsWith('CK ')) {
+      // Chiết khấu thương mại: Nợ 521 / Có 131 (TT200) hoặc Có 511 (TT133 ghi giảm)
+      // Ở đây dùng 521 cho chuẩn chuyên nghiệp
+      return { no: '521', co: '131', isDiscount: true }
+    }
+    // Bán hàng mặc định: Nợ 131 / Có 511
     return { no: '131', co: '511' }
   } else {
     // Mua vào
-    // Kiểm tra một số từ khóa để phân loại chi phí
-    if (tenUpper.includes('CUOC') || tenUpper.includes('PHI') || tenUpper.includes('DICH VU')) {
+    // Kiểm tra một số từ khóa để phân loại chi phí (642, 641, 242...)
+    if (tenUpper.includes('CUOC') || tenUpper.includes('PHI') || tenUpper.includes('DICH VU') || 
+        tenUpper.includes('GIA CONG') || tenUpper.includes('VAN CHUYEN')) {
       return { no: '642', co: '331' }
     }
-    if (tenUpper.includes('DIEN') || tenUpper.includes('NUOC') || tenUpper.includes('INTERNET')) {
+    if (tenUpper.includes('DIEN') || tenUpper.includes('NUOC') || tenUpper.includes('INTERNET') || tenUpper.includes('WIFI')) {
       return { no: '642', co: '331' }
+    }
+    if (tenUpper.includes('CONG CU') || tenUpper.includes('DUNG CU') || tenUpper.includes('VAN PHONG PHAM')) {
+      return { no: '153', co: '331' }
     }
     // Mặc định là mua hàng hóa
     return { no: '156', co: '331' }
@@ -98,27 +108,35 @@ export async function getJournalEntries(options: JournalOptions): Promise<Accoun
   const entries: AccountingEntry[] = []
 
   for (const item of data) {
+    const valAmount = Number(item.thtien)
+    const valTax = Number(item.tthue)
+
+    // BỎ QUA dòng trắng (Khuyến mãi 0đ và không thuế) để sạch sổ
+    if (valAmount === 0 && valTax === 0) continue
+
     const mapping = getAccountMapping(item.loaihd, item.tenHang)
     const doitac = item.loaihd === 'banra' ? item.nmten : item.nbten
     
-    // Bút toán doanh thu / giá trị hàng
-    entries.push({
-      id: `${item.id}_dt`,
-      ngay: item.tdlap,
-      soHdon: item.shdon,
-      khHdon: item.khhdon,
-      loaihd: item.loaihd,
-      doitac: doitac || '',
-      dienGiai: `${item.loaihd === 'banra' ? 'Bán' : 'Mua'} ${item.tenHang}`,
-      tkNo: mapping.no,
-      tkCo: mapping.co,
-      soTien: Number(item.thtien),
-      tenHang: item.tenHang,
-      maHang: item.maHang || undefined
-    })
+    // Bút toán doanh thu / giá trị hàng (Chỉ ghi nếu > 0 hoặc là dòng chiết khấu)
+    if (valAmount !== 0) {
+      entries.push({
+        id: `${item.id}_dt`,
+        ngay: item.tdlap,
+        soHdon: item.shdon,
+        khHdon: item.khhdon,
+        loaihd: item.loaihd,
+        doitac: doitac || '',
+        dienGiai: mapping.isDiscount ? `Chiết khấu: ${item.tenHang}` : `${item.loaihd === 'banra' ? 'Bán' : 'Mua'} ${item.tenHang}`,
+        tkNo: mapping.no,
+        tkCo: mapping.co,
+        soTien: Math.abs(valAmount), // Luôn để số dương, tài khoản No/Co sẽ quyết định bản chất
+        tenHang: item.tenHang,
+        maHang: item.maHang || undefined
+      })
+    }
 
     // Bút toán thuế (nếu có)
-    if (Number(item.tthue) > 0) {
+    if (valTax !== 0) {
       const tkThue = item.loaihd === 'banra' ? '3331' : '133'
       entries.push({
         id: `${item.id}_thue`,
@@ -130,7 +148,7 @@ export async function getJournalEntries(options: JournalOptions): Promise<Accoun
         dienGiai: `Thuế GTGT ${item.loaihd === 'banra' ? 'bán ra' : 'mua vào'}`,
         tkNo: item.loaihd === 'banra' ? '131' : tkThue,
         tkCo: item.loaihd === 'banra' ? tkThue : '331',
-        soTien: Number(item.tthue),
+        soTien: Math.abs(valTax),
         tenHang: item.tenHang
       })
     }
