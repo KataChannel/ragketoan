@@ -620,6 +620,13 @@ restore_data() {
     echo -e "${CYAN}[1/5] Giải nén backup...${NC}"
     tar -xzf "$selected_backup" -C "$temp_dir"
     
+    # Xử lý format backup cũ (các file nằm trong 1 folder lồng)
+    local nested_dir=$(ls -1A "$temp_dir" | head -n 1)
+    if [ $(ls -1A "$temp_dir" | wc -l) -eq 1 ] && [ -n "$nested_dir" ] && [ -d "$temp_dir/$nested_dir" ]; then
+        mv "$temp_dir/$nested_dir/"* "$temp_dir/$nested_dir/".[!.]* "$temp_dir/" 2>/dev/null || true
+        rmdir "$temp_dir/$nested_dir" 2>/dev/null || true
+    fi
+    
     # Restore .env
     echo -e "${CYAN}[2/5] Restore file .env...${NC}"
     if [ -f "$temp_dir/.env" ]; then
@@ -629,7 +636,7 @@ restore_data() {
     
     # Restore PostgreSQL
     echo -e "${CYAN}[3/5] Restore PostgreSQL database...${NC}"
-    if [ -f "$temp_dir/postgres_db.dump" ]; then
+    if [ -f "$temp_dir/postgres_db.dump" ] || [ -f "$temp_dir/postgres_n8n.dump" ] || [ -f "$temp_dir/postgres_ketoan.dump" ]; then
         # Tìm container postgres của project này
         local pg_container=""
         for name in "ragketoan-postgres-1" "ragketoan_postgres_1" "postgres"; do
@@ -649,16 +656,44 @@ restore_data() {
                 set +a
             fi
             
-            # Restore using pg_restore với timeout
-            timeout 120 docker exec -i "$pg_container" pg_restore -U "${POSTGRES_USER:-postgres}" \
-                -d "${POSTGRES_DB:-n8n}" \
-                --clean --if-exists \
-                < "$temp_dir/postgres_db.dump" 2>/dev/null
+            local db_restored=false
             
-            if [ $? -eq 0 ]; then
-                echo -e "  ${GREEN}✓${NC} PostgreSQL database restored"
-            else
-                echo -e "  ${YELLOW}⚠${NC} Lỗi khi restore PostgreSQL (có thể do schema conflicts)"
+            # Restore using pg_restore với timeout
+            if [ -f "$temp_dir/postgres_db.dump" ]; then
+                timeout 120 docker exec -i "$pg_container" pg_restore -U "${POSTGRES_USER:-postgres}" \
+                    -d "${POSTGRES_DB:-n8n}" \
+                    --clean --if-exists \
+                    < "$temp_dir/postgres_db.dump" 2>/dev/null
+                
+                if [ $? -eq 0 ]; then
+                    echo -e "  ${GREEN}✓${NC} PostgreSQL database restored"
+                    db_restored=true
+                else
+                    echo -e "  ${YELLOW}⚠${NC} Lỗi khi restore PostgreSQL (có thể do schema conflicts)"
+                fi
+            fi
+            
+            # Old format: postgres_n8n.dump, postgres_ketoan.dump
+            if [ -f "$temp_dir/postgres_n8n.dump" ]; then
+                docker exec -i "$pg_container" psql -U "${POSTGRES_USER:-postgres}" -c "CREATE DATABASE n8n;" 2>/dev/null || true
+                timeout 120 docker exec -i "$pg_container" pg_restore -U "${POSTGRES_USER:-postgres}" -d "n8n" --clean --if-exists < "$temp_dir/postgres_n8n.dump" 2>/dev/null
+                if [ $? -eq 0 ]; then
+                    echo -e "  ${GREEN}✓${NC} PostgreSQL database (n8n) restored"
+                    db_restored=true
+                fi
+            fi
+            
+            if [ -f "$temp_dir/postgres_ketoan.dump" ]; then
+                docker exec -i "$pg_container" psql -U "${POSTGRES_USER:-postgres}" -c "CREATE DATABASE ketoan;" 2>/dev/null || true
+                timeout 120 docker exec -i "$pg_container" pg_restore -U "${POSTGRES_USER:-postgres}" -d "ketoan" --clean --if-exists < "$temp_dir/postgres_ketoan.dump" 2>/dev/null
+                if [ $? -eq 0 ]; then
+                    echo -e "  ${GREEN}✓${NC} PostgreSQL database (ketoan) restored"
+                    db_restored=true
+                fi
+            fi
+            
+            if [ "$db_restored" = "false" ]; then
+                echo -e "  ${YELLOW}⚠${NC} Lỗi khi restore PostgreSQL database"
             fi
         else
             echo -e "  ${YELLOW}⚠${NC} PostgreSQL container không chạy. Hãy khởi động trước khi restore."
