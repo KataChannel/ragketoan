@@ -48,7 +48,7 @@ export default function AiMappingQueuePage() {
     }, [])
 
     const handleScanExisting = async () => {
-        if (!confirm('Bạn có chắc muốn tự động quét lại toàn bộ lịch sử mặt hàng từ 01/01/2023? AI sẽ mất vài phút để học và xử lý.')) return;
+        if (!confirm('Bạn có chắc muốn tự động quét lại toàn bộ lịch sử mặt hàng từ 01/01/2020? AI sẽ mất vài phút để học và xử lý.')) return;
         setIsScanning(true);
         const toastId = toast.loading('Đang quét hóa đơn cũ và đẩy vào Agent...');
         try {
@@ -129,7 +129,7 @@ export default function AiMappingQueuePage() {
                             ))}
                         </select>
                         <Button onClick={handleScanExisting} disabled={isScanning} className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold shadow-md">
-                            Quét Lịch Sử (Từ 2023)
+                            Quét Lịch Sử (Từ 2020)
                         </Button>
                         <Button onClick={fetchQueue} variant="outline" className="border-slate-700 bg-slate-800 text-slate-200">
                             <RefreshCw className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`} /> Làm mới

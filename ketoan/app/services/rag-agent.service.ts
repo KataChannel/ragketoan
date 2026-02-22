@@ -24,6 +24,7 @@ const GOOGLE_MODEL = process.env.GOOGLE_MODEL || 'gemini-1.5-flash';
 
 const OLLAMA_HOST = process.env.OLLAMA_HOST || 'http://localhost:11434';
 const OLLAMA_MODEL = process.env.OLLAMA_MODEL || 'llama3.2:latest';
+const OLLAMA_EMBED_MODEL = process.env.OLLAMA_EMBED_MODEL || 'nomic-embed-text:latest';
 
 /**
  * 1. Hàm Sinh Embedding cho một Text (Tên Hàng Gốc)
@@ -49,7 +50,7 @@ export async function getEmbedding(text: string): Promise<number[]> {
       const res = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ model: 'nomic-embed-text', prompt: text }) // Giả định dùng nomic-embed-text (dim: 768)
+        body: JSON.stringify({ model: OLLAMA_EMBED_MODEL, prompt: text }) // Giả định dùng nomic-embed-text (dim: 768)
       });
       if (!res.ok) throw new Error(await res.text());
       const data = await res.json();

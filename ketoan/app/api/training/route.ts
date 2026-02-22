@@ -23,6 +23,36 @@ export async function GET(request: NextRequest) {
       case 'suggest':
         const suggestions = await autoSuggestGrouping(congtyId)
         return NextResponse.json({ success: true, data: suggestions })
+        
+      case 'suggest_stream':
+        const congtyIdStream = congtyId;
+        const encoder = new TextEncoder();
+        
+        const stream = new ReadableStream({
+          async start(controller) {
+            const sendProgress = (percent: number, message: string, data?: any) => {
+               const payload = JSON.stringify({ percent, message, data: data || null });
+               controller.enqueue(encoder.encode(`data: ${payload}\n\n`));
+            };
+
+            try {
+              const result = await autoSuggestGrouping(congtyIdStream, sendProgress);
+              sendProgress(100, "Hoàn tất phân tích", result);
+              controller.close();
+            } catch (err: any) {
+              sendProgress(100, `Lỗi: ${err.message}`, []);
+              controller.close();
+            }
+          }
+        });
+
+        return new NextResponse(stream, {
+           headers: {
+              'Content-Type': 'text/event-stream',
+              'Cache-Control': 'no-cache',
+              'Connection': 'keep-alive',
+           }
+        });
       
       case 'list':
       default:
