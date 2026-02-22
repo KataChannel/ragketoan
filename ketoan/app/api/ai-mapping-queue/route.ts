@@ -69,12 +69,12 @@ export async function POST(request: NextRequest) {
 
       await prisma.$transaction([
         // Xoá record cũ nếu bị trùng tenGoc
-        prisma.ext_sanpham_dictionary.deleteMany({ where: { tenGoc: queueItem.tenGoc } }),
+        prisma.ext_sanpham_dictionary.deleteMany({ where: { tenGoc: queueItem.tenGoc, congtyId: queueItem.congtyId } }),
         
         // Thêm vào từ điển
         prisma.$executeRaw`
-             INSERT INTO "ext_sanpham_dictionary" ("id", "tenGoc", "tenChuan", "maHang", "dvtinh", "embedding", "updatedAt")
-             VALUES (gen_random_uuid(), ${queueItem.tenGoc}, ${tenChuanToSave}, ${maHangToSave}, ${dvtToSave}, ${vectorStr}::vector, NOW())
+             INSERT INTO "ext_sanpham_dictionary" ("id", "tenGoc", "tenChuan", "maHang", "dvtinh", "embedding", "updatedAt", "congtyId")
+             VALUES (gen_random_uuid(), ${queueItem.tenGoc}, ${tenChuanToSave}, ${maHangToSave}, ${dvtToSave}, ${vectorStr}::vector, NOW(), ${queueItem.congtyId})
         `,
 
         // Đánh dấu Queue là APPROVED
@@ -85,7 +85,7 @@ export async function POST(request: NextRequest) {
 
         // Cập nhật hồi tố hàng loạt lại các hóa đơn đã sync nhưng đang mang tên gốc
         prisma.ext_tonghop.updateMany({
-           where: { tenHang: queueItem.tenGoc },
+           where: { tenHang: queueItem.tenGoc, congtyId: queueItem.congtyId },
            data: { 
              tenHangChuan: tenChuanToSave,
              maHang: maHangToSave,

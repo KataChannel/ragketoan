@@ -1,32 +1,42 @@
 import prisma from '@/app/lib/prisma';
 import { getEmbedding, findSimilarItems, evaluateMapping } from './rag-agent.service';
 
-export async function pushToMappingQueue(items: { tenGoc: string, dvtGoc: string | null }[]) {
-  // Lọc unique theo tên gốc
-  const uniqueItems = Array.from(new Map(items.map(item => [item.tenGoc, item])).values());
+export async function pushToMappingQueue(items: { tenGoc: string, dvtGoc: string | null, congtyId: string | null }[]) {
+  // Lọc unique theo tên gốc + congtyId
+  const uniqueItemsMap = new Map<string, any>();
+  for (const item of items) {
+    uniqueItemsMap.set(`${item.congtyId || 'NULL'}-||-${item.tenGoc}`, item);
+  }
+  const uniqueItems = Array.from(uniqueItemsMap.values());
   
+  if (uniqueItems.length === 0) return;
+
+  const orConditions = uniqueItems.map(i => ({ tenGoc: i.tenGoc, congtyId: i.congtyId }));
+
   // Lấy các item đã có trong queue hoặc dict để không đẩy trùng
   const existingQueue = await prisma.ext_mapping_queue.findMany({
-    where: { tenGoc: { in: uniqueItems.map(i => i.tenGoc) } },
-    select: { tenGoc: true }
+    where: { OR: orConditions },
+    select: { tenGoc: true, congtyId: true }
   });
-  const queueSet = new Set(existingQueue.map(q => q.tenGoc));
+  const queueSet = new Set(existingQueue.map(q => `${q.congtyId || 'NULL'}-||-${q.tenGoc}`));
 
   const existingDict = await prisma.ext_sanpham_dictionary.findMany({
-    where: { tenGoc: { in: uniqueItems.map(i => i.tenGoc) } },
-    select: { tenGoc: true }
+    where: { OR: orConditions },
+    select: { tenGoc: true, congtyId: true }
   });
-  const dictSet = new Set(existingDict.map(d => d.tenGoc));
+  const dictSet = new Set(existingDict.map(d => `${d.congtyId || 'NULL'}-||-${d.tenGoc}`));
 
-  const newItemsToInsert = uniqueItems.filter(item => 
-    !queueSet.has(item.tenGoc) && !dictSet.has(item.tenGoc)
-  );
+  const newItemsToInsert = uniqueItems.filter(item => {
+    const key = `${item.congtyId || 'NULL'}-||-${item.tenGoc}`;
+    return !queueSet.has(key) && !dictSet.has(key);
+  });
 
   if (newItemsToInsert.length > 0) {
     await prisma.ext_mapping_queue.createMany({
       data: newItemsToInsert.map(item => ({
         tenGoc: item.tenGoc,
         dvtGoc: item.dvtGoc,
+        congtyId: item.congtyId,
         status: 'PENDING'
       })),
       skipDuplicates: true
@@ -52,8 +62,8 @@ export async function processMappingQueue(limit: number = 10) {
       // 1. Tạo vector
       const vector = await getEmbedding(item.tenGoc);
       
-      // 2. Tìm top k ngữ nghĩa gần nhất (5 kết quả)
-      const contextItems = await findSimilarItems(vector, 5);
+      // 2. Tìm top k ngữ nghĩa gần nhất (5 kết quả) dựa theo công ty
+      const contextItems = await findSimilarItems(vector, item.congtyId, 5);
 
       // 3. AI Evaluate
       const decision = await evaluateMapping(item.tenGoc, item.dvtGoc, contextItems);
@@ -63,12 +73,12 @@ export async function processMappingQueue(limit: number = 10) {
          // Auto Approve!
          // Cập nhật Dictionary và chuyển status
          await prisma.$transaction([
-           // Xoá record cũ nếu có
-           prisma.ext_sanpham_dictionary.deleteMany({ where: { tenGoc: item.tenGoc } }),
-           // Lưu từ điển. (Dùng pgvector thô ở dạng chuỗi có thể khó nếu ta k update vector. Ở đây ta insert query thô để truyền embedding)
+           // Xoá record cũ nếu có (cùng công ty)
+           prisma.ext_sanpham_dictionary.deleteMany({ where: { tenGoc: item.tenGoc, congtyId: item.congtyId } }),
+           // Lưu từ điển
            prisma.$executeRaw`
-             INSERT INTO "ext_sanpham_dictionary" ("id", "tenGoc", "tenChuan", "maHang", "dvtinh", "embedding", "updatedAt")
-             VALUES (gen_random_uuid(), ${item.tenGoc}, ${decision.mapped_tenChuan}, ${decision.mapped_maHang}, ${item.dvtGoc}, ${`[${vector.join(',')}]`}::vector, NOW())
+             INSERT INTO "ext_sanpham_dictionary" ("id", "tenGoc", "tenChuan", "maHang", "dvtinh", "embedding", "updatedAt", "congtyId")
+             VALUES (gen_random_uuid(), ${item.tenGoc}, ${decision.mapped_tenChuan}, ${decision.mapped_maHang}, ${item.dvtGoc}, ${`[${vector.join(',')}]`}::vector, NOW(), ${item.congtyId})
            `,
            // Cập nhật Queue status
            prisma.ext_mapping_queue.update({

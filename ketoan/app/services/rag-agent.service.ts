@@ -64,7 +64,7 @@ export async function getEmbedding(text: string): Promise<number[]> {
 /**
  * 2. Hàm tìm kiếm Vector Vector bằng Prisma Raw Query (KNN)
  */
-export async function findSimilarItems(embedding: number[], topK: number = 5): Promise<SimilarItem[]> {
+export async function findSimilarItems(embedding: number[], congtyId: string | null, topK: number = 5): Promise<SimilarItem[]> {
   const vectorStr = `[${embedding.join(',')}]`;
   
   // Chúng ta sử dụng Cosine Distance operator <=> của pgvector
@@ -74,6 +74,7 @@ export async function findSimilarItems(embedding: number[], topK: number = 5): P
            1 - ("embedding" <=> ${vectorStr}::vector) as similarity
     FROM "ext_sanpham_dictionary"
     WHERE "embedding" IS NOT NULL
+      AND ("congtyId" = ${congtyId} OR "congtyId" IS NULL)
     ORDER BY "embedding" <=> ${vectorStr}::vector
     LIMIT ${topK};
   `;
