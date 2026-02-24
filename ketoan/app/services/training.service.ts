@@ -118,7 +118,8 @@ export async function updateTrainingMapping(items: string[], standardName: strin
   maHang?: string,
   nhomHang?: string,
   dvtinh?: string,
-  congtyId?: string
+  congtyId?: string,
+  apiKey?: string
 }) {
   const operations = items.map(tenGoc => {
     return (prisma as any).ext_sanpham_dictionary.upsert({
@@ -165,7 +166,7 @@ export async function updateTrainingMapping(items: string[], standardName: strin
   const generateEmbeddingsSafely = async () => {
      for (const tenGoc of items) {
        try {
-         const vector = await getEmbedding(tenGoc);
+         const vector = await getEmbedding(tenGoc, additionalInfo.apiKey);
          const vectorStr = `[${vector.join(',')}]`;
          await prisma.$executeRaw`
             UPDATE "ext_sanpham_dictionary" 
@@ -206,30 +207,31 @@ export async function autoSuggestGrouping(
   });
   const mappedNames = new Set(dictionary.map((d: any) => d.tenGoc));
 
-  // Lấy danh sách các mặt hàng gốc, sắp xếp theo số lượng xuất hiện nhiều nhất
+  // Lấy toàn bộ danh sách các mặt hàng gốc chưa có map để tránh bị kẹt (Bottleneck)
   const allGroups = await prisma.ext_tonghop.groupBy({
     by: ['tenHang'],
     where: isStrictCompany ? { congtyId } : undefined,
     _count: {
       tenHang: true
-    },
-    orderBy: {
-      _count: {
-        tenHang: 'desc'
-      }
-    },
-    take: 500 // Lấy dư ra 500 mục để đảm bảo sau khi lọc xong vẫn đủ
+    }
+    // Đã bỏ `take` và `orderBy` để fetch toàn bộ nhóm sản phẩm
   });
 
-  // Sử dụng batch size động từ người dùng (mặc định 80, tối đa nên là 200-300 để tránh truncation)
-  const unmapped = allGroups.filter(g => !mappedNames.has(g.tenHang)).slice(0, limit);
+  // Lọc ra các mục chưa được map
+  const unmapped = allGroups.filter(g => !mappedNames.has(g.tenHang));
 
   if (unmapped.length === 0) {
     if (onProgress) onProgress(100, 'Tuyệt vời, không có mặt hàng nào cần chuẩn hóa!');
     return [];
   }
 
-  const itemsList = unmapped.map(i => i.tenHang);
+  // Xáo trộn ngẫu nhiên (Shuffle) danh sách thay vì lấy từ trên xuống
+  // Việc này giúp hệ thống nếu chạy lần 2 lần 3 sẽ không bao giờ bị kẹt lại ở 
+  // những mặt hàng mà ở lần 1 AI không biết gom nhóm. Từ đó quét sạch dần hàng nghìn items.
+  const shuffled = unmapped.sort(() => 0.5 - Math.random());
+  const selectedBatch = shuffled.slice(0, limit);
+
+  const itemsList = selectedBatch.map(i => i.tenHang);
 
   if (onProgress) onProgress(30, `Đã trích xuất ${itemsList.length} mặt hàng. Đang phân tích bằng Gemini 2.5 Flash...`);
 
@@ -377,12 +379,12 @@ export async function applyTrainingToDatabase() {
 /**
  * Chấp nhận hàng loạt các gợi ý từ AI
  */
-export async function bulkUpdateTrainingMapping(suggestions: any[], congtyId?: string) {
+export async function bulkUpdateTrainingMapping(suggestions: any[], congtyId?: string, apiKey?: string) {
   let count = 0;
   for (const s of suggestions) {
     if (s.standard && s.variants && Array.isArray(s.variants) && s.variants.length > 0) {
       // Gọi update cho từng nhóm
-      await updateTrainingMapping(s.variants, s.standard, { congtyId });
+      await updateTrainingMapping(s.variants, s.standard, { congtyId, apiKey });
       count++;
     }
   }

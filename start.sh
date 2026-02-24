@@ -428,6 +428,15 @@ cleanup_old_backups() {
 
 # Function to backup data
 backup_data() {
+    if [ -f "$SCRIPT_DIR/backup.sh" ]; then
+        bash "$SCRIPT_DIR/backup.sh"
+        cleanup_old_backups
+    else
+        echo -e "${RED}[ERROR] Không tìm thấy file backup.sh!${NC}"
+    fi
+    return 0
+
+    # Original code ignored below:
     local timestamp=$(date +"%Y%m%d_%H%M%S")
     local backup_name="ragketoan_backup_${timestamp}"
     local temp_dir="$BACKUP_DIR/temp_${timestamp}"
@@ -616,6 +625,14 @@ restore_data() {
         return 0
     fi
     
+    if [ -f "$SCRIPT_DIR/restore.sh" ]; then
+        bash "$SCRIPT_DIR/restore.sh" "$selected_backup" --auto-yes
+    else
+        echo -e "${RED}[ERROR] Không tìm thấy file restore.sh!${NC}"
+    fi
+    return 0
+
+    # Original code ignored below:
     local temp_dir="$BACKUP_DIR/restore_temp_$(date +%s)"
     mkdir -p "$temp_dir"
     

@@ -69,6 +69,7 @@ export default function TrainingPage() {
   // Suggestions
   const [suggestions, setSuggestions] = useState<any[]>([]);
   const [isSuggesting, setIsSuggesting] = useState(false);
+  const [isTrainingComplete, setIsTrainingComplete] = useState(false);
   const [suggestProgress, setSuggestProgress] = useState({ percent: 0, message: '' });
   const [aiLimit, setAiLimit] = useState<number>(80);
   const [apiKey, setApiKey] = useState<string>('');
@@ -174,6 +175,7 @@ export default function TrainingPage() {
           action: 'update',
           items: selectedNames,
           standardName,
+          apiKey: apiKey || undefined,
           info: {
             maHang,
             nhomHang,
@@ -223,6 +225,7 @@ export default function TrainingPage() {
     }
 
     setIsSuggesting(true);
+    setIsTrainingComplete(false);
     setSuggestions([]);
     setSuggestProgress({ percent: 5, message: 'Khởi tạo tiến trình phân tích AI...' });
 
@@ -247,6 +250,7 @@ export default function TrainingPage() {
             eventSource.close();
             eventSourceRef.current = null;
             setIsSuggesting(false);
+            setIsTrainingComplete(true);
 
             if (data.data && Array.isArray(data.data) && data.data.length > 0) {
               setSuggestions(data.data);
@@ -270,6 +274,7 @@ export default function TrainingPage() {
           eventSource.close();
           eventSourceRef.current = null;
           setIsSuggesting(false);
+          setIsTrainingComplete(true);
           toast.error('Mất kết nối với dịch vụ AI hoặc bạn đã dừng tiến trình');
         }
       };
@@ -284,6 +289,7 @@ export default function TrainingPage() {
       eventSourceRef.current.close();
       eventSourceRef.current = null;
       setIsSuggesting(false);
+      setIsTrainingComplete(true);
       setSuggestProgress({ percent: 0, message: 'Đã dừng theo yêu cầu người dùng' });
       toast.info('Đã dừng tiến trình AI');
     }
@@ -312,7 +318,8 @@ export default function TrainingPage() {
         body: JSON.stringify({
           action: 'bulk_update',
           suggestions,
-          congtyId: selectedCompanyId || undefined
+          congtyId: selectedCompanyId || undefined,
+          apiKey: apiKey || undefined
         }),
       });
       const result = await response.json();
@@ -645,6 +652,15 @@ export default function TrainingPage() {
                   <div className="absolute top-0 left-0 w-full h-full bg-white/20 animate-pulse"></div>
                 </div>
               </div>
+            </div>
+          )}
+
+          {!isSuggesting && isTrainingComplete && (
+            <div className="mb-6 w-full text-center">
+              <span className="text-red-500 font-bold text-sm px-4 py-1.5 rounded-lg border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 inline-flex items-center gap-1.5 animate-pulse">
+                <CheckCircle2 className="h-4 w-4" />
+                Tiến trình Training tự động đã chạy xong!
+              </span>
             </div>
           )}
 

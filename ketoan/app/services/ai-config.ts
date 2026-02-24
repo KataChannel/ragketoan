@@ -60,11 +60,11 @@ export async function generateContent(prompt: string, config: any = {}, apiKey?:
 /**
  * Helper chuyên biệt cho Embedding
  */
-export async function embedText(text: string): Promise<number[]> {
+export async function embedText(text: string, apiKey?: string): Promise<number[]> {
   const data = await callGoogleAI('models/gemini-embedding-001:embedContent', {
     model: 'models/gemini-embedding-001',
     content: { parts: [{ text }] },
     outputDimensionality: 768
-  });
+  }, 'v1beta', apiKey);
   return data.embedding.values;
 }

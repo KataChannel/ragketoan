@@ -104,8 +104,9 @@ export async function POST(request: NextRequest) {
 
     switch (action) {
       case 'update':
-        const { items, standardName, info } = body
-        const result = await updateTrainingMapping(items, standardName, info)
+        const { items, standardName, info, apiKey } = body
+        const additionalInfo = { ...info, apiKey }
+        const result = await updateTrainingMapping(items, standardName, additionalInfo)
         return NextResponse.json(result)
 
       case 'sync':
@@ -113,8 +114,8 @@ export async function POST(request: NextRequest) {
         return NextResponse.json(syncResult)
 
       case 'bulk_update':
-        const { suggestions, congtyId: bulkCongtyId } = body
-        const bulkResult = await bulkUpdateTrainingMapping(suggestions, bulkCongtyId)
+        const { suggestions, congtyId: bulkCongtyId, apiKey: bulkApiKey } = body
+        const bulkResult = await bulkUpdateTrainingMapping(suggestions, bulkCongtyId, bulkApiKey)
         return NextResponse.json(bulkResult)
 
       default:
