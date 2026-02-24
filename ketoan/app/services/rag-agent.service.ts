@@ -21,9 +21,9 @@ export interface SimilarItem {
 /**
  * 1. Hàm Sinh Embedding cho một Text (Tên Hàng Gốc)
  */
-export async function getEmbedding(text: string): Promise<number[]> {
+export async function getEmbedding(text: string, apiKey?: string): Promise<number[]> {
   try {
-    return await embedText(text);
+    return await embedText(text, apiKey);
   } catch (error) {
     console.error('Error generating embedding with Google API:', error);
     throw error;
