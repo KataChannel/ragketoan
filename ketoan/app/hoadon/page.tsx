@@ -270,6 +270,27 @@ export default function HoaDonPage() {
     document.body.removeChild(link);
   };
 
+  // Handle export excel
+  const handleExportExcel = async () => {
+    try {
+      toast.info('Đang chuẩn bị file Excel...', { duration: 3000 });
+      const params = new URLSearchParams({
+        fromDate: filterFromDate,
+        toDate: filterToDate,
+      });
+
+      if (selectedCompanyId) {
+        params.append('congtyId', selectedCompanyId);
+      }
+
+      const url = `/api/invoices/export?${params.toString()}`;
+      window.location.href = url;
+    } catch (error) {
+      console.error('Error exporting excel:', error);
+      toast.error('Có lỗi khi xuất Excel');
+    }
+  };
+
   // Handle sync với streaming
   const handleSync = async () => {
     // Kiểm tra phải chọn cấu hình hoặc nhập token
@@ -905,7 +926,7 @@ export default function HoaDonPage() {
                 <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
                 <span className="ml-1">Tải lại</span>
               </Button>
-              <Button variant="outline" size="sm" className="flex-1 sm:flex-none">
+              <Button variant="outline" size="sm" className="flex-1 sm:flex-none" onClick={handleExportExcel}>
                 <Download className="h-4 w-4" />
                 <span className="ml-1">Xuất Excel</span>
               </Button>

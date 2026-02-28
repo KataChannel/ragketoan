@@ -1013,8 +1013,20 @@ export async function recalculateDailyInventory(congtyId?: string) {
         xuatQty: new Decimal(0), xuatVal: new Decimal(0) 
       };
 
-      const tonCuoiQty = prevBal.qty.add(trans.nhapQty).sub(trans.xuatQty);
-      const tonCuoiVal = prevBal.val.add(trans.nhapVal).sub(trans.xuatVal);
+      const totalQtyBeforeXuat = prevBal.qty.add(trans.nhapQty);
+      const totalValBeforeXuat = prevBal.val.add(trans.nhapVal);
+      
+      // Tính giá bình quân tại thời điểm xuất
+      let unitPrice = new Decimal(0);
+      if (totalQtyBeforeXuat.gt(0)) {
+        unitPrice = totalValBeforeXuat.div(totalQtyBeforeXuat);
+      }
+
+      // Giá trị xuất kho thực tế (COGS) theo giá bình quân
+      const actualXuatVal = trans.xuatQty.mul(unitPrice);
+
+      const tonCuoiQty = totalQtyBeforeXuat.sub(trans.xuatQty);
+      const tonCuoiVal = totalValBeforeXuat.sub(actualXuatVal);
 
       // Only save if there's a balance or a transaction today
       if (tonCuoiQty.toNumber() !== 0 || tonCuoiVal.toNumber() !== 0 || 
@@ -1031,7 +1043,7 @@ export async function recalculateDailyInventory(congtyId?: string) {
           nhapQty: trans.nhapQty,
           nhapVal: trans.nhapVal,
           xuatQty: trans.xuatQty,
-          xuatVal: trans.xuatVal,
+          xuatVal: actualXuatVal, // Sử dụng giá trị xuất kho thực tế (giá vốn)
           tonCuoiQty: tonCuoiQty,
           tonCuoiVal: tonCuoiVal
         });
@@ -1065,6 +1077,55 @@ export async function recalculateDailyInventory(congtyId?: string) {
 // Export default
 // ============================================================================
 
+/**
+ * Lấy danh sách các sản phẩm đang bị âm kho kèm gợi ý xử lý
+ */
+export async function getNegativeInventory(congtyId: string) {
+  // 1. Tìm các sản phẩm có tonCuoiQty < 0 tại ngày mới nhất
+  const today = new Date();
+  today.setUTCHours(0, 0, 0, 0);
+
+  const negativeItems = await (prisma as any).ext_daily_stock_v2.findMany({
+    where: {
+      congtyId,
+      date: {
+        lte: today
+      },
+      tonCuoiQty: {
+        lt: 0
+      }
+    },
+    orderBy: {
+      date: 'desc'
+    },
+    distinct: ['tenHangChuan']
+  });
+
+  // 2. Với mỗi sản phẩm âm, tìm giao dịch bán ra gần nhất và gợi ý mua vào
+  const results = await Promise.all(negativeItems.map(async (item: any) => {
+    const lastSale = await prisma.ext_tonghop.findFirst({
+      where: {
+        congtyId,
+        tenHangChuan: item.tenHangChuan,
+        soLuongXuat: { gt: 0 }
+      },
+      orderBy: { tdlap: 'desc' }
+    });
+
+    return {
+      tenHangChuan: item.tenHangChuan,
+      maHang: item.maHang,
+      dvtinh: item.dvtinh,
+      tonHienTai: Number(item.tonCuoiQty),
+      ngayAmDauTien: item.date,
+      banGiaGanNhat: lastSale ? Number(lastSale.dgia) : 0,
+      goiY: `Cần bổ sung hóa đơn nhập kho cho ít nhất ${Math.abs(Number(item.tonCuoiQty))} ${item.dvtinh} trước ngày ${item.date.toLocaleDateString('vi-VN')}`
+    };
+  }));
+
+  return results;
+}
+
 export default {
   syncTongHop,
   getTongHopStats,
@@ -1073,5 +1134,6 @@ export default {
   getXuatNhapTonTheoThoiGian,
   getXuatNhapTonBaoCaoThang,
   getXuatNhapTonBaoCaoNam,
-  recalculateDailyInventory
+  recalculateDailyInventory,
+  getNegativeInventory
 }

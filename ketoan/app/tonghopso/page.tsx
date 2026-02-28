@@ -15,6 +15,11 @@ import {
     ClipboardList,
     ArrowRightLeft,
     Calculator,
+    TrendingUp,
+    Building2,
+    AlertTriangle,
+    ShieldCheck,
+    AlertCircle
 } from 'lucide-react';
 import { DashboardLayout } from '@/app/components/dashboard-layout';
 import { Button } from '@/app/components/ui/button';
@@ -39,7 +44,13 @@ export default function TongHopSoPage() {
     const [journalData, setJournalData] = useState<any[]>([]);
     const [ledgerData, setLedgerData] = useState<any[]>([]);
     const [trialBalanceData, setTrialBalanceData] = useState<any[]>([]);
+    const [detailLedgerData, setDetailLedgerData] = useState<any[]>([]);
+    const [plData, setPlData] = useState<any[]>([]);
+    const [balanceSheetData, setBalanceSheetData] = useState<any[]>([]);
+    const [negativeInventory, setNegativeInventory] = useState<any[]>([]);
+    const [auditAlerts, setAuditAlerts] = useState<any[]>([]);
     const [selectedAccount, setSelectedAccount] = useState<string>('111');
+    const [searchObject, setSearchObject] = useState<string>('');
 
     const commonAccounts = [
         { value: '111', label: '111 - Tiền mặt' },
@@ -141,6 +152,116 @@ export default function TongHopSoPage() {
         }
     }, [selectedCompanyId, fromDate, toDate, isLoading]);
 
+    const fetchDetailLedger = useCallback(async () => {
+        if (!selectedAccount || isLoading) return;
+        setIsLoading(true);
+        try {
+            const params = new URLSearchParams({
+                action: 'sochitiet',
+                tk: selectedAccount,
+                doiTuong: searchObject,
+                fromDate,
+                toDate,
+            });
+            if (selectedCompanyId) params.append('congtyId', selectedCompanyId);
+
+            const response = await fetch(`/api/tonghopso?${params}`);
+            const result = await response.json();
+            if (result.success) {
+                setDetailLedgerData(result.data);
+            }
+        } catch (error) {
+            console.error('Error fetching detail ledger:', error);
+            toast.error('Lỗi khi tải dữ liệu sổ chi tiết');
+        } finally {
+            setIsLoading(false);
+        }
+    }, [selectedAccount, searchObject, selectedCompanyId, fromDate, toDate, isLoading]);
+
+    const fetchPLReport = useCallback(async () => {
+        if (isLoading) return;
+        setIsLoading(true);
+        try {
+            const params = new URLSearchParams({
+                action: 'bckqkd',
+                fromDate,
+                toDate,
+            });
+            if (selectedCompanyId) params.append('congtyId', selectedCompanyId);
+
+            const response = await fetch(`/api/tonghopso?${params}`);
+            const result = await response.json();
+            if (result.success) {
+                setPlData(result.data);
+            }
+        } catch (error) {
+            console.error('Error fetching P&L report:', error);
+            toast.error('Lỗi khi tải báo cáo KQKD');
+        } finally {
+            setIsLoading(false);
+        }
+    }, [selectedCompanyId, fromDate, toDate, isLoading]);
+
+    const fetchBalanceSheet = useCallback(async () => {
+        if (isLoading) return;
+        setIsLoading(true);
+        try {
+            const params = new URLSearchParams({
+                action: 'bangcandoi_b01',
+                fromDate,
+                toDate,
+            });
+            if (selectedCompanyId) params.append('congtyId', selectedCompanyId);
+
+            const response = await fetch(`/api/tonghopso?${params}`);
+            const result = await response.json();
+            if (result.success) {
+                setBalanceSheetData(result.data);
+            }
+        } catch (error) {
+            console.error('Error fetching Balance Sheet:', error);
+        } finally {
+            setIsLoading(false);
+        }
+    }, [selectedCompanyId, fromDate, toDate, isLoading]);
+
+    const fetchNegativeInventory = useCallback(async () => {
+        try {
+            const params = new URLSearchParams({
+                action: 'xnt-mathang',
+                onlyNegative: 'true'
+            });
+            if (selectedCompanyId) params.append('congtyId', selectedCompanyId);
+
+            const response = await fetch(`/api/tonghop?${params}`);
+            const result = await response.json();
+            if (result.success) {
+                setNegativeInventory(result.items.filter((i: any) => i.tonCuoi < 0));
+            }
+        } catch (error) {
+            console.error('Error fetching negatives:', error);
+        }
+    }, [selectedCompanyId]);
+
+    const fetchAudit = useCallback(async () => {
+        try {
+            const params = new URLSearchParams({
+                action: 'audit',
+                fromDate,
+                toDate,
+            });
+            if (selectedCompanyId) params.append('congtyId', selectedCompanyId);
+
+            const response = await fetch(`/api/tonghopso?${params}`);
+            const result = await response.json();
+            if (result.success) {
+                setAuditAlerts(result.data);
+            }
+        } catch (error) {
+            console.error('Error fetching audit:', error);
+        }
+    }, [selectedCompanyId, fromDate, toDate]);
+
     useEffect(() => {
         fetchCompanies();
         const cached = localStorage.getItem('last_selected_company_id');
@@ -159,10 +280,26 @@ export default function TongHopSoPage() {
         fetchTrialBalance();
     }, [fromDate, toDate, selectedCompanyId]);
 
+    useEffect(() => {
+        fetchDetailLedger();
+    }, [selectedAccount, searchObject, fromDate, toDate, selectedCompanyId]);
+
+    useEffect(() => {
+        fetchPLReport();
+        fetchBalanceSheet();
+        fetchNegativeInventory();
+        fetchAudit();
+    }, [fromDate, toDate, selectedCompanyId]);
+
     const handleRefresh = () => {
         fetchJournal();
         fetchLedger();
         fetchTrialBalance();
+        fetchDetailLedger();
+        fetchPLReport();
+        fetchBalanceSheet();
+        fetchNegativeInventory();
+        fetchAudit();
     };
 
     const handleExportExcel = () => {
@@ -251,6 +388,22 @@ export default function TongHopSoPage() {
                         <TabsTrigger value="bangcandoi" className="py-2.5">
                             <Calculator className="h-4 w-4 mr-2" />
                             Bảng Cân Đối
+                        </TabsTrigger>
+                        <TabsTrigger value="bckqkd" className="py-2.5">
+                            <TrendingUp className="h-4 w-4 mr-2" />
+                            Báo cáo KQKD
+                        </TabsTrigger>
+                        <TabsTrigger value="can-can-doi-kt" className="py-2.5 text-blue-600 font-bold">
+                            <Building2 className="h-4 w-4 mr-2" />
+                            Bảng Cân Đối KT
+                        </TabsTrigger>
+                        <TabsTrigger value="canh-bao-kho" className="py-2.5 text-red-500">
+                            <AlertTriangle className="h-4 w-4 mr-2" />
+                            Cảnh báo Kho ({negativeInventory.length})
+                        </TabsTrigger>
+                        <TabsTrigger value="ai-audit" className="py-2.5 text-secondary-600 font-bold border-l-2 border-secondary-100 ml-2 pl-4">
+                            <ShieldCheck className="h-4 w-4 mr-2" />
+                            AI Audit ({auditAlerts.length})
                         </TabsTrigger>
                     </TabsList>
 
@@ -394,9 +547,88 @@ export default function TongHopSoPage() {
                             )}
                         </TabsContent>
                         <TabsContent value="sochitiet" className="m-0">
-                            <div className="p-8 text-center text-gray-500">
-                                <p>Tính năng Sổ Chi Tiết đang được hoàn thiện</p>
+                            <div className="p-4 border-b border-gray-100 dark:border-gray-800 flex flex-col sm:flex-row items-center gap-4">
+                                <div className="flex items-center gap-2 max-w-xs w-full">
+                                    <Label className="text-xs font-bold whitespace-nowrap">TK:</Label>
+                                    <Combobox
+                                        options={commonAccounts}
+                                        value={selectedAccount}
+                                        onValueChange={setSelectedAccount}
+                                        placeholder="Chọn tài khoản..."
+                                    />
+                                </div>
+                                <div className="flex items-center gap-2 flex-1 w-full">
+                                    <Label className="text-xs font-bold whitespace-nowrap">ĐỐI TƯỢNG:</Label>
+                                    <div className="relative w-full">
+                                        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
+                                        <Input
+                                            placeholder="Tên khách hàng, nhà cung cấp hoặc mã hàng..."
+                                            value={searchObject}
+                                            onChange={(e) => setSearchObject(e.target.value)}
+                                            className="pl-9 h-9"
+                                        />
+                                    </div>
+                                </div>
                             </div>
+
+                            {isLoading ? (
+                                <div className="p-8 text-center text-gray-500">
+                                    <RefreshCw className="h-8 w-8 text-blue-500 animate-spin mx-auto mb-2" />
+                                    <p>Đang tải dữ liệu sổ chi tiết...</p>
+                                </div>
+                            ) : detailLedgerData.length === 0 ? (
+                                <div className="p-8 text-center text-gray-500">
+                                    <p>Không có dữ liệu cho đối tượng này trong kỳ</p>
+                                </div>
+                            ) : (
+                                <div className="overflow-x-auto">
+                                    <table className="w-full text-sm text-left border-collapse">
+                                        <thead>
+                                            <tr className="bg-gray-50 dark:bg-gray-900/50 border-b border-gray-200 dark:border-gray-700">
+                                                <th className="px-4 py-3 font-semibold text-gray-700 dark:text-gray-200">NGÀY</th>
+                                                <th className="px-4 py-3 font-semibold text-gray-700 dark:text-gray-200">CHỨNG TỪ</th>
+                                                <th className="px-4 py-3 font-semibold text-gray-700 dark:text-gray-200">DIỄN GIẢI</th>
+                                                <th className="px-4 py-3 font-semibold text-gray-700 dark:text-gray-200 text-center">TK Đ/Ứ</th>
+                                                <th className="px-4 py-3 font-semibold text-gray-700 dark:text-gray-200 text-right">NỢ</th>
+                                                <th className="px-4 py-3 font-semibold text-gray-700 dark:text-gray-200 text-right">CÓ</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {detailLedgerData.map((item, idx) => (
+                                                <tr key={idx} className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900/40">
+                                                    <td className="px-4 py-2 text-gray-600 dark:text-gray-300">
+                                                        {format(new Date(item.ngay), 'dd/MM/yyyy')}
+                                                    </td>
+                                                    <td className="px-4 py-2 font-medium text-gray-900 dark:text-white">
+                                                        {item.soHdon}
+                                                    </td>
+                                                    <td className="px-4 py-2 text-gray-600 dark:text-gray-300 max-w-[300px] truncate">
+                                                        {item.dienGiai}
+                                                    </td>
+                                                    <td className="px-4 py-2 text-center font-bold text-gray-500">
+                                                        {item.tkDoiUng}
+                                                    </td>
+                                                    <td className="px-4 py-2 text-right font-medium text-blue-600">
+                                                        {item.no > 0 ? formatCurrency(item.no) : '-'}
+                                                    </td>
+                                                    <td className="px-4 py-2 text-right font-medium text-amber-600">
+                                                        {item.co > 0 ? formatCurrency(item.co) : '-'}
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                            <tr className="bg-gray-50 dark:bg-gray-900/50 font-bold">
+                                                <td colSpan={4} className="px-4 py-3 text-right">TỔNG CỘNG</td>
+                                                <td className="px-4 py-3 text-right text-blue-600">
+                                                    {formatCurrency(detailLedgerData.reduce((acc, curr) => acc + (curr.no || 0), 0))}
+                                                </td>
+                                                <td className="px-4 py-3 text-right text-amber-600">
+                                                    {formatCurrency(detailLedgerData.reduce((acc, curr) => acc + (curr.co || 0), 0))}
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            )}
                         </TabsContent>
                         <TabsContent value="bangcandoi" className="m-0">
                             {isLoading ? (
@@ -452,6 +684,183 @@ export default function TongHopSoPage() {
                                     </table>
                                 </div>
                             )}
+                        </TabsContent>
+                        <TabsContent value="bckqkd" className="m-0">
+                            {isLoading ? (
+                                <div className="p-8 text-center text-gray-500">
+                                    <RefreshCw className="h-8 w-8 text-blue-500 animate-spin mx-auto mb-2" />
+                                    <p>Đang lập báo cáo KQKD...</p>
+                                </div>
+                            ) : plData.length === 0 ? (
+                                <div className="p-8 text-center text-gray-500">
+                                    <p>Không có dữ liệu trong kỳ này</p>
+                                </div>
+                            ) : (
+                                <div className="p-4 sm:p-6 lg:p-8 max-w-4xl mx-auto bg-white dark:bg-gray-800">
+                                    <div className="text-center mb-8">
+                                        <h3 className="text-xl font-bold uppercase">Báo cáo Kết quả Hoạt động Kinh doanh</h3>
+                                        <p className="text-sm text-gray-500 mt-1">
+                                            Kỳ báo cáo: Từ {format(new Date(fromDate), 'dd/MM/yyyy')} đến {format(new Date(toDate), 'dd/MM/yyyy')}
+                                        </p>
+                                        <p className="text-xs text-secondary-500 mt-0.5">(Đơn vị tính: Đồng Việt Nam)</p>
+                                    </div>
+
+                                    <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+                                        <table className="w-full text-sm">
+                                            <thead className="bg-gray-50 dark:bg-gray-900/50">
+                                                <tr>
+                                                    <th className="px-4 py-3 text-left font-bold border-b border-gray-200 dark:border-gray-700">Chỉ tiêu</th>
+                                                    <th className="px-4 py-3 text-center font-bold border-b border-gray-200 dark:border-gray-700 w-24">Mã số</th>
+                                                    <th className="px-4 py-3 text-right font-bold border-b border-gray-200 dark:border-gray-700 w-48">Số kỳ này</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+                                                {plData.map((row, idx) => (
+                                                    <tr key={idx} className={`${idx === 2 || idx === 4 || idx === 6 || idx === 9 ? 'bg-blue-50/20 dark:bg-blue-900/10 font-bold' : ''}`}>
+                                                        <td className="px-4 py-3 text-gray-700 dark:text-gray-300">{row.target}</td>
+                                                        <td className="px-4 py-3 text-center text-gray-500">{row.code}</td>
+                                                        <td className="px-4 py-3 text-right font-mono font-medium">
+                                                            {formatCurrency(row.value)}
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                    <div className="grid grid-cols-3 mt-12 text-center text-sm font-bold">
+                                        <div>NGƯỜI LẬP BIỂU</div>
+                                        <div>KẾ TOÁN TRƯỞNG</div>
+                                        <div>GIÁM ĐỐC</div>
+                                    </div>
+                                    <div className="grid grid-cols-3 mt-2 text-center text-xs text-gray-400 italic">
+                                        <div>(Ký, họ tên)</div>
+                                        <div>(Ký, họ tên)</div>
+                                        <div>(Ký, đóng dấu, họ tên)</div>
+                                    </div>
+                                </div>
+                            )}
+                        </TabsContent>
+                        <TabsContent value="can-can-doi-kt" className="m-0">
+                            <div className="p-4 sm:p-6 lg:p-8 max-w-4xl mx-auto">
+                                <div className="text-center mb-8">
+                                    <h3 className="text-xl font-bold uppercase">Bảng Cân Đối Kế Toán</h3>
+                                    <p className="text-sm text-gray-500">Kỳ báo cáo: Đến ngày {format(new Date(toDate), 'dd/MM/yyyy')}</p>
+                                </div>
+                                <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+                                    <table className="w-full text-sm">
+                                        <thead className="bg-gray-50 dark:bg-gray-900/50">
+                                            <tr>
+                                                <th className="px-4 py-3 text-left">Chỉ tiêu</th>
+                                                <th className="px-4 py-3 text-center w-24">Mã số</th>
+                                                <th className="px-4 py-3 text-right w-48">Số cuối kỳ</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+                                            {balanceSheetData.map((row, idx) => (
+                                                <tr key={idx} className={`${row.isHeader ? 'bg-gray-50 font-bold' : ''} ${row.isTotal ? 'bg-blue-50 font-bold text-blue-700' : ''}`}>
+                                                    <td className="px-4 py-3">{row.target}</td>
+                                                    <td className="px-4 py-3 text-center text-gray-400">{row.code}</td>
+                                                    <td className="px-4 py-3 text-right font-mono">{formatCurrency(row.value)}</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </TabsContent>
+
+                        <TabsContent value="canh-bao-kho" className="m-0">
+                            <div className="p-6">
+                                <h3 className="text-lg font-bold text-red-600 mb-4 flex items-center">
+                                    <AlertTriangle className="h-5 w-5 mr-2" />
+                                    Danh sách mặt hàng bị âm kho (Yêu cầu xử lý gấp)
+                                </h3>
+                                {negativeInventory.length === 0 ? (
+                                    <div className="p-8 text-center text-green-600 bg-green-50 rounded-lg border border-green-200">
+                                        Không phát hiện sản phẩm bị âm kho. Kho hàng đang ở trạng thái tốt.
+                                    </div>
+                                ) : (
+                                    <div className="space-y-4">
+                                        {negativeInventory.map((item, idx) => (
+                                            <div key={idx} className="p-4 border-l-4 border-red-500 bg-red-50/50 dark:bg-red-900/10 rounded-r-lg flex justify-between items-center">
+                                                <div>
+                                                    <h4 className="font-bold text-gray-900 dark:text-white uppercase">{item.tenMatHang}</h4>
+                                                    <p className="text-sm text-gray-600">
+                                                        Số lượng âm: <span className="text-red-600 font-bold">{item.tonCuoi}</span> {item.dvtinh}
+                                                    </p>
+                                                    <p className="text-xs text-gray-500 mt-1 italic">
+                                                        Gợi ý: Cần bổ sung hóa đơn nhập kho hoặc kiểm tra lại đơn vị tính của mặt hàng này.
+                                                    </p>
+                                                </div>
+                                                <Button variant="outline" size="sm" className="bg-white border-red-200 text-red-600 hover:bg-red-50">
+                                                    Xử lý ngay (Cần AI hỗ trợ)
+                                                </Button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        </TabsContent>
+
+                        <TabsContent value="ai-audit" className="m-0">
+                            <div className="p-6">
+                                <div className="flex items-center justify-between mb-6">
+                                    <h3 className="text-xl font-bold flex items-center text-secondary-700">
+                                        <ShieldCheck className="h-6 w-6 mr-2 text-secondary-500" />
+                                        AI Audit: Hệ thống rà soát rủi ro thuế & kế toán
+                                    </h3>
+                                    <div className="text-sm bg-secondary-50 text-secondary-600 px-3 py-1 rounded-full border border-secondary-100">
+                                        Đã quét {auditAlerts.length} rủi ro
+                                    </div>
+                                </div>
+
+                                {auditAlerts.length === 0 ? (
+                                    <div className="p-12 text-center bg-green-50 rounded-xl border-2 border-dashed border-green-200">
+                                        <div className="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                                            <ShieldCheck className="h-8 w-8 text-green-600" />
+                                        </div>
+                                        <h4 className="text-lg font-bold text-green-800">Sổ sách của bạn thật tuyệt vời!</h4>
+                                        <p className="text-green-600 mt-2">AI không tìm thấy sai sót nghiêm trọng nào trong kỳ báo cáo này.</p>
+                                    </div>
+                                ) : (
+                                    <div className="grid grid-cols-1 gap-4">
+                                        {auditAlerts.map((alert, idx) => (
+                                            <div key={idx} className={`p-5 rounded-xl border-l-4 shadow-sm flex gap-4 items-start ${alert.type === 'error'
+                                                ? 'bg-red-50/30 border-red-500 border-y border-r border-red-100'
+                                                : 'bg-amber-50/30 border-amber-500 border-y border-r border-amber-100'
+                                                }`}>
+                                                <div className={`p-2 rounded-lg ${alert.type === 'error' ? 'bg-red-100' : 'bg-amber-100'}`}>
+                                                    {alert.type === 'error' ? (
+                                                        <AlertTriangle className={`h-5 w-5 ${alert.type === 'error' ? 'text-red-600' : 'text-amber-600'}`} />
+                                                    ) : (
+                                                        <AlertCircle className="h-5 w-5 text-amber-600" />
+                                                    )}
+                                                </div>
+                                                <div className="flex-1">
+                                                    <div className="flex items-center justify-between">
+                                                        <h4 className="font-bold text-gray-900 uppercase tracking-tight">{alert.title}</h4>
+                                                        {alert.amount && (
+                                                            <span className="text-sm font-mono font-bold bg-white px-2 py-0.5 rounded shadow-sm">
+                                                                {formatCurrency(alert.amount)}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                    <p className="text-gray-600 mt-1 leading-relaxed">{alert.detail}</p>
+                                                    <div className="mt-3 flex gap-2">
+                                                        <Button size="sm" variant="outline" className="text-[10px] h-7 px-2 border-gray-200">
+                                                            Xem giao dịch
+                                                        </Button>
+                                                        <Button size="sm" className={`${alert.type === 'error' ? 'bg-red-600 hover:bg-red-700' : 'bg-amber-600 hover:bg-amber-700'} text-[10px] h-7 px-2`}>
+                                                            Xử lý ngay
+                                                        </Button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
                         </TabsContent>
                     </div>
                 </Tabs>

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getJournalEntries, getLedgerEntries, getTrialBalance } from '@/app/services/so-ke-toan.service'
+import { getJournalEntries, getLedgerEntries, getTrialBalance, getDetailLedgerEntries, getProfitAndLoss, getBalanceSheet, getAuditAlerts } from '@/app/services/so-ke-toan.service'
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
@@ -27,6 +27,23 @@ export async function GET(req: NextRequest) {
       case 'bangcandoi':
         const trialBalance = await getTrialBalance({ congtyId, fromDate, toDate })
         return NextResponse.json({ success: true, data: trialBalance })
+      
+      case 'sochitiet':
+        const searchDetail = searchParams.get('doiTuong') || ''
+        const detailLedger = await getDetailLedgerEntries(tk, searchDetail, { congtyId, fromDate, toDate, search })
+        return NextResponse.json({ success: true, data: detailLedger })
+
+      case 'bckqkd':
+        const plReport = await getProfitAndLoss({ congtyId, fromDate, toDate })
+        return NextResponse.json({ success: true, data: plReport })
+
+      case 'bangcandoi_b01':
+        const bsReport = await getBalanceSheet({ congtyId, fromDate, toDate })
+        return NextResponse.json({ success: true, data: bsReport })
+
+      case 'audit':
+        const auditAlerts = await getAuditAlerts({ congtyId, fromDate, toDate })
+        return NextResponse.json({ success: true, data: auditAlerts })
 
       default:
         return NextResponse.json({ success: false, message: 'Action không hợp lệ' }, { status: 400 })
