@@ -1,91 +1,107 @@
-# Hướng dẫn Sử dụng Giao diện Tổng hợp Số liệu & Quyết toán Thuế
+# Hướng dẫn Sử dụng Chi tiết Hệ thống AI Kế Toán & Quyết Toán Thuế
 
-Tài liệu này hướng dẫn chi tiết cách sử dụng các tính năng trong phân hệ **Tổng hợp số** (`/tonghopso`), được thiết kế để chuẩn bị hồ sơ quyết toán thuế một cách chuyên nghiệp và tự động.
-
----
-
-## 1. Dashboard (Bảng điều khiển)
-Đây là màn hình đầu tiên khi đăng nhập, cung cấp cái nhìn tổng quan:
-- **Biểu đồ doanh thu - chi phí:** Theo dõi dòng tiền theo tháng/quý.
-- **Top mặt hàng bán chạy:** Giám sát hiệu quả kinh doanh.
-- **Tình trạng chuẩn bị Audit:** Hiển thị phần trăm hoàn thiện sổ sách so với mục tiêu.
-
-## 2. Đồng bộ Hóa đơn (`/tonghop`)
-Phân hệ nạp dữ liệu đầu vào từ hóa đơn điện tử (XML/PDF) hoặc Portal Tổng cục Thuế.
-- **Nút Đồng bộ (Sync):** AI sẽ tự động đọc, tách dòng và chuẩn hóa tên hàng.
-- **Phân loại (Mapping):** Tại đây, bạn có thể kiểm tra xem AI đã gán đúng mã hàng và tài khoản kế toán chưa.
-
-## 3. Bộ lọc Tổng thể (Global Filters)
-Nằm ở phía trên cùng của trang, bộ lọc này áp dụng cho **tất cả các tab báo cáo**.
-- **Chọn Công ty:** Lựa chọn đơn vị cần xem số liệu (Trong trường hợp quản lý nhiều mã số thuế).
-- **Khoảng thời gian (Từ ngày - Đến ngày):** Quy định kỳ báo cáo (Ví dụ: 01/01/2025 - 31/12/2025 để quyết toán năm).
-- **Nút Làm mới (Refresh):** Nhấn để AI tính toán lại toàn bộ bút toán khi có dữ liệu hóa đơn mới phát sinh.
-- **Nút Xuất Excel:** Xuất báo cáo đang chọn ra file định dạng Excel để in ấn.
+Tài liệu này cung cấp hướng dẫn vận hành chi tiết cho từng phân hệ trong ứng dụng. Hệ thống được thiết kế để tự động hóa tối đa quy trình từ khi nhận hóa đơn đến khi lên báo cáo tài chính và rà soát rủi ro thuế.
 
 ---
 
-## 2. Chi tiết các Tab Tính năng
-
-### 📑 Sổ Nhật Ký Chung
-**Mục tiêu:** Hiển thị tất cả các nghiệp vụ kinh tế phát sinh trong kỳ theo trình tự thời gian.
-- **Cấu trúc:** Mã hóa đơn, Ngày tháng, Diễn giải, Tài khoản Nợ/Có, Số tiền.
-- **Tính năng đặc biệt:** 
-    - Tự động hạch toán doanh thu và thuế từ hóa đơn.
-    - **Tự động sinh bút toán giá vốn (632/156)** cho mỗi hóa đơn bán ra giúp kiểm soát lãi gộp ngay lập tức.
-
-### 📗 Sổ Cái
-**Mục tiêu:** Xem chi tiết biến động của từng tài khoản kế toán cụ thể.
-- **Cách dùng:** Chọn mã tài khoản (ví dụ: 111, 112, 131, 331...) từ danh sách thả xuống.
-- **Hiển thị:** Các bút toán đối ứng, số dư đầu kỳ, phát sinh trong kỳ và số dư cuối kỳ của tài khoản đó.
-
-### 📊 Bảng Cân Đối Phát Sinh
-**Mục tiêu:** Kiểm tra tổng thể tính cân đối của toàn bộ hệ thống tài khoản.
-- **Kiểm tra nhanh:** Tổng phát sinh Nợ phải luôn bằng Tổng phát sinh Có. Nếu lệch, AI sẽ đánh dấu màu đỏ để cảnh báo.
-
-### 🔎 Sổ Chi Tiết Đối Tượng
-**Mục tiêu:** Quản lý công nợ khách hàng (131) và nhà cung cấp (331) chi tiết đến từng người.
-- **Cách dùng:** 
-    1. Chọn tài khoản cần xem (131 hoặc 331).
-    2. Nhập tên hoặc mã đối tác vào ô tìm kiếm.
-- **Hiển thị:** Lịch sử mua/bán và tình trạng nợ đọng hiện tại của đối tác đó.
-
-### 📈 Báo cáo Kết quả Kinh doanh (P&L)
-**Mục tiêu:** Xem doanh thu, giá vốn, chi phí quản lý và lợi nhuận thực tế.
-- **Chỉ tiêu:** Hiển thị đầy đủ các mã số theo mẫu B02-DNN (Doanh thu nội bộ, Giá vốn hàng bán, Chi phí quản lý doanh nghiệp, Lợi nhuận thuần...).
-- **Đơn vị tính:** Đồng Việt Nam.
-
-### ⚖️ Bảng Cân Đối Kế Toán
-**Mục tiêu:** Báo cáo tình hình tài sản và nguồn vốn tại một thời điểm.
-- **Phân loại:** Tài sản (Tiền, Phải thu, Tồn kho, TSCĐ) và Nguồn vốn (Nợ phải trả, Vốn chủ sở hữu).
-- **Tính cân đối:** Tổng Tài sản phải luôn bằng Tổng Nguồn vốn.
+## 🧭 Cấu trúc Route & Phân hệ
+- `/`: **Dashboard** - Tổng quan tình hình tài chính và tiến độ quyết toán.
+- `/hoadon`: **Quản lý Hóa đơn** - Đồng bộ từ Tổng cục Thuế, lưu trữ và lọc hóa đơn.
+- `/tonghopso`: **Sổ sách Kế toán** - Nhật ký chung, Sổ cái, BCTC và AI Audit.
+- `/xuatnhapton`: **Kho hàng (Inventory)** - Quản lý nhập/xuất và tính giá vốn bình quân.
+- `/ai-mapping`: **Duyệt AI (HITL)** - Phê duyệt kết quả ánh xạ mặt hàng do AI xử lý.
+- `/training`: **Huấn luyện AI** - Chuẩn hóa danh mục mặt hàng tự động.
+- `/thongke`: **Phân tích** - Biểu đồ thống kê doanh thu, chi phí.
 
 ---
 
-## 3. Hệ thống Giám sát & AI Audit (Tính năng độc quyền)
-
-### 🚨 Cảnh báo Kho (Âm kho)
-Hiển thị danh sách các mặt hàng bị xuất bán nhiều hơn số lượng hiện có trong kho.
-- **Cột Số lượng âm:** Hiển thị số lượng cần bổ sung hóa đơn đầu vào để hợp thức hóa.
-- **Gợi ý AI:** Đề xuất các mặt hàng cần nhập thêm hoặc kiểm tra lại đơn vị tính.
-
-### 🛡️ AI Audit (Rà soát Rủi ro)
-Đây là "trợ lý ảo" chuyên rà soát các lỗi mà đoàn thanh tra thuế thường tập trung soi:
-- **Mức độ Lỗi (Màu đỏ):** Các sai phạm nghiêm trọng (Âm quỹ tiền mặt, HĐ > 20tr trả tiền mặt...).
-- **Mức độ Cảnh báo (Màu vàng):** Các nghi vấn (Thuế suất bát thường, trùng số hóa đơn, thiếu đối tượng công nợ).
-- **Hướng xử lý:** Với mỗi cảnh báo, AI cung cấp nút **"Xử lý ngay"** để hướng dẫn bạn cách điều chỉnh chứng từ hợp lệ.
+## 🚀 1. Dashboard (Trang chủ)
+Màn hình trung tâm giúp giám sát nhanh sức khỏe doanh nghiệp.
+- **Thao tác:**
+    1. Xem biểu đồ doanh thu theo thời gian để nhận diện mùa vụ kinh doanh.
+    2. Kiểm tra **"Tình trạng chuẩn bị Audit"** để biết cần hoàn thiện bao nhiêu % hồ sơ.
+    3. Nhấn **"Vào ứng dụng"** để đi đến phân hệ Hóa đơn - nơi bắt đầu quy trình.
 
 ---
 
+## 📥 2. Quản lý Hóa đơn (`/hoadon`)
+Cổng nạp dữ liệu chính cho toàn bộ hệ thống.
+
+### � Đồng bộ hóa đơn từ API Thuế
+Nền tảng này kết nối trực tiếp với cổng `hoadondientu.gdt.gov.vn`.
+- **Các bước thực hiện:**
+    1. Nhấn nút **"Đồng bộ"** (Biểu tượng mũi tên ngược nhau).
+    2. Chọn **Loại hóa đơn** (Bán ra/Mua vào).
+    3. Chọn **Khoảng thời gian** cần lấy dữ liệu.
+    4. Tích vào **"Đồng bộ chi tiết"** nếu muốn lấy cả danh sách từng mặt hàng (Khuyên dùng).
+    5. Nhấn **"Bắt đầu đồng bộ"** và theo dõi thanh tiến trình Real-time.
+
+### ⚙️ Cấu hình API & Công ty
+Để đồng bộ thành công, bạn cần cấu hình Bearer Token.
+- **Thao tác:**
+    1. Nhấn **"Cài đặt API"** (Biểu tượng bánh răng).
+    2. Chọn **Công ty** cần cấu hình.
+    3. Dán **Bearer Token** lấy từ trình duyệt khi đăng nhập trang Thuế Điện Tử.
+    4. Nhấn **"Lưu cấu hình"**. Chú ý: Token có thời hạn, nếu đồng bộ lỗi 401, hãy cập nhật lại Token mới.
+
 ---
 
-## 5. Trợ lý Kế toán AI (Chatbot)
-Nằm ở góc phải màn hình hoặc tab **"AI Chatbot"**.
-- **Hỗ trợ truy vấn tự nhiên:** Bạn có thể hỏi *"Tháng 2 tôi bán được bao nhiêu?"* hoặc *"Tại sao tài khoản 111 lại bị âm?"*.
-- **Giải đáp thông tư/nghị định:** AI được nạp sẵn dữ liệu về Thông tư 133, 200 và các quy định thuế mới nhất để giải đáp thắc mắc của bạn ngay lập tức.
+## 🧠 3. Chuẩn hóa & Huấn luyện AI (`/training` & `/ai-mapping`)
+Tính năng "trí tuệ" giúp gộp nhiều tên hàng ghi sai lệch về cùng một mã chuẩn.
 
-## 6. Quy trình Đề xuất cho Quyết toán Thuế
-1. **Bước 1:** Cập nhật dữ liệu từ tab **Đồng bộ hóa đơn**.
-2. **Bước 2:** Vào tab **Cảnh báo Kho**, xử lý hết các mã hàng bị âm.
-3. **Bước 3:** Vào tab **AI Audit**, kiểm tra và khắc phục các lỗi màu đỏ/vàng.
-4. **Bước 4:** Kiểm tra tính cân đối tại **Bảng Cân Đối Phát Sinh**.
-5. **Bước 5:** Xuất Excel toàn bộ sổ sách để bàn giao hồ sơ.
+### 🎓 Huấn luyện AI (`/training`)
+Sử dụng khi bạn có quá nhiều mặt hàng tên tương tự nhau (Ví dụ: "Thép phi 10", "T.Phi 10", "HP Phi 10").
+- **Thao tác:**
+    1. Nhập **API Key** (Ollama hoặc Gemini) và chọn số lượng mặt hàng cần quét.
+    2. Nhấn **"Chạy Training Tự Động"**. AI sẽ tìm các nhóm tương đồng.
+    3. Xem các **"Gợi ý"** ở bên dưới. Nếu đúng, nhấn **"Áp dụng ngay"** hoặc **"Áp dụng tất cả"**.
+    4. Nhấn **"Lưu & Đồng bộ bảng kê"** để cập nhật kết quả vào sổ kho.
+
+### 🛡️ Duyệt Mặt hàng AI (`/ai-mapping`)
+Dành cho các mặt hàng mới mà AI chưa đủ độ tự tin để tự động gán mã.
+- **Thao tác:**
+    1. Theo dõi danh sách các mặt hàng **"PENDING"**.
+    2. Xem **"AI Đề xuất"** và lý do AI chọn mã đó.
+    3. Nếu đúng: Nhấn **"Duyệt Gợi Ý"**.
+    4. Nếu sai: Nhập tay vào ô **"Tùy chỉnh mã/tên chuẩn"** rồi nhấn **"Lưu Tùy Chỉnh"**.
+
+---
+
+## 📦 4. Quản lý Kho (`/xuatnhapton`)
+Tự động chuyển đổi hóa đơn thành phiếu Nhập/Xuất kho.
+
+### � Tính toán Giá vốn & XNT
+- **Thao tác:**
+    1. Nhấn **"Đồng bộ"** để quét toàn bộ hóa đơn vừa tải về vào bảng kho.
+    2. Nhấn **"Cập nhật XNT"** (Màu vàng): AI sẽ tính toán lại giá vốn theo phương pháp **Bình quân gia quyền**.
+    3. Kiểm tra các mặt hàng bị **"Âm"** để bổ sung hóa đơn đầu vào kịp thời.
+    4. Xuất báo cáo: Có 3 loại báo cáo (Tháng, Năm, Tổng hợp) hỗ trợ định dạng Excel in ấn.
+
+---
+
+## ⚖️ 5. Tổng Hợp Sổ Kế Toán & Audit (`/tonghopso`)
+Giai đoạn cuối cùng để chuẩn bị hồ sơ lưu trữ.
+
+### 📔 Sổ Nhật Ký & Sổ Cái
+- **Thao tác:**
+    1. Nhấn **"Cập nhật dữ liệu sổ"**: Hệ thống sẽ quét toàn bộ hóa đơn và kho để sinh ra các bút toán Nợ/Có tự động.
+    2. Chọn tài khoản (111, 112, 131...) tại tab **Sổ Cái** để kiểm tra tính đúng đắn của dòng tiền và công nợ.
+
+### 🛡️ AI Audit (Phát hiện sai sót Thuế)
+Tính năng then chốt trước khi nộp báo cáo.
+- **Thao tác:**
+    1. Chuyển sang tab **"AI Audit"**.
+    2. Xem các cảnh báo:
+        - **Màu Đỏ:** Lỗi bắt buộc phải sửa (Ví dụ: Thanh toán tiền mặt > 20tr).
+        - **Màu Vàng:** Rủi ro giải trình (Ví dụ: Hóa đơn trùng lặp, giá vốn cao bất thường).
+    3. Nhấn **"Xem giao dịch"** để truy vết lại hóa đơn gốc bị lỗi.
+
+---
+
+## 📅 6. Quy trình 05 Bước "Quyết toán trong 1h"
+Hướng dẫn nhanh cho kỳ quyết toán:
+1.  **Bước 1 (Hóa đơn):** Đồng bộ toàn bộ hóa đơn Mua vào/Bán ra của cả năm.
+2.  **Bước 2 (Chuẩn hóa):** Vào **Training AI** để dọn dẹp các tên hàng rác, gộp về mã chuẩn.
+3.  **Bước 3 (Kho hàng):** Nhấn **Cập nhật XNT** để hệ thống tính giá vốn tự động.
+4.  **Bước 4 (Sổ sách):** Nhấn **Cập nhật dữ liệu sổ** để lên Báo cáo tài chính.
+5.  **Bước 5 (Audit):** Kiểm soát lỗi bằng **AI Audit** và **Xuất Excel** lưu trữ/in ấn.
