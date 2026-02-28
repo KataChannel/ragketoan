@@ -10,11 +10,9 @@
 | Hạng mục | Đầu việc chính | Tiến độ | Trạng thái |
 | :--- | :--- | :--- | :--- |
 | **Hệ thống lõi** | Chuẩn hóa hạch toán (Account Mapping) | ✅ **100%** | **Đã nâng cấp bộ từ khóa & phân loại** |
-| **Tồn kho (XNT)** | Đối chiếu & Xử lý tồn kho âm | 🏗️ **85%** | **Đã hoàn thành logic Giá vốn (COGS) bình quân** |
-| **Công nợ (131/331)** | Lập sổ chi tiết đối tượng | ✅ **100%** | **Đã hoàn thành bàn giao UI/API** |
-| **Sổ sách KT** | Sổ Nhật Ký Chung & Sổ Cái | ✅ **100%** | **Sổ sách đã sẵn sàng truy xuất** |
-| **BCTC** | Bảng cân đối phát sinh & B01/02-DNN | ✅ **100%** | **Đã có Báo cáo KQKD & Bảng Cân đối KT** |
+| **Xử lý Kho** | Xử lý tồn âm & Giá vốn | ✅ **100%** | **Đã hoàn thành logic XNT & Giá vốn** |
 | **Audit Chéo** | Tự động kiểm tra tính nhất quán | ✅ **100%** | **Đã hoàn thành rà soát Rủi ro Thuế & Kế toán** |
+| **Tài liệu HD** | Hướng dẫn vận hành hệ thống | ✅ **100%** | **Đã bàn giao UI Manual chi tiết** |
 
 ---
 
@@ -38,6 +36,11 @@
 - [x] 1. Viết logic tự động kết chuyển doanh thu, chi phí xác định lỗ lãi tháng/quý.
 - [x] 2. Render giao diện Báo cáo KQKD (P&L) hoàn chỉnh.
 - [x] 3. Hoàn thiện Bảng Cân Đối Kế Toán theo TT133/200.
+
+### [➕ Giai đoạn 6] Bàn giao & Hướng dẫn
+- [x] 1. Review toàn bộ Route & UI.
+- [x] 2. Lập file hướng dẫn chi tiết từng thao tác (`ui-accounting-manual.md`).
+- [x] 3. Kiểm tra tính ổn định của Docker & Database.
 
 ---
 
