@@ -17,7 +17,9 @@ import {
   Plus,
   Pencil,
   Trash2,
+  Camera,
 } from 'lucide-react';
+import { CameraCapture } from '@/app/components/camera-capture';
 import { DashboardLayout } from '@/app/components/dashboard-layout';
 import { Button } from '@/app/components/ui/button';
 import { Input } from '@/app/components/ui/input';
@@ -73,6 +75,8 @@ interface ExtendedSyncProgress extends SyncProgress {
 }
 
 export default function HoaDonPage() {
+  const [showCameraCapture, setShowCameraCapture] = useState(false);
+  const [capturedImages, setCapturedImages] = useState<Array<{ fileName: string; dataUrl: string }>>([]);
   const [invoices, setInvoices] = useState<Invoice[]>(mockInvoices);
   const [isLoading, setIsLoading] = useState(false);
   const [invoiceType, setInvoiceType] = useState<InvoiceType>('banra');
@@ -797,6 +801,21 @@ export default function HoaDonPage() {
             </p>
           </div>
           <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowCameraCapture(true)}
+              className="relative"
+              title="Chụp tài liệu / bảng kê / hóa đơn"
+            >
+              <Camera className="h-4 w-4" />
+              <span className="hidden sm:inline ml-1">Chụp hình</span>
+              {capturedImages.length > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 bg-green-500 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+                  {capturedImages.length}
+                </span>
+              )}
+            </Button>
             <Button variant="outline" size="sm" onClick={() => setShowCompanyDialog(true)}>
               <Plus className="h-4 w-4" />
               <span className="hidden sm:inline ml-1">Thêm CT</span>
@@ -1853,6 +1872,16 @@ export default function HoaDonPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Camera Capture Modal */}
+      {showCameraCapture && (
+        <CameraCapture
+          onCapture={(fileName, dataUrl) => {
+            setCapturedImages(prev => [...prev, { fileName, dataUrl }]);
+          }}
+          onClose={() => setShowCameraCapture(false)}
+        />
+      )}
     </DashboardLayout>
   );
 }
