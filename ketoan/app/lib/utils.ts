@@ -25,24 +25,31 @@ export function formatNumber(value: number): string {
 /**
  * Format date to Vietnamese format
  */
-export function formatDate(date: Date | string, includeTime = false): string {
+export function formatDate(date: Date | string | null | undefined, includeTime = false): string {
+  if (!date) return '---';
+  
   const d = typeof date === 'string' ? new Date(date) : date;
   
-  if (includeTime) {
-    return new Intl.DateTimeFormat('vi-VN', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    }).format(d);
-  }
-  
-  return new Intl.DateTimeFormat('vi-VN', {
+  if (isNaN(d.getTime())) return '---';
+
+  const dateOptions: Intl.DateTimeFormatOptions = {
     day: '2-digit',
     month: '2-digit',
     year: 'numeric',
-  }).format(d);
+  };
+
+  const timeOptions: Intl.DateTimeFormatOptions = {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  };
+
+  const format = new Intl.DateTimeFormat('vi-VN', {
+    ...dateOptions,
+    ...(includeTime ? timeOptions : {}),
+  });
+
+  return format.format(d);
 }
 
 /**

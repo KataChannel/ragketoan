@@ -1,23 +1,30 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { format } from 'date-fns';
+import { formatDate, formatCurrency, getDateRange } from '@/app/lib/utils';
 import { vi } from 'date-fns/locale';
 import { toast } from 'sonner';
 import {
-  RefreshCw,
-  Download,
+  BarChart3,
   TrendingUp,
-  TrendingDown,
+  ArrowUpRight,
+  ArrowDownRight,
+  Calendar,
+  Filter,
+  Download,
+  Info,
+  Archive,
+  ArrowRight,
   Package,
+  Layers,
+  History,
   FileText,
+  Building2,
+  RefreshCw,
   Search,
   ArrowUpDown,
-  Filter,
-  BarChart3,
-  PieChart,
-  Calendar,
-  Building2,
+  TrendingDown,
+  PieChart
 } from 'lucide-react';
 import { DashboardLayout } from '@/app/components/dashboard-layout';
 import { Button } from '@/app/components/ui/button';
@@ -33,7 +40,6 @@ import {
   DialogTitle,
   DialogDescription,
 } from '@/app/components/ui/dialog';
-import { formatCurrency, getDateRange } from '@/app/lib/utils';
 import { CongTy } from '@/app/types';
 
 // ============================================================================
@@ -669,7 +675,7 @@ export default function ThongKePage() {
                           </span>
                         </td>
                         <td className="px-3 py-3 text-center text-gray-600 dark:text-gray-400 text-xs hidden lg:table-cell">
-                          {format(new Date(item.tdlap), 'dd/MM/yy', { locale: vi })}
+                          {formatDate(item.tdlap)}
                         </td>
                       </tr>
                     ))

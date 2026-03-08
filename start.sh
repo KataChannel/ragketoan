@@ -51,6 +51,7 @@ show_menu() {
     echo -e "  ${GREEN}9)${NC} 💾 Backup dữ liệu     (Backup data)"
     echo -e "  ${GREEN}r)${NC} 🔄 Restore dữ liệu    (Restore data)"
     echo -e "  ${GREEN}l)${NC} 🔧 Cấu hình LLM       (Ollama/Google AI)"
+    echo -e "  ${GREEN}s)${NC} 📷 Sync hình ảnh     (Sync images from ketoan)"
     echo -e "  ${GREEN}g)${NC} 🔀 Git commit & push  (Auto git)"
     echo -e "  ${GREEN}0)${NC} ❌ Thoát"
     echo ""
@@ -382,6 +383,18 @@ start_ketoan() {
     echo -e "${GREEN}✅ Ketoan Frontend đã khởi động!${NC}"
     echo ""
     echo -e "  📊 Ketoan:     ${BLUE}http://localhost:3000${NC}"
+}
+
+# Function to sync images from container
+sync_images() {
+    echo -e "${GREEN}[INFO] Đang đồng bộ hóa hình ảnh từ container 'ketoan'...${NC}"
+    if docker ps --format '{{.Names}}' | grep -q "^ketoan$"; then
+        mkdir -p "$SCRIPT_DIR/images"
+        docker cp ketoan:/images/. "$SCRIPT_DIR/images/" 2>/dev/null || true
+        echo -e "  ${GREEN}✓${NC} Đã copy hình ảnh ra thư mục images/"
+    else
+        echo -e "  ${YELLOW}⚠${NC} Container 'ketoan' không chạy, không thể copy!"
+    fi
 }
 
 # Function to start all services
@@ -810,6 +823,9 @@ while [[ $# -gt 0 ]]; do
             echo "Git Options:"
             echo "  --git       Auto git add, commit và push"
             echo ""
+            echo "Image Options:"
+            echo "  --sync      Đồng bộ hình ảnh từ container ra host"
+            echo ""
             echo "Other:"
             echo "  -h, --help  Hiển thị trợ giúp"
             echo ""
@@ -826,6 +842,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         --git)
             SERVICE="git"
+            shift
+            ;;
+        --sync|--sync-images)
+            SERVICE="sync-images"
             shift
             ;;
         --rag)
@@ -914,6 +934,9 @@ if [ -n "$SERVICE" ]; then
                 echo -e "${YELLOW}[IMPORTANT] Hãy đảm bảo GOOGLE_API_KEY đã được cấu hình trong .env${NC}"
             fi
             echo -e "${YELLOW}[TIP] Restart RAG Service: docker compose restart rag-service${NC}"
+            ;;
+        sync-images)
+            sync_images
             ;;
     esac
     exit 0
@@ -1007,6 +1030,11 @@ while true; do
             auto_git
             echo ""
             ;;
+        s|S)
+            # Sync images
+            sync_images
+            echo ""
+            ;;
         0)
             echo -e "${YELLOW}Tạm biệt! 👋${NC}"
             exit 0
@@ -1028,3 +1056,4 @@ echo -e "${YELLOW}[TIP] Dùng './start.sh --ketoan-db' để chạy Ketoan & Pus
 echo -e "${YELLOW}[TIP] Dùng './start.sh --rag' để chạy RAG Service${NC}"
 echo -e "${YELLOW}[TIP] Dùng './start.sh --llm-google' để chuyển sang Google AI${NC}"
 echo -e "${YELLOW}[TIP] Dùng './start.sh --git' để auto git commit & push${NC}"
+echo -e "${YELLOW}[TIP] Dùng './start.sh --sync' để sync hình ảnh từ container${NC}"

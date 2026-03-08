@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { format } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { toast } from 'sonner';
@@ -38,6 +38,7 @@ export default function TongHopSoPage() {
     const [isLoading, setIsLoading] = useState(false);
     const [companies, setCompanies] = useState<CongTy[]>([]);
     const [selectedCompanyId, setSelectedCompanyId] = useState<string>('');
+    const initialFetchRef = useRef(false);
     const [fromDate, setFromDate] = useState(getDateRange(1).fromDate);
     const [toDate, setToDate] = useState(getDateRange(0).toDate);
     const [search, setSearch] = useState('');
@@ -49,6 +50,8 @@ export default function TongHopSoPage() {
     const [balanceSheetData, setBalanceSheetData] = useState<any[]>([]);
     const [negativeInventory, setNegativeInventory] = useState<any[]>([]);
     const [auditAlerts, setAuditAlerts] = useState<any[]>([]);
+    const [auditReport, setAuditReport] = useState<string>('');
+    const [showFullReport, setShowFullReport] = useState(false);
     const [selectedAccount, setSelectedAccount] = useState<string>('111');
     const [searchObject, setSearchObject] = useState<string>('');
 
@@ -64,6 +67,17 @@ export default function TongHopSoPage() {
         { value: '632', label: '632 - Giá vốn hàng bán' },
         { value: '642', label: '642 - Chi phí quản lý doanh nghiệp' },
     ];
+
+    const safeFormatDate = (dateStr: string | Date | null | undefined, formatStr = 'dd/MM/yyyy') => {
+        if (!dateStr) return '...';
+        try {
+            const date = new Date(dateStr);
+            if (isNaN(date.getTime())) return '...';
+            return format(date, formatStr);
+        } catch (e) {
+            return '...';
+        }
+    };
 
     // Fetch companies
     const fetchCompanies = useCallback(async () => {
@@ -257,6 +271,19 @@ export default function TongHopSoPage() {
             if (result.success) {
                 setAuditAlerts(result.data);
             }
+
+            // Fetch detailed markdown report
+            const reportParams = new URLSearchParams({
+                action: 'audit-report',
+                fromDate,
+                toDate,
+            });
+            if (selectedCompanyId) reportParams.append('congtyId', selectedCompanyId);
+            const reportResponse = await fetch(`/api/tonghopso?${reportParams}`);
+            const reportResult = await reportResponse.json();
+            if (reportResult.success) {
+                setAuditReport(reportResult.data);
+            }
         } catch (error) {
             console.error('Error fetching audit:', error);
         }
@@ -268,38 +295,46 @@ export default function TongHopSoPage() {
         if (cached) setSelectedCompanyId(cached);
     }, [fetchCompanies]);
 
+    // Initial fetch - only run once when selectedCompanyId is first determined
     useEffect(() => {
+        if (selectedCompanyId && !initialFetchRef.current) {
+            handleSearch();
+            initialFetchRef.current = true;
+        }
+    }, [selectedCompanyId]); 
+
+    useEffect(() => {
+        if (initialFetchRef.current) {
+            fetchLedger();
+        }
+    }, [selectedAccount]); 
+
+    useEffect(() => {
+        if (initialFetchRef.current) {
+            fetchDetailLedger();
+        }
+    }, [selectedAccount, searchObject]); 
+
+    const handleSearch = () => {
+        if (!selectedCompanyId) {
+            toast.error('Vui lòng chọn công ty');
+            return;
+        }
+        
         fetchJournal();
-    }, [fromDate, toDate, selectedCompanyId]);
-
-    useEffect(() => {
         fetchLedger();
-    }, [selectedAccount, fromDate, toDate, selectedCompanyId]);
-
-    useEffect(() => {
         fetchTrialBalance();
-    }, [fromDate, toDate, selectedCompanyId]);
-
-    useEffect(() => {
         fetchDetailLedger();
-    }, [selectedAccount, searchObject, fromDate, toDate, selectedCompanyId]);
-
-    useEffect(() => {
         fetchPLReport();
         fetchBalanceSheet();
         fetchNegativeInventory();
         fetchAudit();
-    }, [fromDate, toDate, selectedCompanyId]);
+        
+        toast.success(`Đã cập nhật dữ liệu từ ${safeFormatDate(fromDate)} đến ${safeFormatDate(toDate)}`);
+    };
 
     const handleRefresh = () => {
-        fetchJournal();
-        fetchLedger();
-        fetchTrialBalance();
-        fetchDetailLedger();
-        fetchPLReport();
-        fetchBalanceSheet();
-        fetchNegativeInventory();
-        fetchAudit();
+        handleSearch();
     };
 
     const handleExportExcel = () => {
@@ -333,7 +368,7 @@ export default function TongHopSoPage() {
 
                 {/* Filter Bar */}
                 <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-3 sm:p-4">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
                         <div className="sm:col-span-2">
                             <Label className="text-xs text-secondary-500 mb-1 block font-bold">CÔNG TY</Label>
                             <Combobox
@@ -366,6 +401,16 @@ export default function TongHopSoPage() {
                                 onChange={(e) => setToDate(e.target.value)}
                                 className="h-9"
                             />
+                        </div>
+                        <div className="flex items-end">
+                            <Button 
+                                onClick={handleSearch} 
+                                className="w-full h-9 bg-blue-600 hover:bg-blue-700 text-white shadow-sm"
+                                disabled={isLoading}
+                            >
+                                <Search className="h-4 w-4 mr-2" />
+                                Tìm kiếm
+                            </Button>
                         </div>
                     </div>
                 </div>
@@ -438,7 +483,7 @@ export default function TongHopSoPage() {
                                             {journalData.map((item) => (
                                                 <tr key={item.id} className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900/40">
                                                     <td className="px-4 py-2 text-gray-600 dark:text-gray-300">
-                                                        {format(new Date(item.ngay), 'dd/MM/yyyy')}
+                                                        {safeFormatDate(item.ngay)}
                                                     </td>
                                                     <td className="px-4 py-2 font-medium text-gray-900 dark:text-white">
                                                         {item.soHdon}
@@ -513,7 +558,7 @@ export default function TongHopSoPage() {
                                             {ledgerData.map((item, idx) => (
                                                 <tr key={idx} className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900/40">
                                                     <td className="px-4 py-2 text-gray-600 dark:text-gray-300">
-                                                        {format(new Date(item.ngay), 'dd/MM/yyyy')}
+                                                        {safeFormatDate(item.ngay)}
                                                     </td>
                                                     <td className="px-4 py-2 font-medium text-gray-900 dark:text-white">
                                                         {item.soHdon}
@@ -597,7 +642,7 @@ export default function TongHopSoPage() {
                                             {detailLedgerData.map((item, idx) => (
                                                 <tr key={idx} className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900/40">
                                                     <td className="px-4 py-2 text-gray-600 dark:text-gray-300">
-                                                        {format(new Date(item.ngay), 'dd/MM/yyyy')}
+                                                        {safeFormatDate(item.ngay)}
                                                     </td>
                                                     <td className="px-4 py-2 font-medium text-gray-900 dark:text-white">
                                                         {item.soHdon}
@@ -700,7 +745,7 @@ export default function TongHopSoPage() {
                                     <div className="text-center mb-8">
                                         <h3 className="text-xl font-bold uppercase">Báo cáo Kết quả Hoạt động Kinh doanh</h3>
                                         <p className="text-sm text-gray-500 mt-1">
-                                            Kỳ báo cáo: Từ {format(new Date(fromDate), 'dd/MM/yyyy')} đến {format(new Date(toDate), 'dd/MM/yyyy')}
+                                            Kỳ báo cáo: Từ {safeFormatDate(fromDate)} đến {safeFormatDate(toDate)}
                                         </p>
                                         <p className="text-xs text-secondary-500 mt-0.5">(Đơn vị tính: Đồng Việt Nam)</p>
                                     </div>
@@ -745,7 +790,7 @@ export default function TongHopSoPage() {
                             <div className="p-4 sm:p-6 lg:p-8 max-w-4xl mx-auto">
                                 <div className="text-center mb-8">
                                     <h3 className="text-xl font-bold uppercase">Bảng Cân Đối Kế Toán</h3>
-                                    <p className="text-sm text-gray-500">Kỳ báo cáo: Đến ngày {format(new Date(toDate), 'dd/MM/yyyy')}</p>
+                                    <p className="text-sm text-gray-500">Kỳ báo cáo: Đến ngày {safeFormatDate(toDate)}</p>
                                 </div>
                                 <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
                                     <table className="w-full text-sm">
@@ -815,7 +860,7 @@ export default function TongHopSoPage() {
                                     </div>
                                 </div>
 
-                                {auditAlerts.length === 0 ? (
+                                 {auditAlerts.length === 0 ? (
                                     <div className="p-12 text-center bg-green-50 rounded-xl border-2 border-dashed border-green-200">
                                         <div className="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
                                             <ShieldCheck className="h-8 w-8 text-green-600" />
@@ -824,40 +869,60 @@ export default function TongHopSoPage() {
                                         <p className="text-green-600 mt-2">AI không tìm thấy sai sót nghiêm trọng nào trong kỳ báo cáo này.</p>
                                     </div>
                                 ) : (
-                                    <div className="grid grid-cols-1 gap-4">
-                                        {auditAlerts.map((alert, idx) => (
-                                            <div key={idx} className={`p-5 rounded-xl border-l-4 shadow-sm flex gap-4 items-start ${alert.type === 'error'
-                                                ? 'bg-red-50/30 border-red-500 border-y border-r border-red-100'
-                                                : 'bg-amber-50/30 border-amber-500 border-y border-r border-amber-100'
-                                                }`}>
-                                                <div className={`p-2 rounded-lg ${alert.type === 'error' ? 'bg-red-100' : 'bg-amber-100'}`}>
-                                                    {alert.type === 'error' ? (
-                                                        <AlertTriangle className={`h-5 w-5 ${alert.type === 'error' ? 'text-red-600' : 'text-amber-600'}`} />
-                                                    ) : (
-                                                        <AlertCircle className="h-5 w-5 text-amber-600" />
-                                                    )}
-                                                </div>
-                                                <div className="flex-1">
-                                                    <div className="flex items-center justify-between">
-                                                        <h4 className="font-bold text-gray-900 uppercase tracking-tight">{alert.title}</h4>
-                                                        {alert.amount && (
-                                                            <span className="text-sm font-mono font-bold bg-white px-2 py-0.5 rounded shadow-sm">
-                                                                {formatCurrency(alert.amount)}
-                                                            </span>
-                                                        )}
-                                                    </div>
-                                                    <p className="text-gray-600 mt-1 leading-relaxed">{alert.detail}</p>
-                                                    <div className="mt-3 flex gap-2">
-                                                        <Button size="sm" variant="outline" className="text-[10px] h-7 px-2 border-gray-200">
-                                                            Xem giao dịch
-                                                        </Button>
-                                                        <Button size="sm" className={`${alert.type === 'error' ? 'bg-red-600 hover:bg-red-700' : 'bg-amber-600 hover:bg-amber-700'} text-[10px] h-7 px-2`}>
-                                                            Xử lý ngay
-                                                        </Button>
-                                                    </div>
+                                    <div className="space-y-6">
+                                        <div className="flex justify-end">
+                                            <Button 
+                                                variant="outline" 
+                                                onClick={() => setShowFullReport(!showFullReport)}
+                                                className="bg-secondary-50 border-secondary-200 text-secondary-700 hover:bg-secondary-100"
+                                            >
+                                                {showFullReport ? 'Ẩn báo cáo chi tiết' : 'Xem báo cáo AI chuyên sâu (Markdown)'}
+                                            </Button>
+                                        </div>
+
+                                        {showFullReport && auditReport && (
+                                            <div className="bg-white p-8 rounded-xl border border-gray-200 shadow-sm overflow-auto max-h-[600px] prose dark:prose-invert max-w-none">
+                                                <div className="whitespace-pre-wrap font-sans text-gray-800 leading-relaxed">
+                                                    {auditReport}
                                                 </div>
                                             </div>
-                                        ))}
+                                        )}
+
+                                        <div className="grid grid-cols-1 gap-4">
+                                            {auditAlerts.map((alert, idx) => (
+                                                <div key={idx} className={`p-5 rounded-xl border-l-4 shadow-sm flex gap-4 items-start ${alert.type === 'error'
+                                                    ? 'bg-red-50/30 border-red-500 border-y border-r border-red-100'
+                                                    : 'bg-amber-50/30 border-amber-500 border-y border-r border-amber-100'
+                                                    }`}>
+                                                    <div className={`p-2 rounded-lg ${alert.type === 'error' ? 'bg-red-100' : 'bg-amber-100'}`}>
+                                                        {alert.type === 'error' ? (
+                                                            <AlertTriangle className={`h-5 w-5 ${alert.type === 'error' ? 'text-red-600' : 'text-amber-600'}`} />
+                                                        ) : (
+                                                            <AlertCircle className="h-5 w-5 text-amber-600" />
+                                                        )}
+                                                    </div>
+                                                    <div className="flex-1">
+                                                        <div className="flex items-center justify-between">
+                                                            <h4 className="font-bold text-gray-900 uppercase tracking-tight">{alert.title}</h4>
+                                                            {alert.amount && (
+                                                                <span className="text-sm font-mono font-bold bg-white px-2 py-0.5 rounded shadow-sm">
+                                                                    {formatCurrency(alert.amount)}
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                        <p className="text-gray-600 mt-1 leading-relaxed">{alert.detail}</p>
+                                                        <div className="mt-3 flex gap-2">
+                                                            <Button size="sm" variant="outline" className="text-[10px] h-7 px-2 border-gray-200">
+                                                                Xem giao dịch
+                                                            </Button>
+                                                            <Button size="sm" className={`${alert.type === 'error' ? 'bg-red-600 hover:bg-red-700' : 'bg-amber-600 hover:bg-amber-700'} text-[10px] h-7 px-2`}>
+                                                                Xử lý ngay
+                                                            </Button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
                                     </div>
                                 )}
                             </div>

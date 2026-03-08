@@ -45,6 +45,21 @@ export async function GET(req: NextRequest) {
         const auditAlerts = await getAuditAlerts({ congtyId, fromDate, toDate })
         return NextResponse.json({ success: true, data: auditAlerts })
 
+      case 'audit-report':
+        try {
+          const fs = require('fs')
+          const path = require('path')
+          const reportPath = path.join(process.cwd(), 'audit_report.md')
+          if (fs.existsSync(reportPath)) {
+            const content = fs.readFileSync(reportPath, 'utf8')
+            return NextResponse.json({ success: true, data: content })
+          } else {
+            return NextResponse.json({ success: false, message: 'Báo cáo chưa được tạo' })
+          }
+        } catch (e) {
+          return NextResponse.json({ success: false, message: 'Lỗi khi đọc báo cáo' })
+        }
+
       default:
         return NextResponse.json({ success: false, message: 'Action không hợp lệ' }, { status: 400 })
     }

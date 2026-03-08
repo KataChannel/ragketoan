@@ -15,6 +15,7 @@ import {
   Sparkles,
   BookText,
   Bot,
+  FileSearch,
 } from "lucide-react"
 
 import {
@@ -80,6 +81,11 @@ const menuItems = [
     title: "Cài đặt",
     icon: Settings,
     href: "/caidat",
+  },
+  {
+    title: "Báo cáo HH Phat",
+    icon: FileSearch,
+    href: "/xuatnhapton/hoang-huy-phat",
   },
 ]
 

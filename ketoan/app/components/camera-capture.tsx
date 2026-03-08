@@ -291,7 +291,7 @@ export function CameraCapture({ onCapture, onClose }: CameraCaptureProps) {
 
     // Chụp hình
     const handleCapture = async () => {
-        if (!videoRef.current || !quality?.isGood) return;
+        if (!videoRef.current) return;
 
         setIsSaving(true);
         try {
@@ -531,9 +531,9 @@ export function CameraCapture({ onCapture, onClose }: CameraCaptureProps) {
                             {/* Capture button */}
                             <button
                                 onClick={handleCapture}
-                                disabled={!isGood || isSaving}
-                                className={`flex-1 flex items-center justify-center gap-2 py-3.5 rounded-2xl font-bold text-sm transition-all duration-300 ${isGood && !isSaving
-                                    ? 'bg-green-500 hover:bg-green-400 text-white shadow-[0_0_20px_rgba(34,197,94,0.4)] scale-105'
+                                disabled={isSaving || !isCameraReady}
+                                className={`flex-1 flex items-center justify-center gap-2 py-3.5 rounded-2xl font-bold text-sm transition-all duration-300 ${!isSaving && isCameraReady
+                                    ? 'bg-blue-600 hover:bg-blue-500 text-white shadow-[0_0_20px_rgba(37,99,235,0.4)] scale-105 active:scale-95'
                                     : 'bg-gray-700 text-gray-500 cursor-not-allowed'
                                     }`}
                             >
@@ -542,15 +542,10 @@ export function CameraCapture({ onCapture, onClose }: CameraCaptureProps) {
                                         <Loader2 className="h-5 w-5 animate-spin" />
                                         Đang lưu...
                                     </>
-                                ) : isGood ? (
+                                ) : (
                                     <>
                                         <Camera className="h-5 w-5" />
                                         CHỤP ({capturedCount > 0 ? `${capturedCount} ảnh` : 'Sẵn sàng'})
-                                    </>
-                                ) : (
-                                    <>
-                                        <AlertCircle className="h-5 w-5" />
-                                        Chưa đạt chuẩn
                                     </>
                                 )}
                             </button>

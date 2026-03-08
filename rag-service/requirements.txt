@@ -1,0 +1,15 @@
+fastapi
+uvicorn
+pydantic
+pydantic-settings
+sqlalchemy
+psycopg2-binary
+qdrant-client
+sentence-transformers
+google-generativeai
+requests
+langchain
+langchain-community
+langchain-openai
+python-multipart
+python-dotenv
