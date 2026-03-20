@@ -28,6 +28,7 @@ import { Label } from '@/app/components/ui/label';
 import { Combobox, Tabs, TabsContent, TabsList, TabsTrigger } from '@/app/components/ui';
 import { formatCurrency, getDateRange } from '@/app/lib/utils';
 import { CongTy } from '@/app/types';
+import * as XLSX from 'xlsx';
 
 // ============================================================================
 // Component
@@ -337,8 +338,129 @@ export default function TongHopSoPage() {
         handleSearch();
     };
 
-    const handleExportExcel = () => {
-        toast.info('Tính năng xuất Excel đang được xử lý...');
+    const handleExportExcel = async () => {
+        if (!selectedCompanyId) {
+            toast.error('Vui lòng chọn công ty');
+            return;
+        }
+
+        try {
+            setIsLoading(true);
+            toast.info('Đang xuất Excel, quá trình này có thể mất vài giây...');
+
+            const wb = XLSX.utils.book_new();
+            const company = companies.find(c => c.id === selectedCompanyId);
+            const companyName = company ? (company.tenVietTat || company.ten) : 'CongTy';
+
+            // 1. Sổ Nhật Ký Chung
+            if (journalData && journalData.length > 0) {
+                const nkHeader = [['NGÀY', 'SỐ HD', 'DIỄN GIẢI', 'ĐỐI TÁC', 'NỢ', 'CÓ', 'SỐ TIỀN']];
+                const nkData = journalData.map(i => [safeFormatDate(i.ngay), i.soHdon, i.dienGiai, i.doitac, i.tkNo, i.tkCo, i.soTien]);
+                const totalNk = journalData.reduce((acc, curr) => acc + curr.soTien, 0);
+                nkData.push(['', '', '', '', '', 'TỔNG CỘNG', totalNk]);
+                const wsNk = XLSX.utils.aoa_to_sheet([...nkHeader, ...nkData]);
+                XLSX.utils.book_append_sheet(wb, wsNk, 'Sổ Nhật Ký Chung');
+            }
+
+            // 2 & 3. Sổ Cái và Sổ Chi Tiết cho từng tài khoản chung
+            for (const acc of commonAccounts) {
+                // Sổ Cái
+                const scParams = new URLSearchParams({
+                    action: 'socai',
+                    tk: acc.value,
+                    fromDate,
+                    toDate,
+                });
+                if (selectedCompanyId) scParams.append('congtyId', selectedCompanyId);
+                const ledgerRes = await fetch(`/api/tonghopso?${scParams}`);
+                
+                if (ledgerRes.ok) {
+                    const ledgerResult = await ledgerRes.json();
+                    if (ledgerResult.success && ledgerResult.data && ledgerResult.data.length > 0) {
+                        const scHeader = [['NGÀY', 'CHỨNG TỪ', 'DIỄN GIẢI', 'TK Đ/Ứ', 'NỢ', 'CÓ']];
+                        const scData = ledgerResult.data.map((i: any) => [safeFormatDate(i.ngay), i.soHdon, i.dienGiai, i.tkDoiUng, i.no || 0, i.co || 0]);
+                        const totalScNo = ledgerResult.data.reduce((acc: number, curr: any) => acc + (curr.no || 0), 0);
+                        const totalScCo = ledgerResult.data.reduce((acc: number, curr: any) => acc + (curr.co || 0), 0);
+                        scData.push(['', '', '', 'TỔNG CỘNG PHÁT SINH', totalScNo, totalScCo]);
+                        const wsSc = XLSX.utils.aoa_to_sheet([...scHeader, ...scData]);
+                        
+                        const sheetName = `Sổ Cái ${acc.value}`.substring(0, 31);
+                        try {
+                            XLSX.utils.book_append_sheet(wb, wsSc, sheetName);
+                        } catch (e) {
+                            console.log('Sheet name duplication or error', sheetName);
+                        }
+                    }
+                }
+
+                // Sổ Chi Tiết
+                const sctParams = new URLSearchParams({
+                    action: 'sochitiet',
+                    tk: acc.value,
+                    fromDate,
+                    toDate,
+                });
+                if (selectedCompanyId) sctParams.append('congtyId', selectedCompanyId);
+                const detailRes = await fetch(`/api/tonghopso?${sctParams}`);
+
+                if (detailRes.ok) {
+                    const detailResult = await detailRes.json();
+                    if (detailResult.success && detailResult.data && detailResult.data.length > 0) {
+                        const sctHeader = [['NGÀY', 'CHỨNG TỪ', 'DIỄN GIẢI', 'TK Đ/Ứ', 'NỢ', 'CÓ']];
+                        const sctData = detailResult.data.map((i: any) => [safeFormatDate(i.ngay), i.soHdon, i.dienGiai, i.tkDoiUng, i.no || 0, i.co || 0]);
+                        const totalSctNo = detailResult.data.reduce((acc: number, curr: any) => acc + (curr.no || 0), 0);
+                        const totalSctCo = detailResult.data.reduce((acc: number, curr: any) => acc + (curr.co || 0), 0);
+                        sctData.push(['', '', '', 'TỔNG CỘNG', totalSctNo, totalSctCo]);
+                        const wsSct = XLSX.utils.aoa_to_sheet([...sctHeader, ...sctData]);
+                        
+                        const sheetName = `Sổ CT ${acc.value}`.substring(0, 31);
+                        try {
+                            XLSX.utils.book_append_sheet(wb, wsSct, sheetName);
+                        } catch (e) {
+                            console.log('Sheet name duplication or error', sheetName);
+                        }
+                    }
+                }
+            }
+
+            // 4. Bảng Cân Đối SPS
+            if (trialBalanceData && trialBalanceData.length > 0) {
+                const bcdHeader = [['SỐ HIỆU TK', 'TÊN TÀI KHOẢN', 'PHÁT SINH NỢ', 'PHÁT SINH CÓ']];
+                const bcdData = trialBalanceData.map(item => {
+                    const accLabel = commonAccounts.find(a => a.value === item.tk)?.label.split(' - ')[1] || 'Tài khoản chi tiết';
+                    return [item.tk, accLabel, item.no || 0, item.co || 0];
+                });
+                const totalBcdNo = trialBalanceData.reduce((acc, curr) => acc + (curr.no || 0), 0);
+                const totalBcdCo = trialBalanceData.reduce((acc, curr) => acc + (curr.co || 0), 0);
+                bcdData.push(['', 'TỔNG CỘNG', totalBcdNo, totalBcdCo]);
+                const wsBcd = XLSX.utils.aoa_to_sheet([...bcdHeader, ...bcdData]);
+                XLSX.utils.book_append_sheet(wb, wsBcd, 'Bảng Cân Đối SPS');
+            }
+
+            // 5. Kết Quả Kinh Doanh
+            if (plData && plData.length > 0) {
+                const kqkHeader = [['Chỉ tiêu', 'Mã số', 'Số kỳ này']];
+                const kqkData = plData.map(i => [i.target, i.code || '', i.value || 0]);
+                const wsKqk = XLSX.utils.aoa_to_sheet([...kqkHeader, ...kqkData]);
+                XLSX.utils.book_append_sheet(wb, wsKqk, 'KQ Kinh Doanh');
+            }
+
+            // 6. Bảng Cân Đối KT
+            if (balanceSheetData && balanceSheetData.length > 0) {
+                const bckHeader = [['Chỉ tiêu', 'Mã số', 'Số cuối kỳ']];
+                const bckData = balanceSheetData.map(i => [i.target, i.code || '', i.value || 0]);
+                const wsBck = XLSX.utils.aoa_to_sheet([...bckHeader, ...bckData]);
+                XLSX.utils.book_append_sheet(wb, wsBck, 'Bảng CĐKT');
+            }
+
+            XLSX.writeFile(wb, `SoKeToan_${companyName}_${format(new Date(), 'yyyyMMdd')}.xlsx`);
+            toast.success('Xuất file Excel thành công!');
+        } catch (error) {
+            console.error('Lỗi khi xuất Excel:', error);
+            toast.error('Có lỗi xảy ra khi xuất Excel');
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
