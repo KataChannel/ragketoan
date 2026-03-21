@@ -1,0 +1,134 @@
+Sheets: ['Sodung', 'Hoadon', 'Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6', 'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12', 'xnt12thang']
+--- Sodung ---
+   Tháng  Doanh Thu Bán Ra  ...  Doanh Thu Mua Vào  Thuế Mua Vào
+0      1         890556850  ...         1154981164     115559137
+1      2        1062540911  ...         1745704064     174741765
+2      3        1702314546  ...         1536437738     153152886
+3      4         976118179  ...          757550609      75858644
+4      5         856337274  ...          600350985      59060355
+
+[5 rows x 6 columns]
+--- Hoadon ---
+     Tháng  Loại HD Tình trạng (Mã)  Số lượng  Tổng giá tiền (VNĐ)
+0  01/2023   Bán ra      1 (Hợp lệ)        56           1011342901
+1  01/2023  Mua vào      1 (Hợp lệ)       110           1359784418
+2  02/2023   Bán ra      1 (Hợp lệ)       130           1315134997
+3  02/2023  Mua vào      1 (Hợp lệ)       150           1992257562
+4  03/2023   Bán ra      1 (Hợp lệ)       154           1703955996
+--- Tháng 1 ---
+                                       Mã - Tên Hàng  ... Cuối Kỳ (Tiền)
+0  ACC-GEN-FREE - Phụ kiện & vật tư phụ (Không th...  ...              0
+1  PC-CUSTOM-U8M - Máy bộ PC để bàn Lắp ráp (Dưới...  ...      138141517
+2  ACC-GEN-200K_1M - Phụ kiện & vật tư phụ (200k ...  ...       14100000
+3  MOUSE-LOGI-WLS - Chuột máy tính Logitech (Khôn...  ...       13200000
+4                NW-ADAPTER - USB/Card thu phát WiFi  ...       11400000
+
+[5 rows x 10 columns]
+--- Tháng 2 ---
+                                       Mã - Tên Hàng  ... Cuối Kỳ (Tiền)
+0  ACC-GEN-FREE - Phụ kiện & vật tư phụ (Không th...  ...              0
+1  PC-CUSTOM-U8M - Máy bộ PC để bàn Lắp ráp (Dưới...  ...      202614082
+2  ACC-GEN-200K_1M - Phụ kiện & vật tư phụ (200k ...  ...       39500000
+3  MOUSE-LOGI-WLS - Chuột máy tính Logitech (Khôn...  ...       34600000
+4                NW-ADAPTER - USB/Card thu phát WiFi  ...       31500000
+
+[5 rows x 10 columns]
+--- Tháng 3 ---
+                                       Mã - Tên Hàng  ... Cuối Kỳ (Tiền)
+0  ACC-GEN-FREE - Phụ kiện & vật tư phụ (Không th...  ...              0
+1  PC-CUSTOM-U8M - Máy bộ PC để bàn Lắp ráp (Dưới...  ...      195919193
+2  ACC-GEN-200K_1M - Phụ kiện & vật tư phụ (200k ...  ...       38600000
+3  MOUSE-LOGI-WLS - Chuột máy tính Logitech (Khôn...  ...       33800000
+4                NW-ADAPTER - USB/Card thu phát WiFi  ...       30800000
+
+[5 rows x 10 columns]
+--- Tháng 4 ---
+                                       Mã - Tên Hàng  ... Cuối Kỳ (Tiền)
+0  ACC-GEN-FREE - Phụ kiện & vật tư phụ (Không th...  ...              0
+1  PC-CUSTOM-U8M - Máy bộ PC để bàn Lắp ráp (Dưới...  ...      161953419
+2  ACC-GEN-200K_1M - Phụ kiện & vật tư phụ (200k ...  ...       30900000
+3  MOUSE-LOGI-WLS - Chuột máy tính Logitech (Khôn...  ...       27200000
+4                NW-ADAPTER - USB/Card thu phát WiFi  ...       24800000
+
+[5 rows x 10 columns]
+--- Tháng 5 ---
+                                       Mã - Tên Hàng  ... Cuối Kỳ (Tiền)
+0  ACC-GEN-FREE - Phụ kiện & vật tư phụ (Không th...  ...              0
+1  PC-CUSTOM-U8M - Máy bộ PC để bàn Lắp ráp (Dưới...  ...      129608419
+2  ACC-GEN-200K_1M - Phụ kiện & vật tư phụ (200k ...  ...       24000000
+3  MOUSE-LOGI-WLS - Chuột máy tính Logitech (Khôn...  ...       21400000
+4                NW-ADAPTER - USB/Card thu phát WiFi  ...       19300000
+
+[5 rows x 10 columns]
+--- Tháng 6 ---
+                                       Mã - Tên Hàng  ... Cuối Kỳ (Tiền)
+0  ACC-GEN-FREE - Phụ kiện & vật tư phụ (Không th...  ...              0
+1  PC-CUSTOM-U8M - Máy bộ PC để bàn Lắp ráp (Dưới...  ...       91142261
+2  ACC-GEN-200K_1M - Phụ kiện & vật tư phụ (200k ...  ...       14400000
+3  MOUSE-LOGI-WLS - Chuột máy tính Logitech (Khôn...  ...       13400000
+4                NW-ADAPTER - USB/Card thu phát WiFi  ...       11700000
+
+[5 rows x 10 columns]
+--- Tháng 7 ---
+                                       Mã - Tên Hàng  ... Cuối Kỳ (Tiền)
+0  ACC-GEN-FREE - Phụ kiện & vật tư phụ (Không th...  ...              0
+1  PC-CUSTOM-U8M - Máy bộ PC để bàn Lắp ráp (Dưới...  ...       65370716
+2  ACC-GEN-200K_1M - Phụ kiện & vật tư phụ (200k ...  ...        8800000
+3  MOUSE-LOGI-WLS - Chuột máy tính Logitech (Khôn...  ...        8600000
+4                NW-ADAPTER - USB/Card thu phát WiFi  ...        7300000
+
+[5 rows x 10 columns]
+--- Tháng 8 ---
+                                       Mã - Tên Hàng  ... Cuối Kỳ (Tiền)
+0  ACC-GEN-FREE - Phụ kiện & vật tư phụ (Không th...  ...              0
+1  PC-CUSTOM-U8M - Máy bộ PC để bàn Lắp ráp (Dưới...  ...      141668984
+2  ACC-GEN-200K_1M - Phụ kiện & vật tư phụ (200k ...  ...       33700000
+3  MOUSE-LOGI-WLS - Chuột máy tính Logitech (Khôn...  ...       29600000
+4                NW-ADAPTER - USB/Card thu phát WiFi  ...       26900000
+
+[5 rows x 10 columns]
+--- Tháng 9 ---
+                                       Mã - Tên Hàng  ... Cuối Kỳ (Tiền)
+0  ACC-GEN-FREE - Phụ kiện & vật tư phụ (Không th...  ...              0
+1  PC-CUSTOM-U8M - Máy bộ PC để bàn Lắp ráp (Dưới...  ...      207601781
+2  ACC-GEN-200K_1M - Phụ kiện & vật tư phụ (200k ...  ...       45900000
+3  MOUSE-LOGI-WLS - Chuột máy tính Logitech (Khôn...  ...       40000000
+4                NW-ADAPTER - USB/Card thu phát WiFi  ...       36500000
+
+[5 rows x 10 columns]
+--- Tháng 10 ---
+                                       Mã - Tên Hàng  ... Cuối Kỳ (Tiền)
+0  ACC-GEN-FREE - Phụ kiện & vật tư phụ (Không th...  ...              0
+1  PC-CUSTOM-U8M - Máy bộ PC để bàn Lắp ráp (Dưới...  ...      121933804
+2  ACC-GEN-200K_1M - Phụ kiện & vật tư phụ (200k ...  ...       25400000
+3  MOUSE-LOGI-WLS - Chuột máy tính Logitech (Khôn...  ...       22600000
+4                NW-ADAPTER - USB/Card thu phát WiFi  ...       20300000
+
+[5 rows x 10 columns]
+--- Tháng 11 ---
+                                       Mã - Tên Hàng  ... Cuối Kỳ (Tiền)
+0  ACC-GEN-FREE - Phụ kiện & vật tư phụ (Không th...  ...              0
+1  PC-CUSTOM-U8M - Máy bộ PC để bàn Lắp ráp (Dưới...  ...      138629738
+2  ACC-GEN-200K_1M - Phụ kiện & vật tư phụ (200k ...  ...       29900000
+3  MOUSE-LOGI-WLS - Chuột máy tính Logitech (Khôn...  ...       26400000
+4                NW-ADAPTER - USB/Card thu phát WiFi  ...       23800000
+
+[5 rows x 10 columns]
+--- Tháng 12 ---
+                                       Mã - Tên Hàng  ... Cuối Kỳ (Tiền)
+0  ACC-GEN-FREE - Phụ kiện & vật tư phụ (Không th...  ...              0
+1  PC-CUSTOM-U8M - Máy bộ PC để bàn Lắp ráp (Dưới...  ...       43647877
+2  ACC-GEN-200K_1M - Phụ kiện & vật tư phụ (200k ...  ...              0
+3  MOUSE-LOGI-WLS - Chuột máy tính Logitech (Khôn...  ...              0
+4                NW-ADAPTER - USB/Card thu phát WiFi  ...              0
+
+[5 rows x 10 columns]
+--- xnt12thang ---
+                                       Mã - Tên Hàng  ... Cuối Kỳ (Tiền)
+0  ACC-GEN-FREE - Phụ kiện & vật tư phụ (Không th...  ...              0
+1  PC-CUSTOM-U8M - Máy bộ PC để bàn Lắp ráp (Dưới...  ...       43647877
+2  ACC-GEN-200K_1M - Phụ kiện & vật tư phụ (200k ...  ...              0
+3  MOUSE-LOGI-WLS - Chuột máy tính Logitech (Khôn...  ...              0
+4                NW-ADAPTER - USB/Card thu phát WiFi  ...              0
+
+[5 rows x 10 columns]
