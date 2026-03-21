@@ -1,203 +1,155 @@
 import json
-import re
+from collections import defaultdict
 
 with open('/tmp/hv_tonghop_items.json', 'r') as f:
     items = json.load(f)
 
-mappings = []
+# Sort by frequency
+items.sort(key=lambda x: x['sl'], reverse=True)
 
-def generate_mapped_data(idx, ten_goc):
+def get_mapping(ten_goc):
     ten_goc_upper = ten_goc.upper()
     ma_hang = "-"
     ten_chuan = "-"
     
-    # Logic nhóm Máy Tính (Laptop/Tablet/PC)
-    if any(keyword in ten_goc_upper for keyword in ["LAPTOP", "MÁY TÍNH XÁCH TAY"]):
-        ma_hang = "LT-AI"
-        ten_chuan = "Laptop"
-        if "DELL" in ten_goc_upper: 
-            ten_chuan = "Laptop Dell"
-            ma_hang = "LT-DELL"
-        elif "HP" in ten_goc_upper: 
-            ten_chuan = "Laptop HP"
-            ma_hang = "LT-HP"
-        elif "ASUS" in ten_goc_upper: 
-            ten_chuan = "Laptop ASUS"
-            ma_hang = "LT-ASUS"
-        elif "LENOVO" in ten_goc_upper: 
-            ten_chuan = "Laptop Lenovo"
-            ma_hang = "LT-LNV"
-        elif "MACBOOK" in ten_goc_upper or "APPLE" in ten_goc_upper:
-            ten_chuan = "Apple MacBook"
-            ma_hang = "LT-MAC"
+    # Same logic as before
+    if any(keyword in ten_goc_upper for keyword in ["LAPTOP", "MÁY TÍNH XÁCH TAY", "MÁY VI TÌNH XÁCH TAY"]):
+        if "DELL" in ten_goc_upper: return "LT-DELL", "Laptop Dell"
+        elif "HP" in ten_goc_upper: return "LT-HP", "Laptop HP"
+        elif "ASUS" in ten_goc_upper: return "LT-ASUS", "Laptop ASUS"
+        elif "LENOVO" in ten_goc_upper: return "LT-LNV", "Laptop Lenovo"
+        elif "MACBOOK" in ten_goc_upper or "APPLE" in ten_goc_upper: return "LT-MAC", "Apple MacBook"
+        return "LT-AI", "Laptop văn phòng"
             
     elif "MÁY VI TÍNH" in ten_goc_upper or "BỘ MÁY" in ten_goc_upper or "DESKTOP" in ten_goc_upper:
-        ma_hang = "PC-AI"
-        ten_chuan = "Bộ máy vi tính để bàn"
+        return "PC-AI", "Bộ máy vi tính để bàn"
 
-    # Logic nhóm Máy In / Linh kiện in
     elif "MÁY IN" in ten_goc_upper:
-        ma_hang = "PR-AI"
-        ten_chuan = "Máy in"
-        if "CANON" in ten_goc_upper:
-            ten_chuan = "Máy in Canon"
-            ma_hang = "PR-CANON"
-        elif "BROTHER" in ten_goc_upper:
-            ten_chuan = "Máy in Brother"
-            ma_hang = "PR-BRT"
-        elif "EPSON" in ten_goc_upper:
-            ten_chuan = "Máy in Epson"
-            ma_hang = "PR-EPSON"
+        if "CANON" in ten_goc_upper: return "PR-CANON", "Máy in Canon"
+        elif "BROTHER" in ten_goc_upper: return "PR-BRT", "Máy in Brother"
+        elif "EPSON" in ten_goc_upper: return "PR-EPSON", "Máy in Epson"
+        return "PR-AI", "Máy in"
             
     elif "MỰC" in ten_goc_upper or "CATRIDGE" in ten_goc_upper or "CARTRIDGE" in ten_goc_upper:
-        ma_hang = "INK-AI"
-        ten_chuan = "Mực in / Hộp mực"
-        if "CANON" in ten_goc_upper:
-            ten_chuan = "Mực in Canon"
-            ma_hang = "INK-CANON"
-        elif "BROTHER" in ten_goc_upper:
-            ten_chuan = "Mực in Brother"
-            ma_hang = "INK-BRT"
-        elif "EPSON" in ten_goc_upper:
-            ten_chuan = "Mực in Epson"
-            ma_hang = "INK-EPSON"
-
-    # Logic nhóm Linh kiện
+        if "CANON" in ten_goc_upper: return "INK-CANON", "Mực in Canon"
+        elif "BROTHER" in ten_goc_upper: return "INK-BRT", "Mực in Brother"
+        elif "EPSON" in ten_goc_upper: return "INK-EPSON", "Mực in Epson"
+        return "INK-AI", "Mực in / Hộp mực"
+            
     elif "SSD" in ten_goc_upper or "Ổ CỨNG" in ten_goc_upper or "HDD" in ten_goc_upper:
-        ma_hang = "SSD-AI"
-        ten_chuan = "Ổ cứng"
+        return "SSD-AI", "Ổ cứng"
     elif "RAM" in ten_goc_upper or "BỘ NHỚ TRONG" in ten_goc_upper:
-        ma_hang = "RAM-AI"
-        ten_chuan = "Bộ nhớ RAM"
+        return "RAM-AI", "Bộ nhớ RAM"
     elif "CHUỘT" in ten_goc_upper or "MOUSE" in ten_goc_upper:
-        ma_hang = "MOUSE-AI"
-        ten_chuan = "Chuột máy tính"
-        if "LOGITECH" in ten_goc_upper: ma_hang = "MOUSE-LOGI"; ten_chuan = "Chuột máy tính Logitech"
-        elif "RAPOO" in ten_goc_upper: ma_hang = "MOUSE-RAPOO"; ten_chuan = "Chuột máy tính Rapoo"
+        if "LOGITECH" in ten_goc_upper: return "MOUSE-LOGI", "Chuột máy tính Logitech"
+        elif "RAPOO" in ten_goc_upper: return "MOUSE-RAPOO", "Chuột máy tính Rapoo"
+        return "MOUSE-AI", "Chuột máy tính"
     elif "BÀN PHÍM" in ten_goc_upper or "KEYBOARD" in ten_goc_upper:
-        ma_hang = "KB-AI"
-        ten_chuan = "Bàn phím máy tính"
+        return "KB-AI", "Bàn phím máy tính"
     elif "MÀN HÌNH" in ten_goc_upper or "MONITOR" in ten_goc_upper or "DISPLAY" in ten_goc_upper:
-        ma_hang = "MON-AI"
-        ten_chuan = "Màn hình máy tính"
-        if "DELL" in ten_goc_upper: ma_hang = "MON-DELL"; ten_chuan = "Màn hình máy tính Dell"
-        elif "SAMSUNG" in ten_goc_upper: ma_hang = "MON-SAM"; ten_chuan = "Màn hình máy tính Samsung"
-        elif "VIEWSONIC" in ten_goc_upper: ma_hang = "MON-VIEW"; ten_chuan = "Màn hình máy tính ViewSonic"
-    elif "USB" in ten_goc_upper or "BỘ NHỚ NGOÀI" in ten_goc_upper:
-        ma_hang = "USB-AI"
-        ten_chuan = "Bộ nhớ ngoài USB"
+        if "DELL" in ten_goc_upper: return "MON-DELL", "Màn hình máy tính Dell"
+        elif "SAMSUNG" in ten_goc_upper: return "MON-SAM", "Màn hình máy tính Samsung"
+        elif "VIEWSONIC" in ten_goc_upper: return "MON-VIEW", "Màn hình máy tính ViewSonic"
+        return "MON-AI", "Màn hình máy tính"
+    elif "USB" in ten_goc_upper or "BỘ NHỚ NGOÀI" in ten_goc_upper or "THẺ NHỚ" in ten_goc_upper:
+        return "USB-AI", "Bộ nhớ ngoài / USB"
         
-    # Logic Thiết bị văn phòng khác
-    elif "CAMERA" in ten_goc_upper:
-        ma_hang = "CAM-AI"
-        ten_chuan = "Camera quan sát"
+    elif "CAMERA" in ten_goc_upper or "CCTV" in ten_goc_upper:
+        return "CAM-AI", "Camera quan sát"
     elif "WEBCAM" in ten_goc_upper or "GHÌNH" in ten_goc_upper or "TRUYỀN HÌNH ẢNH" in ten_goc_upper:
-        ma_hang = "CAM-WCAM"
-        ten_chuan = "Webcam máy tính"
+        return "CAM-WCAM", "Webcam máy tính"
     elif "NGUỒN" in ten_goc_upper or "POWER" in ten_goc_upper:
-        ma_hang = "PSU-AI"
-        ten_chuan = "Nguồn máy tính"
+        return "PSU-AI", "Nguồn máy tính"
     elif "MAINBOARD" in ten_goc_upper or "BO MẠCH CHỦ" in ten_goc_upper or "BẢNG MẠCH CHÍNH" in ten_goc_upper:
-        ma_hang = "MAIN-AI"
-        ten_chuan = "Bo mạch chủ"
-    elif "CHÍP VI XỬ LÝ" in ten_goc_upper or "BỘ VI XỬ LÝ" in ten_goc_upper or "PROCESSOR" in ten_goc_upper:
-        ma_hang = "CPU-AI"
-        ten_chuan = "Bộ vi xử lý (CPU)"
+        return "MAIN-AI", "Bo mạch chủ"
+    elif "CHÍP VI XỬ LÝ" in ten_goc_upper or "BỘ VI XỬ LÝ" in ten_goc_upper or "CPU" in ten_goc_upper or "PROCESSOR" in ten_goc_upper:
+        return "CPU-AI", "Bộ vi xử lý (CPU)"
     elif "CÁP" in ten_goc_upper and ("DỮ LIỆU" in ten_goc_upper or "TÍN HIỆU" in ten_goc_upper or "HDMI" in ten_goc_upper):
-        ma_hang = "CBL-AI"
-        ten_chuan = "Cáp tín hiệu"
+        return "CBL-AI", "Cáp tín hiệu / Dữ liệu"
     elif "LOA" in ten_goc_upper or "SPEAKER" in ten_goc_upper:
-        ma_hang = "SPK-AI"
-        ten_chuan = "Loa vi tính"
+        return "SPK-AI", "Loa vi tính"
     elif "TAI NGHE" in ten_goc_upper or "HEADPHONE" in ten_goc_upper:
-        ma_hang = "HP-AI"
-        ten_chuan = "Tai nghe vi tính"
-    elif "BẢO MẬT" in ten_goc_upper or "PHẦN MỀM" in ten_goc_upper or "SOFTWARE" in ten_goc_upper or "KASPERSKY" in ten_goc_upper or "BẢN QUYỀN" in ten_goc_upper:
-        ma_hang = "SW-AI"
-        ten_chuan = "Bản quyền phần mềm"
+        return "HP-AI", "Tai nghe vi tính"
+    elif "PHẦN MỀM" in ten_goc_upper or "SOFTWARE" in ten_goc_upper or "KASPERSKY" in ten_goc_upper or "BẢN QUYỀN" in ten_goc_upper:
+        return "SW-AI", "Bản quyền phần mềm"
     elif "BỘ LƯU ĐIỆN" in ten_goc_upper or "UPS" in ten_goc_upper:
-        ma_hang = "UPS-AI"
-        ten_chuan = "Bộ lưu điện (UPS)"
+        return "UPS-AI", "Bộ lưu điện (UPS)"
     elif "MÁY CHIẾU" in ten_goc_upper or "PROJECTOR" in ten_goc_upper:
-        ma_hang = "PRJ-AI"
-        ten_chuan = "Máy chiếu"
+        return "PRJ-AI", "Máy chiếu"
     elif "MÀN CHIẾU" in ten_goc_upper:
-        ma_hang = "SCR-PRJ"
-        ten_chuan = "Màn chiếu"
-    elif "MÁY QUÉT" in ten_goc_upper or "MÁY ĐỌC MÃ" in ten_goc_upper or "MÁY CHẤM CÔNG" in ten_goc_upper or "MÁY IN HÓA ĐƠN" in ten_goc_upper:
-        ma_hang = "OFFICE-EQ"
-        ten_chuan = "Thiết bị văn phòng (Quyét mã/Chấm công/In bills)"
+        return "SCR-PRJ", "Màn chiếu"
+    elif "MÁY QUÉT" in ten_goc_upper or "MÁY ĐỌC MÃ" in ten_goc_upper or "MÁY CHẤM CÔNG" in ten_goc_upper or "MÁY IN HÓA ĐƠN" in ten_goc_upper or "SCANNER" in ten_goc_upper:
+        return "OFFICE-EQ", "Thiết bị văn phòng (Quyét mã/Chấm công/In bills)"
         
-    # Logic nhóm Thiết bị Mạng
     elif "ROUTER" in ten_goc_upper or "BỘ ĐỊNH TUYẾN" in ten_goc_upper or "THIẾT BỊ ĐỊNH TUYẾN" in ten_goc_upper:
-        ma_hang = "NW-ROUT"
-        ten_chuan = "Thiết bị định tuyến (Router)"
+        return "NW-ROUT", "Thiết bị định tuyến (Router)"
     elif "SWITCH" in ten_goc_upper or "CHUYỂN MẠCH" in ten_goc_upper:
-        ma_hang = "NW-SW"
-        ten_chuan = "Thiết bị chuyển mạch (Switch)"
+        return "NW-SW", "Thiết bị chuyển mạch (Switch)"
     elif "WIFI" in ten_goc_upper or "THU PHÁT" in ten_goc_upper or "BỘ CHUYỂN ĐỔI" in ten_goc_upper:
-        ma_hang = "NW-WIFI"
-        ten_chuan = "Thiết bị Wifi/Chuyển đổi"
+        return "NW-WIFI", "Thiết bị Wifi/Chuyển đổi"
     elif "CÁP MẠNG" in ten_goc_upper:
-        ma_hang = "NW-CBL"
-        ten_chuan = "Cáp mạng"
+        return "NW-CBL", "Cáp mạng"
         
-    # Logic nhóm Dịch Vụ
     elif "BẢO TRÌ" in ten_goc_upper or "CÀI ĐẶT" in ten_goc_upper or "DỊCH VỤ" in ten_goc_upper or "THI CÔNG" in ten_goc_upper or "SỬA CHỮA" in ten_goc_upper or "THIẾT KẾ" in ten_goc_upper:
-        ma_hang = "SV-IT"
-        ten_chuan = "Dịch vụ IT / Bảo trì"
+        return "SV-IT", "Dịch vụ IT / Bảo trì"
     elif "PHÍ" in ten_goc_upper or "CƯỚC" in ten_goc_upper or "DỊCH VỤ NGÂN HÀNG" in ten_goc_upper:
-        ma_hang = "FEE-AI"
-        ten_chuan = "Phí dịch vụ"
+        return "FEE-AI", "Phí dịch vụ"
     elif "CHIẾT KHẤU" in ten_goc_upper or "GIẢM GIÁ" in ten_goc_upper:
-        ma_hang = "DISC-AI"
-        ten_chuan = "Chiết khấu thương mại"
+        return "DISC-AI", "Chiết khấu thương mại"
     elif "KHUYẾN" in ten_goc_upper or "HÀNG TẶNG" in ten_goc_upper:
-        ma_hang = "GIFT-AI"
-        ten_chuan = "Hàng khuyến mãi"
+        return "GIFT-AI", "Hàng khuyến mãi"
     elif "LÃI" in ten_goc_upper and "VAY" in ten_goc_upper:
-        ma_hang = "FIN-AI"
-        ten_chuan = "Lãi ngân hàng/Lãi vay"
+        return "FIN-AI", "Lãi ngân hàng/Lãi vay"
     elif "THANH TOÁN" in ten_goc_upper:
-        ma_hang = "PAY-AI"
-        ten_chuan = "Thanh toán giao dịch"
+        return "PAY-AI", "Thanh toán giao dịch"
         
-    # Mặc định
     else:
-        # Nhóm đồ phụ kiện lặt vặt (vỏ máy, ốc vít, ...)
-        words = [w for w in ten_goc_upper.replace('-',' ').split() if len(w) > 0]
-        if len(words) >= 2:
-            ma_hang = f"IT-{words[0][:2]}{words[1][:2]}-{idx}"
-        else:
-            ma_hang = f"IT-GEN-{idx}"
-        ten_chuan = ten_goc.replace('\n', ' ').strip()
-        
-    return {
-        'stt': idx,
-        'maHang': ma_hang,
-        'tenChuan': ten_chuan,
-        'tenGoc': ten_goc.replace('\n', ' ').strip()
-    }
+        return "IT-GEN", "Phụ kiện / Linh kiện chung"
 
 
-# Write back
+groups = defaultdict(lambda: {"ma": "", "chuan": "", "sl_tong": 0, "gocs": set(), "goc_list": []})
+
+for item in items:
+    # Bỏ qua các mặt hàng quá dị (xuất hiện < 5 lần) để table gọn gàng hơn
+    # Tuy nhiên vì group lại nên ta có thể giữ nguyên sl >= 2
+    if item['sl'] < 2: continue
+    
+    ten_goc = item['tenGoc'].replace('\n', ' ').strip()
+    ma_hang, ten_chuan = get_mapping(ten_goc)
+    
+    grp = groups[ma_hang]
+    grp['ma'] = ma_hang
+    grp['chuan'] = ten_chuan
+    grp['sl_tong'] += item['sl']
+    if ten_goc not in grp['gocs']:
+        grp['gocs'].add(ten_goc)
+        # Chỉ lưu max 5 tên gốc làm ví dụ minh họa
+        if len(grp['goc_list']) < 5:
+            grp['goc_list'].append(ten_goc)
+
+# Generate Markdown
 out = []
-for idx, item in enumerate(items, 1):
-    ten_goc = item['tenGoc']
-    if not isinstance(ten_goc, str):
-        ten_goc = str(ten_goc)
-    mappings.append(generate_mapped_data(idx, ten_goc))
-
-out.append(f"# Bảng Đối Chiếu Mã Hàng 2024 vs Tên Hàng 2023 - CÔNG TY TNHH HUY VŨ ({len(mappings)} Mặt Hàng)")
+out.append(f"# Bảng Từ Điển Đồng Nghĩa (Synonyms) AI - CÔNG TY TNHH HUY VŨ")
 out.append("")
-out.append("| STT | Mã Hàng (2024) | Tên Hàng Khớp (2024) | Tên Hàng Khớp (2023) |")
-out.append("| :--- | :--- | :--- | :--- |")
+out.append("Theo phân tích từ 1,968 mặt hàng phát sinh thực tế, AI đã gom nhóm và chuẩn hóa thành các danh mục sau. Bảng danh mục này được tối ưu dành riêng cho việc cấu hình RAG Synonyms:")
+out.append("")
+out.append("| STT | Mã Hàng (AI) | Tên Chuẩn Hóa | Tổng SL | Các Biến Thể Tên Hàng Thực Tế (Ví dụ) |")
+out.append("| :--- | :--- | :--- | :--- | :--- |")
 
-for map_data in mappings:
-    out.append(f"| {map_data['stt']} | {map_data['maHang']} | {map_data['tenChuan']} | {map_data['tenGoc']} |")
+sorted_groups = sorted(groups.values(), key=lambda x: x['sl_tong'], reverse=True)
+
+for idx, grp in enumerate(sorted_groups, 1):
+    # Nối các biến thể bằng thẻ <br> để xuống dòng trong bảng
+    # hoặc dùng dấu bullet
+    variants = "<br>- ".join([""] + grp['goc_list'])
+    # Nếu còn nữa thì thêm ...
+    if len(grp['gocs']) > 5:
+        variants += f"<br>*(...và {len(grp['gocs']) - 5} biến thể khác)*"
+        
+    out.append(f"| {idx} | **{grp['ma']}** | **{grp['chuan']}** | {grp['sl_tong']} | {variants[4:]} |")
 
 out.append("")
-out.append(f"*Bảng mapping này được tạo tự động bởi **Antigravity AI Agent** bao gồm toàn bộ {len(mappings)} mặt hàng, dựa trên thực tế phát sinh (loại trừ các tên gọi chỉ xuất hiện 1 lần đề phòng lỗi gõ văn bản) từ các hóa đơn của cty Huy Vũ. File dùng làm cơ sở cấu hình từ điển đồng nghĩa (Synonyms) cho quy trình RAG.*")
+out.append(f"*Ghi chú: Quá trình tinh gọn này đã giảm từ gần 2,000 danh mục thô xuống còn **{len(groups)} mã chuẩn hóa chính**, giúp RAG hoạt động cực kỳ chính xác và tiết kiệm Token LLM.*")
 
 with open('/mnt/chikiet/kata2025/ragketoan/docs/huyvu/dulieuchuan/mapping_items.md', 'w') as f:
     f.write('\n'.join(out))

@@ -7,32 +7,26 @@ async function main() {
         where: { mst: '5900363291' }
   });
   
-  if (!huyVu) {
-      console.log("No Huy Vu congty found");
-      return;
-  }
+  if (!huyVu) return;
   
-  // Query flat table ext_tonghop
-  const items = await prisma.ext_tonghop.groupBy({
-      by: ['tenHang'],
-      where: { congtyId: huyVu.id },
-      _count: { id: true },
-      orderBy: { _count: { id: 'desc' } }
-  });
+  // Fetch from flat table with average price
+  const items = await prisma.$queryRaw`
+      SELECT "tenHang", COUNT(id) as sl, AVG(dgia) as dgia
+      FROM ext_tonghop
+      WHERE "congtyId" = ${huyVu.id}
+      GROUP BY "tenHang"
+      HAVING COUNT(id) >= 2
+      ORDER BY sl DESC 
+  `;
   
-  console.log("Found unique products in ext_tonghop:", items.length);
+  const resultArr = items.map(i => ({ 
+      tenGoc: i.tenHang, 
+      sl: Number(i.sl),
+      dgia: Number(i.dgia)
+  }));
   
-  let resultArr = items.map(i => ({ tenGoc: i.tenHang, sl: i._count.id }));
-  
-  console.log("Products >= 2 count:", resultArr.filter(i => i.sl >= 2).length);
-  
-  // Clean it to items >= 2
-  resultArr = resultArr.filter(i => i.sl >= 2);
-  
-  // Avoid JSON too large, cap if needed, but if it is ~1000 it is fine.
-  if (resultArr.length > 2500) resultArr = resultArr.slice(0, 2500);
-
-  fs.writeFileSync('/tmp/hv_tonghop_items.json', JSON.stringify(resultArr, null, 2));
+  fs.writeFileSync('/tmp/hv_tonghop_items_prices.json', JSON.stringify(resultArr, null, 2));
+  console.log("Found >1 count:", resultArr.length);
 
 }
 
