@@ -3,16 +3,11 @@ import numpy as np
 import hashlib
 from sqlalchemy import create_engine
 import os
-import warnings
-
-warnings.filterwarnings('ignore')
 
 DB_URI = "postgresql://root:password@localhost:5432/ketoan"
 COMPANY_ID = "db88c924-206b-4544-9256-c1cd79d417e4"
 INITIAL_BALANCE = 20528682383
 DOCS_DIR = "/chikiet/kata2025/ragketoan/docs/huyvu"
-
-np.random.seed(42)
 
 def read_categories():
     cat_file = os.path.join(DOCS_DIR, "DANH_MUC_NHOM_SAN_PHAM.md")
@@ -33,14 +28,11 @@ def get_full_data():
             h."idServer",
             h.tdlap, 
             h.loaihd, 
-            h.tgtcthue,
-            h.tgtthue,
             h.tgtttbso 
         FROM ext_listhoadon h
         WHERE h."congtyId" = '{COMPANY_ID}'
     """
     df_list = pd.read_sql(query_list, engine)
-    df_list['tdlap'] = pd.to_datetime(df_list['tdlap'])
     
     query_detail = f"""
         SELECT 
@@ -151,17 +143,27 @@ def assemble_raw_data(df_list, df_detail, df_cat):
         
     if len(raw_data) > 0:
         raw_data['cat_ma'] = raw_data['product_name'].apply(lambda x: mapping_dict[x][0])
-        raw_data['cat_ten'] = raw_data['product_name'].apply(lambda x: mapping_dict[x][1])
     
     return raw_data
 
-def evaluate_minimum_balances(raw_data, active_cats):
+def evaluate_deficits():
+    df_cat = read_categories()
+    df_list, df_detail = get_full_data()
+    raw_data = assemble_raw_data(df_list, df_detail, df_cat)
+    
+    # Sort chronologically
     months = sorted(raw_data['ym'].unique())
+    
+    active_cats = raw_data['cat_ma'].unique().tolist()
+    
     deficits = {}
     
     for ma in active_cats:
-        run_sl = 0; run_vnd = 0
-        min_sl = 0; min_vnd = 0
+        run_sl = 0
+        run_vnd = 0
+        min_sl = 0
+        min_vnd = 0
+        
         tx_cat = raw_data[raw_data['cat_ma'] == ma]
         for ym in months:
             m_tx = tx_cat[tx_cat['ym'] == ym]
@@ -177,142 +179,14 @@ def evaluate_minimum_balances(raw_data, active_cats):
             if run_vnd < min_vnd: min_vnd = run_vnd
             
         deficits[ma] = {
-            'req_sl': np.abs(min_sl),
-            'req_vnd': np.abs(min_vnd)
+            'req_sl': -min_sl,
+            'req_vnd': -min_vnd
         }
-    return deficits
-
-def build_xnt_reports():
-    df_cat = read_categories()
-    df_list, df_detail = get_full_data()
-    raw_data = assemble_raw_data(df_list, df_detail, df_cat)
     
-    active_cats = raw_data['cat_ma'].unique().tolist()
-    
-    min_deficits = evaluate_minimum_balances(raw_data, active_cats)
-    
-    total_req_vnd = sum(d['req_vnd'] for d in min_deficits.values())
-    surplus_vnd = INITIAL_BALANCE - total_req_vnd
-    
-    if surplus_vnd < 0:
-        surplus_vnd = 0 # Cannot happen according to explicit check, but safety fallback.
-
-    # Distribute surplus randomly across active categories
-    weights = np.random.uniform(0.1, 3.0, len(active_cats))
-    weights /= weights.sum()
-    surplus_dist = surplus_vnd * weights
-    surplus_dist = np.round(surplus_dist, 0)
-    surplus_dist[np.argmax(surplus_dist)] += (surplus_vnd - np.sum(surplus_dist)) # Ensure exact sum
-    
-    # Add random base quantities just to make figures look nicer
-    surplus_sl = np.random.randint(15, 200, len(active_cats))
-    
-    balances = {}
-    for _, row in df_cat.iterrows():
-        balances[row['ma']] = {'sl': 0, 'vnd': 0}
-        
-    for idx, ma in enumerate(active_cats):
-        req_sl = min_deficits[ma]['req_sl']
-        req_vnd = min_deficits[ma]['req_vnd']
-        
-        # Ensure we add a minimum padding to cover roundings
-        balances[ma]['sl'] = req_sl + surplus_sl[idx]
-        balances[ma]['vnd'] = req_vnd + surplus_dist[idx]
-
-    years = [2023, 2024, 2025, 2026]
-    md_rows = []
-    
-    for y in years:
-        filename = os.path.join(DOCS_DIR, f"XNT_HuyVu_{y}.xlsx")
-        writer = pd.ExcelWriter(filename, engine='xlsxwriter')
-        
-        for m in range(1, 13):
-            m_data = []
-            m_rev_vnd = 0; m_rev_sl = 0; m_pur_vnd = 0; m_pur_sl = 0
-            monthly_tx = raw_data[(raw_data['year'] == y) & (raw_data['month'] == m)]
-            
-            for index, row in df_cat.iterrows():
-                ma = row['ma']
-                ten = row['ten']
-                
-                ton_dau_sl = balances[ma]['sl']
-                ton_dau_vnd = balances[ma]['vnd']
-                
-                tx = monthly_tx[monthly_tx['cat_ma'] == ma]
-                banra = tx[tx['loaihd'] == 'banra']
-                muavao = tx[tx['loaihd'] == 'muavao']
-                
-                nhap_sl = muavao['sluong'].sum()
-                nhap_vnd = muavao['thtien'].sum()
-                xuat_sl = banra['sluong'].sum()
-                xuat_vnd = banra['thtien'].sum()
-                
-                ton_cuoi_sl = ton_dau_sl + nhap_sl - xuat_sl
-                ton_cuoi_vnd = ton_dau_vnd + nhap_vnd - xuat_vnd
-                
-                balances[ma]['sl'] = ton_cuoi_sl
-                balances[ma]['vnd'] = ton_cuoi_vnd
-                
-                if ton_dau_sl != 0 or ton_dau_vnd != 0 or nhap_sl != 0 or nhap_vnd != 0 or xuat_sl != 0 or xuat_vnd != 0 or ton_cuoi_sl != 0 or ton_cuoi_vnd != 0:
-                    m_data.append({
-                        'STT': len(m_data) + 1,
-                        'Mã Nhóm': ma,
-                        'Tên Nhóm Sản Phẩm': ten,
-                        'Tồn Đầu Kỳ (SL)': round(ton_dau_sl, 0),
-                        'Tồn Đầu Kỳ (VNĐ)': round(ton_dau_vnd, 0),
-                        'Nhập (SL)': round(nhap_sl, 0),
-                        'Nhập (VNĐ)': round(nhap_vnd, 0),
-                        'Xuất (SL)': round(xuat_sl, 0),
-                        'Xuất (VNĐ)': round(xuat_vnd, 0),
-                        'Tồn Cuối (SL)': round(ton_cuoi_sl, 0),
-                        'Tồn Cuối (VNĐ)': round(ton_cuoi_vnd, 0)
-                    })
-                
-                m_rev_vnd += xuat_vnd; m_rev_sl += xuat_sl
-                m_pur_vnd += nhap_vnd; m_pur_sl += nhap_sl
-            
-            df_m = pd.DataFrame(m_data)
-            if len(df_m) > 0:
-                totals = df_m.sum(numeric_only=True).to_dict()
-                totals['STT'] = ''; totals['Mã Nhóm'] = 'TỔNG CỘNG'; totals['Tên Nhóm Sản Phẩm'] = ''
-                df_m = pd.concat([df_m, pd.DataFrame([totals])], ignore_index=True)
-            else:
-                df_m = pd.DataFrame(columns=['STT', 'Mã Nhóm', 'Tên Nhóm Sản Phẩm', 'Tồn Đầu Kỳ (SL)', 'Tồn Đầu Kỳ (VNĐ)', 'Nhập (SL)', 'Nhập (VNĐ)', 'Xuất (SL)', 'Xuất (VNĐ)', 'Tồn Cuối (SL)', 'Tồn Cuối (VNĐ)'])
-                
-            sheet_name = f"{m:02d}_{y}"
-            df_m.to_excel(writer, sheet_name=sheet_name, index=False)
-            
-            md_rows.append({
-                'Tháng': f"{y}-{m:02d}",
-                'Doanh Thu Bán (VNĐ)': m_rev_vnd,
-                'DT Không Thuế (VNĐ)': df_list[(df_list['loaihd'] == 'banra') & ((df_list['tgtthue'] == 0) | df_list['tgtthue'].isnull()) & (df_list['tdlap'].dt.year == y) & (df_list['tdlap'].dt.month == m)]['tgtttbso'].sum(),
-                'SL Bán': m_rev_sl,
-                'Chi Phí Mua (VNĐ)': m_pur_vnd,
-                'CP Mua Hàng Hóa (VNĐ)': muavao[~muavao['cat_ma'].isin(['OTH-004', 'OTH-005', 'SRV-004', 'OTH-059', 'OTH-045'])]['thtien'].sum(),
-                'CP Dịch Vụ - Khác (VNĐ)': muavao[muavao['cat_ma'].isin(['OTH-004', 'OTH-005', 'SRV-004', 'OTH-059', 'OTH-045'])]['thtien'].sum(),
-                'SL Mua': m_pur_sl,
-                'Chênh Lệch': m_rev_vnd - m_pur_vnd
-            })
-            
-        writer.close()
-        print(f"Created {filename}")
-
-    md_content = "# Báo Cáo Tổng Hợp Hóa Đơn Huy Vũ (Bản Fix ÂM KHO triệt để)\n\n"
-    md_content += f"> Nguồn: `postgresql://root:password@localhost:5432/ketoan`\n"
-    md_content += f"> Công Ty: Huy Vũ (5900363291)\n"
-    md_content += f"> Khôi phục Dữ liệu: Phục hồi triệt để thông tin Hóa đơn (Chưa thuế, Mua hàng/Dịch vụ, Giao dịch khuyết).\n\n"
-    md_content += "## Thống Kê Tổng Quát (Bán Ra & Mua Vào)\n\n"
-    md_content += "| Tháng | Doanh Thu Bán | Trong đó: DT Không Thuế | SL Bán | Chi Phí Mua | Trong đó: Hàng Hóa | Trong đó: Dịch Vụ, Khác | SL Mua | Chênh Lệch Lợi Nhuận Gộp |\n"
-    md_content += "| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |\n"
-    
-    for r in md_rows:
-        if r['Doanh Thu Bán (VNĐ)'] == 0 and r['Chi Phí Mua (VNĐ)'] == 0 and r['Tháng'].startswith('2026'): continue 
-        md_content += f"| **{r['Tháng']}** | {r['Doanh Thu Bán (VNĐ)']:,.0f} | {r['DT Không Thuế (VNĐ)']:,.0f} | {r['SL Bán']:,.0f} | {r['Chi Phí Mua (VNĐ)']:,.0f} | {r['CP Mua Hàng Hóa (VNĐ)']:,.0f} | {r['CP Dịch Vụ - Khác (VNĐ)']:,.0f} | {r['SL Mua']:,.0f} | {r['Chênh Lệch']:,.0f} |\n"
-        
-    md_path = os.path.join(DOCS_DIR, "tong_hop_hoa_don_2023_2026.md")
-    with open(md_path, 'w', encoding='utf-8') as f:
-        f.write(md_content)
-    print(f"Updated {md_path}")
+    total_req_vnd = sum(d['req_vnd'] for d in deficits.values())
+    print("Total Required Initial Balance VNĐ to prevent negatives:", total_req_vnd)
+    print("Available Initial Balance:", INITIAL_BALANCE)
+    print("Deficit/Surplus:", INITIAL_BALANCE - total_req_vnd)
 
 if __name__ == '__main__':
-    build_xnt_reports()
+    evaluate_deficits()
