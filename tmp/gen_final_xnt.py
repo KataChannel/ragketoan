@@ -58,12 +58,12 @@ for r in rows:
     items_data[ma]['months'][(nam, thang)] = {'sln': sln, 'gtn': gtn, 'slx': slx, 'gtx': gtx}
     all_ma_hang.add(ma)
 
-# Sequence from 2023-01 to 2026-01
+# Sequence from 2023-01 to 2026-02
 min_y, max_y = 2023, 2026
 months_seq = []
 for y in range(min_y, max_y + 1):
     for m in range(1, 13):
-        if y == 2026 and m > 1: break # Stop at Jan 2026
+        if y == 2026 and m > 2: break # Stop at Feb 2026
         months_seq.append((y, m))
 
 md_output_path = "/chikiet/kata2025/ragketoan/docs/huyvu/tong_hop_xnt_2023_2026.md"
@@ -78,7 +78,7 @@ balances = {ma: {'sl': 0.0, 'val': 0.0} for ma in all_ma_hang}
 writer = pd.ExcelWriter(excel_output_path, engine='openpyxl')
 
 with open(md_output_path, "w", encoding="utf-8") as f_md:
-    f_md.write("# Tổng Hợp Xuất Nhập Tồn (01/2023 - 01/2026)\n\n")
+    f_md.write("# Tổng Hợp Xuất Nhập Tồn (01/2023 - 02/2026)\n\n")
     
     f_md.write("## 1. Phương pháp tổng hợp dữ liệu\n")
     f_md.write("Báo cáo được tổng hợp tự động từ hệ thống cơ sở dữ liệu kế toán với các tiêu chí sau:\n\n")
@@ -87,7 +87,7 @@ with open(md_output_path, "w", encoding="utf-8") as f_md:
     f_md.write("  - **Đầu kỳ tháng (T)** = **Cuối kỳ tháng (T-1)**.\n")
     f_md.write("  - **Cuối kỳ tháng (T)** = **Đầu kỳ** + **Nhập** - **Xuất**.\n")
     f_md.write("- **Giá trị tiền**: Được cộng dồn từ cột `giaTriNhap` (Mua vào) và `giaTriXuat` (Doanh thu bán ra) tương ứng cho từng mặt hàng.\n")
-    f_md.write("- **Thời gian**: Từ 01/01/2023 đến 01/01/2026.\n\n")
+    f_md.write("- **Thời gian**: Từ 01/01/2023 đến 01/02/2026.\n\n")
     
     f_md.write("---\n\n")
 

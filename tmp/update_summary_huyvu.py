@@ -1,18 +1,25 @@
-import psycopg2
+import subprocess
+import csv
+import io
 import pandas as pd
 import os
 
-def update_summary():
-    conn = psycopg2.connect(
-        host="localhost",
-        database="ketoan",
-        user="root",
-        password="password"
+def run_query(sql):
+    result = subprocess.run(
+        ["psql", "-h", "localhost", "-U", "root", "-d", "ketoan", "--csv", "-c", sql],
+        env={"PGPASSWORD": "password"},
+        capture_output=True,
+        text=True
     )
-    
+    if result.returncode != 0:
+        print(f"Error: {result.stderr}")
+        return pd.DataFrame()
+    return pd.read_csv(io.StringIO(result.stdout))
+
+def update_summary():
     mst = "5900363291"
     
-    # 1. Monthly basic stats from ext_listhoadon (as baseline for totals and counts)
+    # 1. Monthly basic stats from ext_listhoadon
     q_h = f"""
     SELECT 
         to_char(tdlap, 'YYYY-MM') as month,
@@ -27,7 +34,7 @@ def update_summary():
     GROUP BY month
     ORDER BY month;
     """
-    df_h = pd.read_sql(q_h, conn)
+    df_h = run_query(q_h)
     
     # 2. Detail stats from ext_tonghop
     q_d = f"""
@@ -37,18 +44,19 @@ def update_summary():
         "tenHang",
         sluong,
         thtien,
-        tthue,
         tsuat,
-        tgtttbso
+        "tongTien" as tgtttbso
     FROM ext_tonghop
     WHERE (nbmst = '{mst}' OR nmmst = '{mst}')
       AND tdlap >= '2023-01-01' AND tdlap < '2026-04-01'
       AND tthai = '1';
     """
-    df_details = pd.read_sql(q_d, conn)
+    df_details = run_query(q_d)
     
-    conn.close()
-    
+    if df_details.empty:
+        print("No details found.")
+        return
+
     # Classification Logic
     def classify(row):
         ten = str(row['tenHang']).lower()
@@ -90,14 +98,12 @@ def update_summary():
             'th_rieng_mua': muavao[muavao['cat'] == 'GOODS']['tgtttbso'].sum(),
             'km_rieng_ban': banra[banra['cat'] == 'PROMO']['tgtttbso'].sum(),
             'km_rieng_mua': muavao[muavao['cat'] == 'PROMO']['tgtttbso'].sum(),
-            'dt_kct_ban': banra[banra['cat'] == 'NON_TAX']['tgtttbso'].sum(),
-            'detail_ban': len(banra),
-            'detail_mua': len(muavao)
+            'dt_kct_ban': banra[banra['cat'] == 'NON_TAX']['tgtttbso'].sum()
         })
         
     df_s = pd.DataFrame(results)
     
-    # Final Merge with baseline
+    # Final Merge
     final_df = pd.merge(df_h, df_s, on='month', how='outer').fillna(0)
     
     # Formatting helper for display
@@ -105,14 +111,14 @@ def update_summary():
         return f"{val:,.0f}".replace(',', '.')
     
     # Generate MD content
-    md = "# Báo Cáo Tổng Hợp Hóa Đơn Huy Vũ (01/2023 - 01/2026)\n\n"
+    md = "# Báo Cáo Tổng Hợp Hóa Đơn Huy Vũ (01/2023 - 02/2026)\n\n"
     md += "## 1. Thống Kê Tổng Quát (Banra & Muavao)\n\n"
     md += "| Tháng | Doanh Thu Bán (VNĐ) | SL HD | SL Hàng | Chi Phí Mua (VNĐ) | SL HD | SL Hàng | Chênh Lệch |\n"
     md += "| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |\n"
     
     for _, r in final_df.iterrows():
         diff = r['ban_ra_vnđ'] - r['mua_vao_vnđ']
-        md += f"| **{r['month']}** | {fmt_num(r['ban_ra_vnđ'])} | {int(r['ban_ra_hd'])} | {fmt_num(r['sl_ban'])} | {fmt_num(r['mua_vao_vnđ'])} | {int(r['mua_vao_mua_vao_hd'] if 'mua_vao_mua_vao_hd' in r else r['mua_vao_hd'])} | {fmt_num(r['sl_mua'])} | {fmt_num(diff)} |\n"
+        md += f"| **{r['month']}** | {fmt_num(r['ban_ra_vnđ'])} | {int(r['ban_ra_hd'])} | {fmt_num(r['sl_ban'])} | {fmt_num(r['mua_vao_vnđ'])} | {int(r['mua_vao_hd'])} | {fmt_num(r['sl_mua'])} | {fmt_num(diff)} |\n"
     
     md += "\n## 2. Phân Tích Chi Tiết (Nghiệp vụ Hạch toán)\n\n"
     md += "| Tháng | Tiền Hàng Riêng (Bán) | DT Không Thuế | Khuyến Mãi (Bán) | CP Riêng (Mua) | Tiền Hàng (Mua) | KM (Mua) |\n"
@@ -129,9 +135,10 @@ def update_summary():
     md += "- **Số lượng hàng**: Tổng cộng cột `sluong` của tất cả các dòng chi tiết.\n"
     md += "\n--- *AI Generated Summary - 2026-03-22*"
     
-    with open('/chikiet/kata2025/ragketoan/docs/huyvu/tong_hop_hoa_don_2023_2026.md', 'w') as f:
+    output_path = '/chikiet/kata2025/ragketoan/docs/huyvu/tong_hop_hoa_don_2023_2026.md'
+    with open(output_path, 'w', encoding='utf-8') as f:
         f.write(md)
-    print("Report updated!")
+    print(f"Report updated at {output_path}")
 
 if __name__ == "__main__":
     update_summary()
