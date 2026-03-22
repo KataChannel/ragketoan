@@ -26,6 +26,8 @@ import { Button } from '@/app/components/ui/button';
 import { Input } from '@/app/components/ui/input';
 import { Label } from '@/app/components/ui/label';
 import { Combobox } from '@/app/components/ui/combobox';
+import { Badge } from '@/app/components/ui/badge';
+import { cn } from '@/app/lib/utils';
 import {
   Dialog,
   DialogContent,
@@ -112,6 +114,9 @@ interface SyncResult {
 // Component
 // ============================================================================
 
+const YEARS = [2020, 2021, 2022, 2023, 2024, 2025, 2026];
+const MONTHS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+
 export default function XuatNhapTonPage() {
   // State
   const [isLoading, setIsLoading] = useState(false);
@@ -121,8 +126,10 @@ export default function XuatNhapTonPage() {
   // Filter state
   const [companies, setCompanies] = useState<CongTy[]>([]);
   const [selectedCompanyId, setSelectedCompanyId] = useState<string>('');
-  const [fromDate, setFromDate] = useState(getDateRange(12).fromDate);
-  const [toDate, setToDate] = useState(getDateRange(12).toDate);
+  const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
+  const [selectedMonth, setSelectedMonth] = useState<number | null>(null);
+  const [fromDate, setFromDate] = useState('');
+  const [toDate, setToDate] = useState('');
   const [search, setSearch] = useState('');
 
   // Data state
@@ -217,9 +224,27 @@ export default function XuatNhapTonPage() {
   }, [selectedCompanyId]);
 
   useEffect(() => {
+    if (selectedYear) {
+      if (selectedMonth) {
+        // Cập nhật fromDate, toDate theo tháng
+        const from = `${selectedYear}-${String(selectedMonth).padStart(2, '0')}-01`;
+        const lastDay = new Date(selectedYear, selectedMonth, 0).getDate();
+        const to = `${selectedYear}-${String(selectedMonth).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
+        setFromDate(from);
+        setToDate(to);
+      } else {
+        // Cập nhật fromDate, toDate theo năm
+        setFromDate(`${selectedYear}-01-01`);
+        setToDate(`${selectedYear}-12-31`);
+      }
+    }
+  }, [selectedYear, selectedMonth]);
+
+  useEffect(() => {
+    if (!fromDate || !toDate) return;
     fetchStats();
     fetchXNTMatHang();
-  }, [fetchStats, fetchXNTMatHang]);
+  }, [fetchStats, fetchXNTMatHang, fromDate, toDate]);
 
   // ============================================================================
   // Handlers
@@ -707,23 +732,53 @@ export default function XuatNhapTonPage() {
                   placeholder="Chọn công ty..."
                 />
               </div>
-              <div>
-                <Label className="text-xs text-secondary-500 mb-1 block font-bold">TỪ NGÀY</Label>
-                <Input
-                  type="date"
-                  value={fromDate}
-                  onChange={(e) => setFromDate(e.target.value)}
-                  className="h-9"
-                />
-              </div>
-              <div>
-                <Label className="text-xs text-secondary-500 mb-1 block font-bold">ĐẾN NGÀY</Label>
-                <Input
-                  type="date"
-                  value={toDate}
-                  onChange={(e) => setToDate(e.target.value)}
-                  className="h-9"
-                />
+              <div className="flex flex-col gap-3 lg:col-span-2 min-w-[300px]">
+                <div className="flex items-center gap-2">
+                  <Label className="text-xs text-secondary-500 font-bold w-16">NĂM:</Label>
+                  <div className="flex flex-wrap gap-1.5">
+                    {YEARS.map((y) => (
+                      <Badge
+                        key={y}
+                        variant={selectedYear === y ? 'default' : 'outline'}
+                        className={cn(
+                          "cursor-pointer hover:opacity-80 transition-all px-3 py-1 text-[11px]",
+                          selectedYear === y ? "bg-blue-600 hover:bg-blue-700" : "border-gray-200"
+                        )}
+                        onClick={() => setSelectedYear(y)}
+                      >
+                        {y}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Label className="text-xs text-secondary-500 font-bold w-16">THÁNG:</Label>
+                  <div className="flex flex-wrap gap-1.5">
+                    <Badge
+                      variant={selectedMonth === null ? 'default' : 'outline'}
+                      className={cn(
+                        "cursor-pointer hover:opacity-80 transition-all px-3 py-1 text-[11px]",
+                        selectedMonth === null ? "bg-indigo-600 hover:bg-indigo-700" : "border-gray-200"
+                      )}
+                      onClick={() => setSelectedMonth(null)}
+                    >
+                      Tất cả
+                    </Badge>
+                    {MONTHS.map((m) => (
+                      <Badge
+                        key={m}
+                        variant={selectedMonth === m ? 'default' : 'outline'}
+                        className={cn(
+                          "cursor-pointer hover:opacity-80 transition-all flex items-center justify-center min-w-[32px] h-6 text-[11px]",
+                          selectedMonth === m ? "bg-indigo-600 hover:bg-indigo-700" : "border-gray-200"
+                        )}
+                        onClick={() => setSelectedMonth(m)}
+                      >
+                        {m}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
 

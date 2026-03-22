@@ -19,7 +19,12 @@ import {
     Building2,
     AlertTriangle,
     ShieldCheck,
-    AlertCircle
+    AlertCircle,
+    Package,
+    Sparkles,
+    Bot,
+    FileSearch,
+    Menu
 } from 'lucide-react';
 import { DashboardLayout } from '@/app/components/dashboard-layout';
 import { Button } from '@/app/components/ui/button';
@@ -50,6 +55,7 @@ export default function TongHopSoPage() {
     const [plData, setPlData] = useState<any[]>([]);
     const [balanceSheetData, setBalanceSheetData] = useState<any[]>([]);
     const [negativeInventory, setNegativeInventory] = useState<any[]>([]);
+    const [inventoryData, setInventoryData] = useState<any[]>([]);
     const [auditAlerts, setAuditAlerts] = useState<any[]>([]);
     const [auditReport, setAuditReport] = useState<string>('');
     const [showFullReport, setShowFullReport] = useState(false);
@@ -316,6 +322,30 @@ export default function TongHopSoPage() {
         }
     }, [selectedAccount, searchObject]); 
 
+    const fetchInventory = useCallback(async () => {
+        if (isLoading) return;
+        setIsLoading(true);
+        try {
+            const params = new URLSearchParams({
+                action: 'xnt-mathang',
+                fromDate,
+                toDate,
+            });
+            if (selectedCompanyId) params.append('congtyId', selectedCompanyId);
+
+            const response = await fetch(`/api/tonghop?${params}`);
+            const result = await response.json();
+            if (result.success) {
+                setInventoryData(result.items || []);
+            }
+        } catch (error) {
+            console.error('Error fetching inventory:', error);
+            toast.error('Lỗi khi tải dữ liệu tồn ko');
+        } finally {
+            setIsLoading(false);
+        }
+    }, [selectedCompanyId, fromDate, toDate, isLoading]);
+
     const handleSearch = () => {
         if (!selectedCompanyId) {
             toast.error('Vui lòng chọn công ty');
@@ -328,6 +358,7 @@ export default function TongHopSoPage() {
         fetchDetailLedger();
         fetchPLReport();
         fetchBalanceSheet();
+        fetchInventory();
         fetchNegativeInventory();
         fetchAudit();
         
@@ -453,6 +484,26 @@ export default function TongHopSoPage() {
                 XLSX.utils.book_append_sheet(wb, wsBck, 'Bảng CĐKT');
             }
 
+            // 7. Tổng hợp Nhập Xuất Tồn
+            if (inventoryData && inventoryData.length > 0) {
+                const xntHeader = [['Mã hàng', 'Tên mặt hàng', 'ĐVT', 'Tồn đầu SL', 'Tồn đầu TT', 'Nhập SL', 'Nhập TT', 'Xuat SL', 'Xuat TT', 'Tồn cuối SL', 'Tồn cuối TT']];
+                const xntData = inventoryData.map(i => [
+                    i.maMatHang, 
+                    i.tenMatHang, 
+                    i.dvtinh, 
+                    i.tonDauSL || 0, 
+                    i.tonDauTT || 0, 
+                    i.nhapSL || 0, 
+                    i.nhapTT || 0, 
+                    i.xuatSL || 0, 
+                    i.xuatTT || 0, 
+                    i.tonCuoiSL || 0, 
+                    i.tonCuoiTT || 0
+                ]);
+                const wsXnt = XLSX.utils.aoa_to_sheet([...xntHeader, ...xntData]);
+                XLSX.utils.book_append_sheet(wb, wsXnt, 'Tổng hợp XNT');
+            }
+
             XLSX.writeFile(wb, `SoKeToan_${companyName}_${format(new Date(), 'yyyyMMdd')}.xlsx`);
             toast.success('Xuất file Excel thành công!');
         } catch (error) {
@@ -555,6 +606,10 @@ export default function TongHopSoPage() {
                         <TabsTrigger value="bangcandoi" className="py-2.5">
                             <Calculator className="h-4 w-4 mr-2" />
                             Bảng Cân Đối
+                        </TabsTrigger>
+                        <TabsTrigger value="inventory" className="py-2.5">
+                            <Package className="h-4 w-4 mr-2" />
+                            Sổ Tổng Hợp XNT
                         </TabsTrigger>
                         <TabsTrigger value="bckqkd" className="py-2.5">
                             <TrendingUp className="h-4 w-4 mr-2" />
@@ -929,6 +984,57 @@ export default function TongHopSoPage() {
                                                     <td className="px-4 py-3">{row.target}</td>
                                                     <td className="px-4 py-3 text-center text-gray-400">{row.code}</td>
                                                     <td className="px-4 py-3 text-right font-mono">{formatCurrency(row.value)}</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </TabsContent>
+
+                        <TabsContent value="inventory" className="m-0">
+                            <div className="p-4 sm:p-6 lg:p-8">
+                                <div className="text-center mb-8">
+                                    <h3 className="text-xl font-bold uppercase">Bảng Tổng Hợp Nhập Xuất Tồn</h3>
+                                    <p className="text-sm text-gray-500">Kỳ báo cáo: Từ {safeFormatDate(fromDate)} đến {safeFormatDate(toDate)}</p>
+                                </div>
+                                <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-x-auto">
+                                    <table className="w-full text-xs text-left">
+                                        <thead className="bg-gray-50 dark:bg-gray-900/50 text-gray-700 dark:text-gray-300">
+                                            <tr className="divide-x divide-gray-200 dark:divide-gray-700">
+                                                <th className="px-3 py-2" rowSpan={2}>Mã hàng</th>
+                                                <th className="px-3 py-2" rowSpan={2}>Tên mặt hàng</th>
+                                                <th className="px-3 py-2 text-center" rowSpan={2}>ĐVT</th>
+                                                <th className="px-3 py-2 text-center bg-gray-100/30" colSpan={2}>Tồn đầu kỳ</th>
+                                                <th className="px-3 py-2 text-center bg-green-50/30" colSpan={2}>Nhập trong kỳ</th>
+                                                <th className="px-3 py-2 text-center bg-red-50/30" colSpan={2}>Xuất trong kỳ</th>
+                                                <th className="px-3 py-2 text-center bg-blue-50/30" colSpan={2}>Tồn cuối kỳ</th>
+                                            </tr>
+                                            <tr className="divide-x divide-gray-200 dark:divide-gray-700 uppercase tracking-tighter text-[10px]">
+                                                <th className="px-2 py-1 text-right">SL</th>
+                                                <th className="px-2 py-1 text-right">TT</th>
+                                                <th className="px-2 py-1 text-right font-bold text-green-700">SL</th>
+                                                <th className="px-2 py-1 text-right">TT</th>
+                                                <th className="px-2 py-1 text-right font-bold text-red-700">SL</th>
+                                                <th className="px-2 py-1 text-right">TT</th>
+                                                <th className="px-2 py-1 text-right font-bold text-blue-700">SL</th>
+                                                <th className="px-2 py-1 text-right">TT</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+                                            {inventoryData.map((item, idx) => (
+                                                <tr key={idx} className="divide-x divide-gray-50 dark:divide-gray-900 border-b border-gray-50 dark:border-gray-900 hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
+                                                    <td className="px-3 py-2 font-mono text-blue-600 font-bold">{item.maMatHang}</td>
+                                                    <td className="px-3 py-2 truncate max-w-[200px]" title={item.tenMatHang}>{item.tenMatHang}</td>
+                                                    <td className="px-3 py-2 text-center text-gray-500">{item.dvtinh}</td>
+                                                    <td className="px-2 py-2 text-right">{item.tonDauSL ? item.tonDauSL.toLocaleString() : '-'}</td>
+                                                    <td className="px-2 py-2 text-right text-gray-500 italic">{formatCurrency(item.tonDauTT)}</td>
+                                                    <td className="px-2 py-2 text-right text-green-600 font-bold">{item.nhapSL ? item.nhapSL.toLocaleString() : '-'}</td>
+                                                    <td className="px-2 py-2 text-right text-gray-500">{formatCurrency(item.nhapTT)}</td>
+                                                    <td className="px-2 py-2 text-right text-red-600 font-bold">{item.xuatSL ? item.xuatSL.toLocaleString() : '-'}</td>
+                                                    <td className="px-2 py-2 text-right text-gray-500">{formatCurrency(item.xuatTT)}</td>
+                                                    <td className={`px-2 py-2 text-right font-bold ${item.tonCuoiSL < 0 ? 'text-red-500 bg-red-50' : 'text-blue-700 bg-blue-50/30'}`}>{item.tonCuoiSL ? item.tonCuoiSL.toLocaleString() : '0'}</td>
+                                                    <td className={`px-2 py-2 text-right font-bold ${item.tonCuoiTT < 0 ? 'text-red-500' : 'text-blue-800 font-mono tracking-tighter'}`}>{formatCurrency(item.tonCuoiTT)}</td>
                                                 </tr>
                                             ))}
                                         </tbody>
