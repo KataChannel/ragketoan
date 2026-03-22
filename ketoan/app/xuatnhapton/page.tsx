@@ -603,14 +603,14 @@ export default function XuatNhapTonPage() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-4 lg:space-y-6">
+      <div className="space-y-3 lg:space-y-4">
         {/* Page Header */}
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
+            <h2 className="text-lg sm:text-xl font-bold tracking-tight text-gray-900 dark:text-white">
               Báo cáo Tổng hợp Xuất Nhập Tồn
             </h2>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
+            <p className="text-xs text-gray-500 dark:text-gray-400 hidden sm:block">
               Thống kê tồn kho chi tiết theo mặt hàng trong khoảng thời gian
             </p>
           </div>
@@ -662,56 +662,55 @@ export default function XuatNhapTonPage() {
 
         {/* Stats Grid */}
         {stats && (
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
-            <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-3 sm:p-4">
-              <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-xs sm:text-sm mb-1">
-                <Package className="h-4 w-4" />
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
+            <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-2 sm:p-3">
+              <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-[10px] sm:text-xs mb-0.5">
+                <Package className="h-3.5 w-3.5" />
                 <span>Số mặt hàng</span>
               </div>
-              <div className="text-base sm:text-xl font-bold text-gray-900 dark:text-white">
+              <div className="text-sm sm:text-lg font-bold text-gray-900 dark:text-white">
                 {(stats.tongMatHang ?? 0).toLocaleString()}
               </div>
-              <div className="text-xs text-secondary-500 dark:text-gray-400">Có phát sinh giao dịch</div>
             </div>
 
-            <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-3 sm:p-4">
-              <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-xs sm:text-sm mb-1">
-                <TrendingDown className="h-4 w-4 text-green-500" />
+            <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-2 sm:p-3">
+              <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-[10px] sm:text-xs mb-0.5">
+                <TrendingDown className="h-3.5 w-3.5 text-green-500" />
                 <span>Tổng nhập</span>
               </div>
-              <div className="text-base sm:text-xl font-bold text-green-600 dark:text-green-400 font-mono">
+              <div className="text-sm sm:text-lg font-bold text-green-600 dark:text-green-400 font-mono">
                 {(stats.tongNhap ?? 0).toLocaleString()}
               </div>
-              <div className="text-xs text-secondary-500 dark:text-gray-400 font-mono">
+              <div className="text-[10px] text-secondary-500 dark:text-gray-400 font-mono truncate">
                 {formatCurrency(stats.giaTriNhap ?? 0)}
               </div>
             </div>
 
-            <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-3 sm:p-4">
-              <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-xs sm:text-sm mb-1">
-                <TrendingUp className="h-4 w-4 text-blue-500" />
+            <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-2 sm:p-3">
+              <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-[10px] sm:text-xs mb-0.5">
+                <TrendingUp className="h-3.5 w-3.5 text-blue-500" />
                 <span>Tổng xuất</span>
               </div>
-              <div className="text-base sm:text-xl font-bold text-blue-600 dark:text-blue-400 font-mono">
+              <div className="text-sm sm:text-lg font-bold text-blue-600 dark:text-blue-400 font-mono">
                 {(stats.tongXuat ?? 0).toLocaleString()}
               </div>
-              <div className="text-xs text-secondary-500 dark:text-gray-400 font-mono">
+              <div className="text-[10px] text-secondary-500 dark:text-gray-400 font-mono truncate">
                 {formatCurrency(stats.giaTriXuat ?? 0)}
               </div>
             </div>
 
-            <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-3 sm:p-4">
-              <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-xs sm:text-sm mb-1">
-                <BarChart3 className="h-4 w-4 text-indigo-500" />
-                <span>Giá trị tồn cuối</span>
+            <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-2 sm:p-3">
+              <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-[10px] sm:text-xs mb-0.5">
+                <BarChart3 className="h-3.5 w-3.5 text-indigo-500" />
+                <span>Tồn cuối</span>
               </div>
-              <div className={`text-base sm:text-xl font-bold font-mono ${(stats.giaTriTonCuoi ?? 0) >= 0
+              <div className={`text-sm sm:text-lg font-bold font-mono ${(stats.giaTriTonCuoi ?? 0) >= 0
                 ? 'text-indigo-600 dark:text-indigo-400'
                 : 'text-red-600 dark:text-red-400'
                 }`}>
                 {formatCurrency(stats.giaTriTonCuoi ?? 0)}
               </div>
-              <div className="text-xs text-secondary-500 dark:text-gray-400 font-mono">
+              <div className="text-[10px] text-secondary-500 dark:text-gray-400 font-mono truncate">
                 SL: {(stats.soLuongTonCuoi ?? 0).toLocaleString()}
               </div>
             </div>
@@ -721,10 +720,11 @@ export default function XuatNhapTonPage() {
         {/* Main Content Area */}
         <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
           {/* Filter Bar */}
-          <div className="p-3 sm:p-4 border-b border-gray-200 dark:border-gray-700 flex flex-wrap items-center gap-3">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-              <div className="sm:col-span-2">
-                <Label className="text-xs text-secondary-500 mb-1 block font-bold">CÔNG TY</Label>
+          <div className="p-3 sm:p-3 border-b border-gray-200 dark:border-gray-700 flex flex-col gap-3">
+            {/* HÀNG 1: CHỌN CÔNG TY */}
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+              <Label className="text-[10px] text-secondary-500 font-bold w-16 uppercase tracking-wider shrink-0">CÔNG TY</Label>
+              <div className="flex-1 max-w-2xl">
                 <Combobox
                   options={companyOptions}
                   value={selectedCompanyId}
@@ -732,17 +732,21 @@ export default function XuatNhapTonPage() {
                   placeholder="Chọn công ty..."
                 />
               </div>
-              <div className="flex flex-col gap-3 lg:col-span-2 min-w-[300px]">
-                <div className="flex items-center gap-2">
-                  <Label className="text-xs text-secondary-500 font-bold w-16">NĂM:</Label>
-                  <div className="flex flex-wrap gap-1.5">
+            </div>
+
+            {/* HÀNG 2: BỘ LỌC THỜI GIAN (NĂM & THÁNG) */}
+            <div className="flex flex-col gap-2.5 bg-gray-50/50 dark:bg-gray-900/40 p-2 sm:px-3 sm:py-2 rounded-lg border border-gray-100 dark:border-gray-800">
+              <div className="flex flex-col lg:flex-row lg:items-center lg:gap-8 gap-2">
+                <div className="flex items-center gap-3">
+                  <Label className="text-[10px] text-secondary-500 font-bold w-12 uppercase tracking-wider shrink-0">NĂM:</Label>
+                  <div className="flex flex-wrap gap-1">
                     {YEARS.map((y) => (
                       <Badge
                         key={y}
                         variant={selectedYear === y ? 'default' : 'outline'}
                         className={cn(
-                          "cursor-pointer hover:opacity-80 transition-all px-3 py-1 text-[11px]",
-                          selectedYear === y ? "bg-blue-600 hover:bg-blue-700" : "border-gray-200"
+                          "cursor-pointer hover:bg-blue-50 transition-all px-2.5 py-0.5 text-[10px] rounded-md",
+                          selectedYear === y ? "bg-blue-600 hover:bg-blue-700 shadow-sm" : "border-gray-200 bg-white"
                         )}
                         onClick={() => setSelectedYear(y)}
                       >
@@ -751,14 +755,17 @@ export default function XuatNhapTonPage() {
                     ))}
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Label className="text-xs text-secondary-500 font-bold w-16">THÁNG:</Label>
-                  <div className="flex flex-wrap gap-1.5">
+
+                <div className="hidden lg:block w-px h-6 bg-gray-200 dark:bg-gray-800" />
+
+                <div className="flex items-center gap-3">
+                  <Label className="text-[10px] text-secondary-500 font-bold w-12 uppercase tracking-wider shrink-0">THÁNG:</Label>
+                  <div className="flex flex-wrap gap-1">
                     <Badge
                       variant={selectedMonth === null ? 'default' : 'outline'}
                       className={cn(
-                        "cursor-pointer hover:opacity-80 transition-all px-3 py-1 text-[11px]",
-                        selectedMonth === null ? "bg-indigo-600 hover:bg-indigo-700" : "border-gray-200"
+                        "cursor-pointer hover:bg-indigo-50 transition-all px-2.5 py-0.5 text-[10px] rounded-md",
+                        selectedMonth === null ? "bg-indigo-600 hover:bg-indigo-700 shadow-sm" : "border-gray-200 bg-white"
                       )}
                       onClick={() => setSelectedMonth(null)}
                     >
@@ -769,8 +776,8 @@ export default function XuatNhapTonPage() {
                         key={m}
                         variant={selectedMonth === m ? 'default' : 'outline'}
                         className={cn(
-                          "cursor-pointer hover:opacity-80 transition-all flex items-center justify-center min-w-[32px] h-6 text-[11px]",
-                          selectedMonth === m ? "bg-indigo-600 hover:bg-indigo-700" : "border-gray-200"
+                          "cursor-pointer hover:bg-indigo-50 transition-all flex items-center justify-center min-w-[30px] h-6 text-[10px] rounded-md",
+                          selectedMonth === m ? "bg-indigo-600 hover:bg-indigo-700 shadow-sm" : "border-gray-200 bg-white"
                         )}
                         onClick={() => setSelectedMonth(m)}
                       >
@@ -782,18 +789,24 @@ export default function XuatNhapTonPage() {
               </div>
             </div>
 
-            <div className="flex-1 min-w-[200px] flex items-end gap-2">
-              <div className="relative flex-1">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400" />
+            {/* HÀNG 3: TÌM KIẾM */}
+            <div className="flex items-center gap-2">
+              <div className="relative flex-1 group">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <Input
                   placeholder="Tìm kiếm mặt hàng..."
-                  className="pl-9 h-9"
+                  className="pl-9 h-8.5 rounded-lg border-gray-200 text-sm"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                 />
               </div>
-              <Button variant="outline" size="sm" onClick={handleRefresh}>
-                <Filter className="h-4 w-4" />
+              <Button 
+                variant="outline" 
+                size="icon" 
+                className="h-8.5 w-8.5 rounded-lg"
+                onClick={handleRefresh}
+              >
+                <Filter className="h-3.5 w-3.5" />
               </Button>
             </div>
           </div>

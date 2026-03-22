@@ -1,0 +1,3158 @@
+{
+  "/chikiet/kata2025/ragketoan/docs/huyvu/dulieuchuan/Huyvu2023.xlsx": {
+    "sheets": [
+      "Hoadon",
+      "Tháng 1",
+      "Tháng 2",
+      "Tháng 3",
+      "Tháng 4",
+      "Tháng 5",
+      "Tháng 6",
+      "Tháng 7",
+      "Tháng 8",
+      "Tháng 9",
+      "Tháng 10",
+      "Tháng 11",
+      "Tháng 12",
+      "xnt12thang"
+    ],
+    "Hoadon": {
+      "columns": [
+        "Tháng",
+        "Loại HD",
+        "Tình trạng (Mã)",
+        "Số lượng",
+        "Tổng giá tiền (VNĐ)"
+      ],
+      "head": [
+        {
+          "Tháng": "01/2023",
+          "Loại HD": "Bán ra",
+          "Tình trạng (Mã)": "1 (Hợp lệ)",
+          "Số lượng": 5284,
+          "Tổng giá tiền (VNĐ)": 891206849.9999999
+        },
+        {
+          "Tháng": "01/2023",
+          "Loại HD": "Mua vào",
+          "Tình trạng (Mã)": "1 (Hợp lệ)",
+          "Số lượng": 7112,
+          "Tổng giá tiền (VNĐ)": 1154981164.0
+        },
+        {
+          "Tháng": "02/2023",
+          "Loại HD": "Bán ra",
+          "Tình trạng (Mã)": "1 (Hợp lệ)",
+          "Số lượng": 6872,
+          "Tổng giá tiền (VNĐ)": 1064640911.0
+        },
+        {
+          "Tháng": "02/2023",
+          "Loại HD": "Mua vào",
+          "Tình trạng (Mã)": "1 (Hợp lệ)",
+          "Số lượng": 10422,
+          "Tổng giá tiền (VNĐ)": 1745704064.0
+        },
+        {
+          "Tháng": "03/2023",
+          "Loại HD": "Bán ra",
+          "Tình trạng (Mã)": "1 (Hợp lệ)",
+          "Số lượng": 8911,
+          "Tổng giá tiền (VNĐ)": 1709814546.0
+        }
+      ]
+    },
+    "Tháng 1": {
+      "columns": [
+        "Mã - Tên Hàng",
+        "ĐVT",
+        "Đầu Kỳ (SL)",
+        "Đầu Kỳ (Tiền)",
+        "Nhập (SL)",
+        "Nhập (Tiền)",
+        "Xuất (SL)",
+        "Xuất (Tiền)",
+        "Cuối Kỳ (SL)",
+        "Cuối Kỳ (Tiền)"
+      ],
+      "head": [
+        {
+          "Mã - Tên Hàng": "ACC-GEN-200K_1M - Phụ kiện & vật tư phụ (200k - 1M)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 14599,
+          "Đầu Kỳ (Tiền)": 13808686844,
+          "Nhập (SL)": 510,
+          "Nhập (Tiền)": 43318660,
+          "Xuất (SL)": 379,
+          "Xuất (Tiền)": 33397910,
+          "Cuối Kỳ (SL)": 14730,
+          "Cuối Kỳ (Tiền)": 13818607594
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-FREE - Phụ kiện & vật tư phụ (Không thu tiền)",
+          "ĐVT": "Lần",
+          "Đầu Kỳ (SL)": 0,
+          "Đầu Kỳ (Tiền)": 0,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 0,
+          "Cuối Kỳ (Tiền)": 0
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-O1M - Phụ kiện & vật tư phụ (> 1M)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1390,
+          "Đầu Kỳ (Tiền)": 233334364,
+          "Nhập (SL)": 314,
+          "Nhập (Tiền)": 26670705,
+          "Xuất (SL)": 234,
+          "Xuất (Tiền)": 20620346,
+          "Cuối Kỳ (SL)": 1470,
+          "Cuối Kỳ (Tiền)": 239384723
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-U200K - Phụ kiện & vật tư phụ (< 200k)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1416,
+          "Đầu Kỳ (Tiền)": 235934364,
+          "Nhập (SL)": 320,
+          "Nhập (Tiền)": 27180336,
+          "Xuất (SL)": 238,
+          "Xuất (Tiền)": 20972830,
+          "Cuối Kỳ (SL)": 1498,
+          "Cuối Kỳ (Tiền)": 242141870
+        },
+        {
+          "Mã - Tên Hàng": "CABLE-SIG - Cáp truyền tín hiệu HDMI/VGA/USB",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1331,
+          "Đầu Kỳ (Tiền)": 227434364,
+          "Nhập (SL)": 301,
+          "Nhập (Tiền)": 25566503,
+          "Xuất (SL)": 224,
+          "Xuất (Tiền)": 19739134,
+          "Cuối Kỳ (SL)": 1408,
+          "Cuối Kỳ (Tiền)": 233261733
+        }
+      ]
+    },
+    "Tháng 2": {
+      "columns": [
+        "Mã - Tên Hàng",
+        "ĐVT",
+        "Đầu Kỳ (SL)",
+        "Đầu Kỳ (Tiền)",
+        "Nhập (SL)",
+        "Nhập (Tiền)",
+        "Xuất (SL)",
+        "Xuất (Tiền)",
+        "Cuối Kỳ (SL)",
+        "Cuối Kỳ (Tiền)"
+      ],
+      "head": [
+        {
+          "Mã - Tên Hàng": "ACC-GEN-200K_1M - Phụ kiện & vật tư phụ (200k - 1M)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 14730,
+          "Đầu Kỳ (Tiền)": 13818607594,
+          "Nhập (SL)": 747,
+          "Nhập (Tiền)": 65455439,
+          "Xuất (SL)": 493,
+          "Xuất (Tiền)": 39909817,
+          "Cuối Kỳ (SL)": 14984,
+          "Cuối Kỳ (Tiền)": 13844153216
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-FREE - Phụ kiện & vật tư phụ (Không thu tiền)",
+          "ĐVT": "Lần",
+          "Đầu Kỳ (SL)": 0,
+          "Đầu Kỳ (Tiền)": 0,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 0,
+          "Cuối Kỳ (Tiền)": 0
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-O1M - Phụ kiện & vật tư phụ (> 1M)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1470,
+          "Đầu Kỳ (Tiền)": 239384723,
+          "Nhập (SL)": 460,
+          "Nhập (Tiền)": 40307232,
+          "Xuất (SL)": 304,
+          "Xuất (Tiền)": 24609705,
+          "Cuối Kỳ (SL)": 1626,
+          "Cuối Kỳ (Tiền)": 255082250
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-U200K - Phụ kiện & vật tư phụ (< 200k)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1498,
+          "Đầu Kỳ (Tiền)": 242141870,
+          "Nhập (SL)": 469,
+          "Nhập (Tiền)": 41095851,
+          "Xuất (SL)": 310,
+          "Xuất (Tiền)": 25095422,
+          "Cuối Kỳ (SL)": 1657,
+          "Cuối Kỳ (Tiền)": 258142299
+        },
+        {
+          "Mã - Tên Hàng": "CABLE-SIG - Cáp truyền tín hiệu HDMI/VGA/USB",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1408,
+          "Đầu Kỳ (Tiền)": 233261733,
+          "Nhập (SL)": 441,
+          "Nhập (Tiền)": 38642368,
+          "Xuất (SL)": 291,
+          "Xuất (Tiền)": 23557316,
+          "Cuối Kỳ (SL)": 1558,
+          "Cuối Kỳ (Tiền)": 248346785
+        }
+      ]
+    },
+    "Tháng 3": {
+      "columns": [
+        "Mã - Tên Hàng",
+        "ĐVT",
+        "Đầu Kỳ (SL)",
+        "Đầu Kỳ (Tiền)",
+        "Nhập (SL)",
+        "Nhập (Tiền)",
+        "Xuất (SL)",
+        "Xuất (Tiền)",
+        "Cuối Kỳ (SL)",
+        "Cuối Kỳ (Tiền)"
+      ],
+      "head": [
+        {
+          "Mã - Tên Hàng": "ACC-GEN-200K_1M - Phụ kiện & vật tư phụ (200k - 1M)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 14984,
+          "Đầu Kỳ (Tiền)": 13844153216,
+          "Nhập (SL)": 630,
+          "Nhập (Tiền)": 57669241,
+          "Xuất (SL)": 639,
+          "Xuất (Tiền)": 64119701,
+          "Cuối Kỳ (SL)": 14975,
+          "Cuối Kỳ (Tiền)": 13837702755
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-FREE - Phụ kiện & vật tư phụ (Không thu tiền)",
+          "ĐVT": "Lần",
+          "Đầu Kỳ (SL)": 0,
+          "Đầu Kỳ (Tiền)": 0,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 0,
+          "Cuối Kỳ (Tiền)": 0
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-O1M - Phụ kiện & vật tư phụ (> 1M)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1626,
+          "Đầu Kỳ (Tiền)": 255082250,
+          "Nhập (SL)": 388,
+          "Nhập (Tiền)": 35516929,
+          "Xuất (SL)": 394,
+          "Xuất (Tiền)": 39535465,
+          "Cuối Kỳ (SL)": 1620,
+          "Cuối Kỳ (Tiền)": 251063714
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-U200K - Phụ kiện & vật tư phụ (< 200k)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1657,
+          "Đầu Kỳ (Tiền)": 258142299,
+          "Nhập (SL)": 395,
+          "Nhập (Tiền)": 36157699,
+          "Xuất (SL)": 401,
+          "Xuất (Tiền)": 40237872,
+          "Cuối Kỳ (SL)": 1651,
+          "Cuối Kỳ (Tiền)": 254062125
+        },
+        {
+          "Mã - Tên Hàng": "CABLE-SIG - Cáp truyền tín hiệu HDMI/VGA/USB",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1558,
+          "Đầu Kỳ (Tiền)": 248346785,
+          "Nhập (SL)": 372,
+          "Nhập (Tiền)": 34052314,
+          "Xuất (SL)": 377,
+          "Xuất (Tiền)": 37829620,
+          "Cuối Kỳ (SL)": 1553,
+          "Cuối Kỳ (Tiền)": 244569478
+        }
+      ]
+    },
+    "Tháng 4": {
+      "columns": [
+        "Mã - Tên Hàng",
+        "ĐVT",
+        "Đầu Kỳ (SL)",
+        "Đầu Kỳ (Tiền)",
+        "Nhập (SL)",
+        "Nhập (Tiền)",
+        "Xuất (SL)",
+        "Xuất (Tiền)",
+        "Cuối Kỳ (SL)",
+        "Cuối Kỳ (Tiền)"
+      ],
+      "head": [
+        {
+          "Mã - Tên Hàng": "ACC-GEN-200K_1M - Phụ kiện & vật tư phụ (200k - 1M)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 14975,
+          "Đầu Kỳ (Tiền)": 13837702755,
+          "Nhập (SL)": 327,
+          "Nhập (Tiền)": 28394660,
+          "Xuất (SL)": 404,
+          "Xuất (Tiền)": 36734271,
+          "Cuối Kỳ (SL)": 14898,
+          "Cuối Kỳ (Tiền)": 13829363143
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-FREE - Phụ kiện & vật tư phụ (Không thu tiền)",
+          "ĐVT": "Lần",
+          "Đầu Kỳ (SL)": 0,
+          "Đầu Kỳ (Tiền)": 0,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 0,
+          "Cuối Kỳ (Tiền)": 0
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-O1M - Phụ kiện & vật tư phụ (> 1M)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1620,
+          "Đầu Kỳ (Tiền)": 251063714,
+          "Nhập (SL)": 202,
+          "Nhập (Tiền)": 17540432,
+          "Xuất (SL)": 249,
+          "Xuất (Tiền)": 22640677,
+          "Cuối Kỳ (SL)": 1573,
+          "Cuối Kỳ (Tiền)": 245963469
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-U200K - Phụ kiện & vật tư phụ (< 200k)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1651,
+          "Đầu Kỳ (Tiền)": 254062125,
+          "Nhập (SL)": 206,
+          "Nhập (Tiền)": 17887767,
+          "Xuất (SL)": 253,
+          "Xuất (Tiền)": 23004383,
+          "Cuối Kỳ (SL)": 1604,
+          "Cuối Kỳ (Tiền)": 248945509
+        },
+        {
+          "Mã - Tên Hàng": "CABLE-SIG - Cáp truyền tín hiệu HDMI/VGA/USB",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1553,
+          "Đầu Kỳ (Tiền)": 244569478,
+          "Nhập (SL)": 193,
+          "Nhập (Tiền)": 16758928,
+          "Xuất (SL)": 238,
+          "Xuất (Tiền)": 21640487,
+          "Cuối Kỳ (SL)": 1508,
+          "Cuối Kỳ (Tiền)": 239687919
+        }
+      ]
+    },
+    "Tháng 5": {
+      "columns": [
+        "Mã - Tên Hàng",
+        "ĐVT",
+        "Đầu Kỳ (SL)",
+        "Đầu Kỳ (Tiền)",
+        "Nhập (SL)",
+        "Nhập (Tiền)",
+        "Xuất (SL)",
+        "Xuất (Tiền)",
+        "Cuối Kỳ (SL)",
+        "Cuối Kỳ (Tiền)"
+      ],
+      "head": [
+        {
+          "Mã - Tên Hàng": "ACC-GEN-200K_1M - Phụ kiện & vật tư phụ (200k - 1M)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 14898,
+          "Đầu Kỳ (Tiền)": 13829363143,
+          "Nhập (SL)": 288,
+          "Nhập (Tiền)": 22558220,
+          "Xuất (SL)": 357,
+          "Xuất (Tiền)": 32143204,
+          "Cuối Kỳ (SL)": 14829,
+          "Cuối Kỳ (Tiền)": 13819778159
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-FREE - Phụ kiện & vật tư phụ (Không thu tiền)",
+          "ĐVT": "Lần",
+          "Đầu Kỳ (SL)": 0,
+          "Đầu Kỳ (Tiền)": 0,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 0,
+          "Cuối Kỳ (Tiền)": 0
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-O1M - Phụ kiện & vật tư phụ (> 1M)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1573,
+          "Đầu Kỳ (Tiền)": 245963469,
+          "Nhập (SL)": 177,
+          "Nhập (Tiền)": 13863906,
+          "Xuất (SL)": 220,
+          "Xuất (Tiền)": 19808137,
+          "Cuối Kỳ (SL)": 1530,
+          "Cuối Kỳ (Tiền)": 240019238
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-U200K - Phụ kiện & vật tư phụ (< 200k)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1604,
+          "Đầu Kỳ (Tiền)": 248945509,
+          "Nhập (SL)": 181,
+          "Nhập (Tiền)": 14177214,
+          "Xuất (SL)": 224,
+          "Xuất (Tiền)": 20168285,
+          "Cuối Kỳ (SL)": 1561,
+          "Cuối Kỳ (Tiền)": 242954439
+        },
+        {
+          "Mã - Tên Hàng": "CABLE-SIG - Cáp truyền tín hiệu HDMI/VGA/USB",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1508,
+          "Đầu Kỳ (Tiền)": 239687919,
+          "Nhập (SL)": 170,
+          "Nhập (Tiền)": 13315616,
+          "Xuất (SL)": 211,
+          "Xuất (Tiền)": 18997804,
+          "Cuối Kỳ (SL)": 1467,
+          "Cuối Kỳ (Tiền)": 234005731
+        }
+      ]
+    },
+    "Tháng 6": {
+      "columns": [
+        "Mã - Tên Hàng",
+        "ĐVT",
+        "Đầu Kỳ (SL)",
+        "Đầu Kỳ (Tiền)",
+        "Nhập (SL)",
+        "Nhập (Tiền)",
+        "Xuất (SL)",
+        "Xuất (Tiền)",
+        "Cuối Kỳ (SL)",
+        "Cuối Kỳ (Tiền)"
+      ],
+      "head": [
+        {
+          "Mã - Tên Hàng": "ACC-GEN-200K_1M - Phụ kiện & vật tư phụ (200k - 1M)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 14829,
+          "Đầu Kỳ (Tiền)": 13819778159,
+          "Nhập (SL)": 314,
+          "Nhập (Tiền)": 28097901,
+          "Xuất (SL)": 410,
+          "Xuất (Tiền)": 36925581,
+          "Cuối Kỳ (SL)": 14733,
+          "Cuối Kỳ (Tiền)": 13810950479
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-FREE - Phụ kiện & vật tư phụ (Không thu tiền)",
+          "ĐVT": "Lần",
+          "Đầu Kỳ (SL)": 0,
+          "Đầu Kỳ (Tiền)": 0,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 0,
+          "Cuối Kỳ (Tiền)": 0
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-O1M - Phụ kiện & vật tư phụ (> 1M)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1530,
+          "Đầu Kỳ (Tiền)": 240019238,
+          "Nhập (SL)": 194,
+          "Nhập (Tiền)": 17359850,
+          "Xuất (SL)": 253,
+          "Xuất (Tiền)": 22785785,
+          "Cuối Kỳ (SL)": 1471,
+          "Cuối Kỳ (Tiền)": 234593302
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-U200K - Phụ kiện & vật tư phụ (< 200k)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1561,
+          "Đầu Kỳ (Tiền)": 242954439,
+          "Nhập (SL)": 197,
+          "Nhập (Tiền)": 17628301,
+          "Xuất (SL)": 257,
+          "Xuất (Tiền)": 23146035,
+          "Cuối Kỳ (SL)": 1501,
+          "Cuối Kỳ (Tiền)": 237436705
+        },
+        {
+          "Mã - Tên Hàng": "CABLE-SIG - Cáp truyền tín hiệu HDMI/VGA/USB",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1467,
+          "Đầu Kỳ (Tiền)": 234005731,
+          "Nhập (SL)": 185,
+          "Nhập (Tiền)": 16554496,
+          "Xuất (SL)": 242,
+          "Xuất (Tiền)": 21795099,
+          "Cuối Kỳ (SL)": 1410,
+          "Cuối Kỳ (Tiền)": 228765128
+        }
+      ]
+    },
+    "Tháng 7": {
+      "columns": [
+        "Mã - Tên Hàng",
+        "ĐVT",
+        "Đầu Kỳ (SL)",
+        "Đầu Kỳ (Tiền)",
+        "Nhập (SL)",
+        "Nhập (Tiền)",
+        "Xuất (SL)",
+        "Xuất (Tiền)",
+        "Cuối Kỳ (SL)",
+        "Cuối Kỳ (Tiền)"
+      ],
+      "head": [
+        {
+          "Mã - Tên Hàng": "ACC-GEN-200K_1M - Phụ kiện & vật tư phụ (200k - 1M)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 14733,
+          "Đầu Kỳ (Tiền)": 13810950479,
+          "Nhập (SL)": 424,
+          "Nhập (Tiền)": 33592839,
+          "Xuất (SL)": 480,
+          "Xuất (Tiền)": 43305657,
+          "Cuối Kỳ (SL)": 14677,
+          "Cuối Kỳ (Tiền)": 13801237662
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-FREE - Phụ kiện & vật tư phụ (Không thu tiền)",
+          "ĐVT": "Lần",
+          "Đầu Kỳ (SL)": 0,
+          "Đầu Kỳ (Tiền)": 0,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 0,
+          "Cuối Kỳ (Tiền)": 0
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-O1M - Phụ kiện & vật tư phụ (> 1M)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1471,
+          "Đầu Kỳ (Tiền)": 234593302,
+          "Nhập (SL)": 261,
+          "Nhập (Tiền)": 20678611,
+          "Xuất (SL)": 296,
+          "Xuất (Tiền)": 26705155,
+          "Cuối Kỳ (SL)": 1436,
+          "Cuối Kỳ (Tiền)": 228566758
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-U200K - Phụ kiện & vật tư phụ (< 200k)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1501,
+          "Đầu Kỳ (Tiền)": 237436705,
+          "Nhập (SL)": 266,
+          "Nhập (Tiền)": 21074753,
+          "Xuất (SL)": 302,
+          "Xuất (Tiền)": 27246476,
+          "Cuối Kỳ (SL)": 1465,
+          "Cuối Kỳ (Tiền)": 231264982
+        },
+        {
+          "Mã - Tên Hàng": "CABLE-SIG - Cáp truyền tín hiệu HDMI/VGA/USB",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1410,
+          "Đầu Kỳ (Tiền)": 228765128,
+          "Nhập (SL)": 250,
+          "Nhập (Tiền)": 19807099,
+          "Xuất (SL)": 283,
+          "Xuất (Tiền)": 25532293,
+          "Cuối Kỳ (SL)": 1377,
+          "Cuối Kỳ (Tiền)": 223039933
+        }
+      ]
+    },
+    "Tháng 8": {
+      "columns": [
+        "Mã - Tên Hàng",
+        "ĐVT",
+        "Đầu Kỳ (SL)",
+        "Đầu Kỳ (Tiền)",
+        "Nhập (SL)",
+        "Nhập (Tiền)",
+        "Xuất (SL)",
+        "Xuất (Tiền)",
+        "Cuối Kỳ (SL)",
+        "Cuối Kỳ (Tiền)"
+      ],
+      "head": [
+        {
+          "Mã - Tên Hàng": "ACC-GEN-200K_1M - Phụ kiện & vật tư phụ (200k - 1M)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 14677,
+          "Đầu Kỳ (Tiền)": 13801237662,
+          "Nhập (SL)": 724,
+          "Nhập (Tiền)": 67976222,
+          "Xuất (SL)": 475,
+          "Xuất (Tiền)": 43874775,
+          "Cuối Kỳ (SL)": 14926,
+          "Cuối Kỳ (Tiền)": 13825339109
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-FREE - Phụ kiện & vật tư phụ (Không thu tiền)",
+          "ĐVT": "Lần",
+          "Đầu Kỳ (SL)": 0,
+          "Đầu Kỳ (Tiền)": 0,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 0,
+          "Cuối Kỳ (Tiền)": 0
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-O1M - Phụ kiện & vật tư phụ (> 1M)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1436,
+          "Đầu Kỳ (Tiền)": 228566758,
+          "Nhập (SL)": 446,
+          "Nhập (Tiền)": 41874855,
+          "Xuất (SL)": 292,
+          "Xuất (Tiền)": 26971441,
+          "Cuối Kỳ (SL)": 1590,
+          "Cuối Kỳ (Tiền)": 243470172
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-U200K - Phụ kiện & vật tư phụ (< 200k)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1465,
+          "Đầu Kỳ (Tiền)": 231264982,
+          "Nhập (SL)": 455,
+          "Nhập (Tiền)": 42719863,
+          "Xuất (SL)": 298,
+          "Xuất (Tiền)": 27525648,
+          "Cuối Kỳ (SL)": 1622,
+          "Cuối Kỳ (Tiền)": 246459197
+        },
+        {
+          "Mã - Tên Hàng": "CABLE-SIG - Cáp truyền tín hiệu HDMI/VGA/USB",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1377,
+          "Đầu Kỳ (Tiền)": 223039933,
+          "Nhập (SL)": 427,
+          "Nhập (Tiền)": 40090949,
+          "Xuất (SL)": 280,
+          "Xuất (Tiền)": 25863025,
+          "Cuối Kỳ (SL)": 1524,
+          "Cuối Kỳ (Tiền)": 237267856
+        }
+      ]
+    },
+    "Tháng 9": {
+      "columns": [
+        "Mã - Tên Hàng",
+        "ĐVT",
+        "Đầu Kỳ (SL)",
+        "Đầu Kỳ (Tiền)",
+        "Nhập (SL)",
+        "Nhập (Tiền)",
+        "Xuất (SL)",
+        "Xuất (Tiền)",
+        "Cuối Kỳ (SL)",
+        "Cuối Kỳ (Tiền)"
+      ],
+      "head": [
+        {
+          "Mã - Tên Hàng": "ACC-GEN-200K_1M - Phụ kiện & vật tư phụ (200k - 1M)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 14926,
+          "Đầu Kỳ (Tiền)": 13825339109,
+          "Nhập (SL)": 650,
+          "Nhập (Tiền)": 58267363,
+          "Xuất (SL)": 528,
+          "Xuất (Tiền)": 48219573,
+          "Cuối Kỳ (SL)": 15048,
+          "Cuối Kỳ (Tiền)": 13835386899
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-FREE - Phụ kiện & vật tư phụ (Không thu tiền)",
+          "ĐVT": "Lần",
+          "Đầu Kỳ (SL)": 0,
+          "Đầu Kỳ (Tiền)": 0,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 0,
+          "Cuối Kỳ (Tiền)": 0
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-O1M - Phụ kiện & vật tư phụ (> 1M)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1590,
+          "Đầu Kỳ (Tiền)": 243470172,
+          "Nhập (SL)": 400,
+          "Nhập (Tiền)": 35856839,
+          "Xuất (SL)": 325,
+          "Xuất (Tiền)": 29680608,
+          "Cuối Kỳ (SL)": 1665,
+          "Cuối Kỳ (Tiền)": 249646403
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-U200K - Phụ kiện & vật tư phụ (< 200k)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1622,
+          "Đầu Kỳ (Tiền)": 246459197,
+          "Nhập (SL)": 408,
+          "Nhập (Tiền)": 36573976,
+          "Xuất (SL)": 332,
+          "Xuất (Tiền)": 30319883,
+          "Cuối Kỳ (SL)": 1698,
+          "Cuối Kỳ (Tiền)": 252713290
+        },
+        {
+          "Mã - Tên Hàng": "CABLE-SIG - Cáp truyền tín hiệu HDMI/VGA/USB",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1524,
+          "Đầu Kỳ (Tiền)": 237267856,
+          "Nhập (SL)": 383,
+          "Nhập (Tiền)": 34332923,
+          "Xuất (SL)": 311,
+          "Xuất (Tiền)": 28402059,
+          "Cuối Kỳ (SL)": 1596,
+          "Cuối Kỳ (Tiền)": 243198720
+        }
+      ]
+    },
+    "Tháng 10": {
+      "columns": [
+        "Mã - Tên Hàng",
+        "ĐVT",
+        "Đầu Kỳ (SL)",
+        "Đầu Kỳ (Tiền)",
+        "Nhập (SL)",
+        "Nhập (Tiền)",
+        "Xuất (SL)",
+        "Xuất (Tiền)",
+        "Cuối Kỳ (SL)",
+        "Cuối Kỳ (Tiền)"
+      ],
+      "head": [
+        {
+          "Mã - Tên Hàng": "ACC-GEN-200K_1M - Phụ kiện & vật tư phụ (200k - 1M)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 15048,
+          "Đầu Kỳ (Tiền)": 13835386899,
+          "Nhập (SL)": 423,
+          "Nhập (Tiền)": 33388259,
+          "Xuất (SL)": 628,
+          "Xuất (Tiền)": 53475679,
+          "Cuối Kỳ (SL)": 14843,
+          "Cuối Kỳ (Tiền)": 13815299479
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-FREE - Phụ kiện & vật tư phụ (Không thu tiền)",
+          "ĐVT": "Lần",
+          "Đầu Kỳ (SL)": 0,
+          "Đầu Kỳ (Tiền)": 0,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 0,
+          "Cuối Kỳ (Tiền)": 0
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-O1M - Phụ kiện & vật tư phụ (> 1M)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1665,
+          "Đầu Kỳ (Tiền)": 249646403,
+          "Nhập (SL)": 261,
+          "Nhập (Tiền)": 20601266,
+          "Xuất (SL)": 387,
+          "Xuất (Tiền)": 32953962,
+          "Cuối Kỳ (SL)": 1539,
+          "Cuối Kỳ (Tiền)": 237293708
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-U200K - Phụ kiện & vật tư phụ (< 200k)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1698,
+          "Đầu Kỳ (Tiền)": 252713290,
+          "Nhập (SL)": 266,
+          "Nhập (Tiền)": 20995927,
+          "Xuất (SL)": 395,
+          "Xuất (Tiền)": 33635181,
+          "Cuối Kỳ (SL)": 1569,
+          "Cuối Kỳ (Tiền)": 240074036
+        },
+        {
+          "Mã - Tên Hàng": "CABLE-SIG - Cáp truyền tín hiệu HDMI/VGA/USB",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1596,
+          "Đầu Kỳ (Tiền)": 243198720,
+          "Nhập (SL)": 250,
+          "Nhập (Tiền)": 19733014,
+          "Xuất (SL)": 371,
+          "Xuất (Tiền)": 31591524,
+          "Cuối Kỳ (SL)": 1475,
+          "Cuối Kỳ (Tiền)": 231340210
+        }
+      ]
+    },
+    "Tháng 11": {
+      "columns": [
+        "Mã - Tên Hàng",
+        "ĐVT",
+        "Đầu Kỳ (SL)",
+        "Đầu Kỳ (Tiền)",
+        "Nhập (SL)",
+        "Nhập (Tiền)",
+        "Xuất (SL)",
+        "Xuất (Tiền)",
+        "Cuối Kỳ (SL)",
+        "Cuối Kỳ (Tiền)"
+      ],
+      "head": [
+        {
+          "Mã - Tên Hàng": "ACC-GEN-200K_1M - Phụ kiện & vật tư phụ (200k - 1M)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 14843,
+          "Đầu Kỳ (Tiền)": 13815299479,
+          "Nhập (SL)": 631,
+          "Nhập (Tiền)": 58708701,
+          "Xuất (SL)": 586,
+          "Xuất (Tiền)": 56123887,
+          "Cuối Kỳ (SL)": 14888,
+          "Cuối Kỳ (Tiền)": 13817884293
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-FREE - Phụ kiện & vật tư phụ (Không thu tiền)",
+          "ĐVT": "Lần",
+          "Đầu Kỳ (SL)": 0,
+          "Đầu Kỳ (Tiền)": 0,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 0,
+          "Cuối Kỳ (Tiền)": 0
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-O1M - Phụ kiện & vật tư phụ (> 1M)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1539,
+          "Đầu Kỳ (Tiền)": 237293708,
+          "Nhập (SL)": 389,
+          "Nhập (Tiền)": 36192844,
+          "Xuất (SL)": 361,
+          "Xuất (Tiền)": 34574613,
+          "Cuối Kỳ (SL)": 1567,
+          "Cuối Kỳ (Tiền)": 238911939
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-U200K - Phụ kiện & vật tư phụ (< 200k)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1569,
+          "Đầu Kỳ (Tiền)": 240074036,
+          "Nhập (SL)": 396,
+          "Nhập (Tiền)": 36844129,
+          "Xuất (SL)": 368,
+          "Xuất (Tiền)": 35245035,
+          "Cuối Kỳ (SL)": 1597,
+          "Cuối Kỳ (Tiền)": 241673130
+        },
+        {
+          "Mã - Tên Hàng": "CABLE-SIG - Cáp truyền tín hiệu HDMI/VGA/USB",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1475,
+          "Đầu Kỳ (Tiền)": 231340210,
+          "Nhập (SL)": 372,
+          "Nhập (Tiền)": 34611152,
+          "Xuất (SL)": 346,
+          "Xuất (Tiền)": 33137995,
+          "Cuối Kỳ (SL)": 1501,
+          "Cuối Kỳ (Tiền)": 232813367
+        }
+      ]
+    },
+    "Tháng 12": {
+      "columns": [
+        "Mã - Tên Hàng",
+        "ĐVT",
+        "Đầu Kỳ (SL)",
+        "Đầu Kỳ (Tiền)",
+        "Nhập (SL)",
+        "Nhập (Tiền)",
+        "Xuất (SL)",
+        "Xuất (Tiền)",
+        "Cuối Kỳ (SL)",
+        "Cuối Kỳ (Tiền)"
+      ],
+      "head": [
+        {
+          "Mã - Tên Hàng": "ACC-GEN-200K_1M - Phụ kiện & vật tư phụ (200k - 1M)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 14888,
+          "Đầu Kỳ (Tiền)": 13817884293,
+          "Nhập (SL)": 987,
+          "Nhập (Tiền)": 89315036,
+          "Xuất (SL)": 1317,
+          "Xuất (Tiền)": 120881917,
+          "Cuối Kỳ (SL)": 14558,
+          "Cuối Kỳ (Tiền)": 13786317411
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-FREE - Phụ kiện & vật tư phụ (Không thu tiền)",
+          "ĐVT": "Lần",
+          "Đầu Kỳ (SL)": 0,
+          "Đầu Kỳ (Tiền)": 0,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 0,
+          "Cuối Kỳ (Tiền)": 0
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-O1M - Phụ kiện & vật tư phụ (> 1M)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1567,
+          "Đầu Kỳ (Tiền)": 238911939,
+          "Nhập (SL)": 608,
+          "Nhập (Tiền)": 55018786,
+          "Xuất (SL)": 811,
+          "Xuất (Tiền)": 74438295,
+          "Cuối Kỳ (SL)": 1364,
+          "Cuối Kỳ (Tiền)": 219492430
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-U200K - Phụ kiện & vật tư phụ (< 200k)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1597,
+          "Đầu Kỳ (Tiền)": 241673130,
+          "Nhập (SL)": 620,
+          "Nhập (Tiền)": 56104683,
+          "Xuất (SL)": 827,
+          "Xuất (Tiền)": 75906868,
+          "Cuối Kỳ (SL)": 1390,
+          "Cuối Kỳ (Tiền)": 221870945
+        },
+        {
+          "Mã - Tên Hàng": "CABLE-SIG - Cáp truyền tín hiệu HDMI/VGA/USB",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1501,
+          "Đầu Kỳ (Tiền)": 232813367,
+          "Nhập (SL)": 583,
+          "Nhập (Tiền)": 52756500,
+          "Xuất (SL)": 777,
+          "Xuất (Tiền)": 71317578,
+          "Cuối Kỳ (SL)": 1307,
+          "Cuối Kỳ (Tiền)": 214252290
+        }
+      ]
+    },
+    "xnt12thang": {
+      "columns": [
+        "Mã - Tên Hàng",
+        "ĐVT",
+        "Đầu Kỳ (SL)",
+        "Đầu Kỳ (Tiền)",
+        "Nhập (SL)",
+        "Nhập (Tiền)",
+        "Xuất (SL)",
+        "Xuất (Tiền)",
+        "Cuối Kỳ (SL)",
+        "Cuối Kỳ (Tiền)"
+      ],
+      "head": [
+        {
+          "Mã - Tên Hàng": "ACC-GEN-200K_1M - Phụ kiện & vật tư phụ (200k - 1M)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 14599,
+          "Đầu Kỳ (Tiền)": 13808686844,
+          "Nhập (SL)": 6655,
+          "Nhập (Tiền)": 586742541,
+          "Xuất (SL)": 6696,
+          "Xuất (Tiền)": 609111972,
+          "Cuối Kỳ (SL)": 14558,
+          "Cuối Kỳ (Tiền)": 13786317411
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-FREE - Phụ kiện & vật tư phụ (Không thu tiền)",
+          "ĐVT": "Lần",
+          "Đầu Kỳ (SL)": 0,
+          "Đầu Kỳ (Tiền)": 0,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 0,
+          "Cuối Kỳ (Tiền)": 0
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-O1M - Phụ kiện & vật tư phụ (> 1M)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1390,
+          "Đầu Kỳ (Tiền)": 233334364,
+          "Nhập (SL)": 4100,
+          "Nhập (Tiền)": 361482255,
+          "Xuất (SL)": 4126,
+          "Xuất (Tiền)": 375324189,
+          "Cuối Kỳ (SL)": 1364,
+          "Cuối Kỳ (Tiền)": 219492430
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-U200K - Phụ kiện & vật tư phụ (< 200k)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1416,
+          "Đầu Kỳ (Tiền)": 235934364,
+          "Nhập (SL)": 4179,
+          "Nhập (Tiền)": 368440499,
+          "Xuất (SL)": 4205,
+          "Xuất (Tiền)": 382503918,
+          "Cuối Kỳ (SL)": 1390,
+          "Cuối Kỳ (Tiền)": 221870945
+        },
+        {
+          "Mã - Tên Hàng": "CABLE-SIG - Cáp truyền tín hiệu HDMI/VGA/USB",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1331,
+          "Đầu Kỳ (Tiền)": 227434364,
+          "Nhập (SL)": 3927,
+          "Nhập (Tiền)": 346221862,
+          "Xuất (SL)": 3951,
+          "Xuất (Tiền)": 359403934,
+          "Cuối Kỳ (SL)": 1307,
+          "Cuối Kỳ (Tiền)": 214252290
+        }
+      ]
+    }
+  },
+  "/chikiet/kata2025/ragketoan/docs/huyvu/dulieuchuan/Huyvu2024.xlsx": {
+    "sheets": [
+      "Hoadon",
+      "Tháng 1",
+      "Tháng 2",
+      "Tháng 3",
+      "Tháng 4",
+      "Tháng 5",
+      "Tháng 6",
+      "Tháng 7",
+      "Tháng 8",
+      "Tháng 9",
+      "Tháng 10",
+      "Tháng 11",
+      "Tháng 12",
+      "xnt12thang"
+    ],
+    "Hoadon": {
+      "columns": [
+        "Tháng",
+        "Loại HD",
+        "Tình trạng (Mã)",
+        "Số lượng",
+        "Tổng giá tiền (VNĐ)"
+      ],
+      "head": [
+        {
+          "Tháng": "01/2024",
+          "Loại HD": "Bán ra",
+          "Tình trạng (Mã)": "1 (Hợp lệ)",
+          "Số lượng": 1123,
+          "Tổng giá tiền (VNĐ)": 712019064.0
+        },
+        {
+          "Tháng": "01/2024",
+          "Loại HD": "Mua vào",
+          "Tình trạng (Mã)": "1 (Hợp lệ)",
+          "Số lượng": 2093,
+          "Tổng giá tiền (VNĐ)": 876700254.9999999
+        },
+        {
+          "Tháng": "02/2024",
+          "Loại HD": "Bán ra",
+          "Tình trạng (Mã)": "1 (Hợp lệ)",
+          "Số lượng": 617,
+          "Tổng giá tiền (VNĐ)": 407057981.0
+        },
+        {
+          "Tháng": "02/2024",
+          "Loại HD": "Mua vào",
+          "Tình trạng (Mã)": "1 (Hợp lệ)",
+          "Số lượng": 2120,
+          "Tổng giá tiền (VNĐ)": 1321381106.0
+        },
+        {
+          "Tháng": "03/2024",
+          "Loại HD": "Bán ra",
+          "Tình trạng (Mã)": "1 (Hợp lệ)",
+          "Số lượng": 7897,
+          "Tổng giá tiền (VNĐ)": 1666644349.0
+        }
+      ]
+    },
+    "Tháng 1": {
+      "columns": [
+        "Mã - Tên Hàng",
+        "ĐVT",
+        "Đầu Kỳ (SL)",
+        "Đầu Kỳ (Tiền)",
+        "Nhập (SL)",
+        "Nhập (Tiền)",
+        "Xuất (SL)",
+        "Xuất (Tiền)",
+        "Cuối Kỳ (SL)",
+        "Cuối Kỳ (Tiền)"
+      ],
+      "head": [
+        {
+          "Mã - Tên Hàng": "ACC-GEN-200K_1M - Phụ kiện & vật tư phụ (200k - 1M)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 14558,
+          "Đầu Kỳ (Tiền)": 13786317411,
+          "Nhập (SL)": 2093,
+          "Nhập (Tiền)": 876700255,
+          "Xuất (SL)": 1123,
+          "Xuất (Tiền)": 712019064,
+          "Cuối Kỳ (SL)": 15528,
+          "Cuối Kỳ (Tiền)": 13950998602
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-FREE - Phụ kiện & vật tư phụ (Không thu tiền)",
+          "ĐVT": "Lần",
+          "Đầu Kỳ (SL)": 0,
+          "Đầu Kỳ (Tiền)": 0,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 0,
+          "Cuối Kỳ (Tiền)": 0
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-O1M - Phụ kiện & vật tư phụ (> 1M)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1364,
+          "Đầu Kỳ (Tiền)": 219492430,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 1364,
+          "Cuối Kỳ (Tiền)": 219492430
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-U200K - Phụ kiện & vật tư phụ (< 200k)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1390,
+          "Đầu Kỳ (Tiền)": 221870945,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 1390,
+          "Cuối Kỳ (Tiền)": 221870945
+        },
+        {
+          "Mã - Tên Hàng": "CABLE-SIG - Cáp truyền tín hiệu HDMI/VGA/USB",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1307,
+          "Đầu Kỳ (Tiền)": 214252290,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 1307,
+          "Cuối Kỳ (Tiền)": 214252290
+        }
+      ]
+    },
+    "Tháng 2": {
+      "columns": [
+        "Mã - Tên Hàng",
+        "ĐVT",
+        "Đầu Kỳ (SL)",
+        "Đầu Kỳ (Tiền)",
+        "Nhập (SL)",
+        "Nhập (Tiền)",
+        "Xuất (SL)",
+        "Xuất (Tiền)",
+        "Cuối Kỳ (SL)",
+        "Cuối Kỳ (Tiền)"
+      ],
+      "head": [
+        {
+          "Mã - Tên Hàng": "ACC-GEN-200K_1M - Phụ kiện & vật tư phụ (200k - 1M)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 15528,
+          "Đầu Kỳ (Tiền)": 13950998602,
+          "Nhập (SL)": 2120,
+          "Nhập (Tiền)": 1321381106,
+          "Xuất (SL)": 617,
+          "Xuất (Tiền)": 407057981,
+          "Cuối Kỳ (SL)": 17031,
+          "Cuối Kỳ (Tiền)": 14865321727
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-FREE - Phụ kiện & vật tư phụ (Không thu tiền)",
+          "ĐVT": "Lần",
+          "Đầu Kỳ (SL)": 0,
+          "Đầu Kỳ (Tiền)": 0,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 0,
+          "Cuối Kỳ (Tiền)": 0
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-O1M - Phụ kiện & vật tư phụ (> 1M)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1364,
+          "Đầu Kỳ (Tiền)": 219492430,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 1364,
+          "Cuối Kỳ (Tiền)": 219492430
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-U200K - Phụ kiện & vật tư phụ (< 200k)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1390,
+          "Đầu Kỳ (Tiền)": 221870945,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 1390,
+          "Cuối Kỳ (Tiền)": 221870945
+        },
+        {
+          "Mã - Tên Hàng": "CABLE-SIG - Cáp truyền tín hiệu HDMI/VGA/USB",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1307,
+          "Đầu Kỳ (Tiền)": 214252290,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 1307,
+          "Cuối Kỳ (Tiền)": 214252290
+        }
+      ]
+    },
+    "Tháng 3": {
+      "columns": [
+        "Mã - Tên Hàng",
+        "ĐVT",
+        "Đầu Kỳ (SL)",
+        "Đầu Kỳ (Tiền)",
+        "Nhập (SL)",
+        "Nhập (Tiền)",
+        "Xuất (SL)",
+        "Xuất (Tiền)",
+        "Cuối Kỳ (SL)",
+        "Cuối Kỳ (Tiền)"
+      ],
+      "head": [
+        {
+          "Mã - Tên Hàng": "ACC-GEN-200K_1M - Phụ kiện & vật tư phụ (200k - 1M)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 17031,
+          "Đầu Kỳ (Tiền)": 14865321727,
+          "Nhập (SL)": 3869,
+          "Nhập (Tiền)": 1865271040,
+          "Xuất (SL)": 7897,
+          "Xuất (Tiền)": 1666644349,
+          "Cuối Kỳ (SL)": 13003,
+          "Cuối Kỳ (Tiền)": 15063948418
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-FREE - Phụ kiện & vật tư phụ (Không thu tiền)",
+          "ĐVT": "Lần",
+          "Đầu Kỳ (SL)": 0,
+          "Đầu Kỳ (Tiền)": 0,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 0,
+          "Cuối Kỳ (Tiền)": 0
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-O1M - Phụ kiện & vật tư phụ (> 1M)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1364,
+          "Đầu Kỳ (Tiền)": 219492430,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 1364,
+          "Cuối Kỳ (Tiền)": 219492430
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-U200K - Phụ kiện & vật tư phụ (< 200k)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1390,
+          "Đầu Kỳ (Tiền)": 221870945,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 1390,
+          "Cuối Kỳ (Tiền)": 221870945
+        },
+        {
+          "Mã - Tên Hàng": "CABLE-SIG - Cáp truyền tín hiệu HDMI/VGA/USB",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1307,
+          "Đầu Kỳ (Tiền)": 214252290,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 1307,
+          "Cuối Kỳ (Tiền)": 214252290
+        }
+      ]
+    },
+    "Tháng 4": {
+      "columns": [
+        "Mã - Tên Hàng",
+        "ĐVT",
+        "Đầu Kỳ (SL)",
+        "Đầu Kỳ (Tiền)",
+        "Nhập (SL)",
+        "Nhập (Tiền)",
+        "Xuất (SL)",
+        "Xuất (Tiền)",
+        "Cuối Kỳ (SL)",
+        "Cuối Kỳ (Tiền)"
+      ],
+      "head": [
+        {
+          "Mã - Tên Hàng": "ACC-GEN-200K_1M - Phụ kiện & vật tư phụ (200k - 1M)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 13003,
+          "Đầu Kỳ (Tiền)": 15063948418,
+          "Nhập (SL)": 1744,
+          "Nhập (Tiền)": 574581960,
+          "Xuất (SL)": 2267,
+          "Xuất (Tiền)": 970772575,
+          "Cuối Kỳ (SL)": 12480,
+          "Cuối Kỳ (Tiền)": 14667757803
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-FREE - Phụ kiện & vật tư phụ (Không thu tiền)",
+          "ĐVT": "Lần",
+          "Đầu Kỳ (SL)": 0,
+          "Đầu Kỳ (Tiền)": 0,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 0,
+          "Cuối Kỳ (Tiền)": 0
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-O1M - Phụ kiện & vật tư phụ (> 1M)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1364,
+          "Đầu Kỳ (Tiền)": 219492430,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 1364,
+          "Cuối Kỳ (Tiền)": 219492430
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-U200K - Phụ kiện & vật tư phụ (< 200k)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1390,
+          "Đầu Kỳ (Tiền)": 221870945,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 1390,
+          "Cuối Kỳ (Tiền)": 221870945
+        },
+        {
+          "Mã - Tên Hàng": "CABLE-SIG - Cáp truyền tín hiệu HDMI/VGA/USB",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1307,
+          "Đầu Kỳ (Tiền)": 214252290,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 1307,
+          "Cuối Kỳ (Tiền)": 214252290
+        }
+      ]
+    },
+    "Tháng 5": {
+      "columns": [
+        "Mã - Tên Hàng",
+        "ĐVT",
+        "Đầu Kỳ (SL)",
+        "Đầu Kỳ (Tiền)",
+        "Nhập (SL)",
+        "Nhập (Tiền)",
+        "Xuất (SL)",
+        "Xuất (Tiền)",
+        "Cuối Kỳ (SL)",
+        "Cuối Kỳ (Tiền)"
+      ],
+      "head": [
+        {
+          "Mã - Tên Hàng": "ACC-GEN-200K_1M - Phụ kiện & vật tư phụ (200k - 1M)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 12480,
+          "Đầu Kỳ (Tiền)": 14667757803,
+          "Nhập (SL)": 1930,
+          "Nhập (Tiền)": 712699747,
+          "Xuất (SL)": 2868,
+          "Xuất (Tiền)": 1669824554,
+          "Cuối Kỳ (SL)": 11542,
+          "Cuối Kỳ (Tiền)": 13710632996
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-FREE - Phụ kiện & vật tư phụ (Không thu tiền)",
+          "ĐVT": "Lần",
+          "Đầu Kỳ (SL)": 0,
+          "Đầu Kỳ (Tiền)": 0,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 0,
+          "Cuối Kỳ (Tiền)": 0
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-O1M - Phụ kiện & vật tư phụ (> 1M)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1364,
+          "Đầu Kỳ (Tiền)": 219492430,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 1364,
+          "Cuối Kỳ (Tiền)": 219492430
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-U200K - Phụ kiện & vật tư phụ (< 200k)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1390,
+          "Đầu Kỳ (Tiền)": 221870945,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 1390,
+          "Cuối Kỳ (Tiền)": 221870945
+        },
+        {
+          "Mã - Tên Hàng": "CABLE-SIG - Cáp truyền tín hiệu HDMI/VGA/USB",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1307,
+          "Đầu Kỳ (Tiền)": 214252290,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 1307,
+          "Cuối Kỳ (Tiền)": 214252290
+        }
+      ]
+    },
+    "Tháng 6": {
+      "columns": [
+        "Mã - Tên Hàng",
+        "ĐVT",
+        "Đầu Kỳ (SL)",
+        "Đầu Kỳ (Tiền)",
+        "Nhập (SL)",
+        "Nhập (Tiền)",
+        "Xuất (SL)",
+        "Xuất (Tiền)",
+        "Cuối Kỳ (SL)",
+        "Cuối Kỳ (Tiền)"
+      ],
+      "head": [
+        {
+          "Mã - Tên Hàng": "ACC-GEN-200K_1M - Phụ kiện & vật tư phụ (200k - 1M)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 11542,
+          "Đầu Kỳ (Tiền)": 13710632996,
+          "Nhập (SL)": 5143,
+          "Nhập (Tiền)": 2665203749,
+          "Xuất (SL)": 2923,
+          "Xuất (Tiền)": 1107909065,
+          "Cuối Kỳ (SL)": 13762,
+          "Cuối Kỳ (Tiền)": 15267927680
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-FREE - Phụ kiện & vật tư phụ (Không thu tiền)",
+          "ĐVT": "Lần",
+          "Đầu Kỳ (SL)": 0,
+          "Đầu Kỳ (Tiền)": 0,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 0,
+          "Cuối Kỳ (Tiền)": 0
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-O1M - Phụ kiện & vật tư phụ (> 1M)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1364,
+          "Đầu Kỳ (Tiền)": 219492430,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 1364,
+          "Cuối Kỳ (Tiền)": 219492430
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-U200K - Phụ kiện & vật tư phụ (< 200k)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1390,
+          "Đầu Kỳ (Tiền)": 221870945,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 1390,
+          "Cuối Kỳ (Tiền)": 221870945
+        },
+        {
+          "Mã - Tên Hàng": "CABLE-SIG - Cáp truyền tín hiệu HDMI/VGA/USB",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1307,
+          "Đầu Kỳ (Tiền)": 214252290,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 1307,
+          "Cuối Kỳ (Tiền)": 214252290
+        }
+      ]
+    },
+    "Tháng 7": {
+      "columns": [
+        "Mã - Tên Hàng",
+        "ĐVT",
+        "Đầu Kỳ (SL)",
+        "Đầu Kỳ (Tiền)",
+        "Nhập (SL)",
+        "Nhập (Tiền)",
+        "Xuất (SL)",
+        "Xuất (Tiền)",
+        "Cuối Kỳ (SL)",
+        "Cuối Kỳ (Tiền)"
+      ],
+      "head": [
+        {
+          "Mã - Tên Hàng": "ACC-GEN-200K_1M - Phụ kiện & vật tư phụ (200k - 1M)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 13762,
+          "Đầu Kỳ (Tiền)": 15267927680,
+          "Nhập (SL)": 2708,
+          "Nhập (Tiền)": 1192056327,
+          "Xuất (SL)": 2258,
+          "Xuất (Tiền)": 2815816636,
+          "Cuối Kỳ (SL)": 14212,
+          "Cuối Kỳ (Tiền)": 13644167371
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-FREE - Phụ kiện & vật tư phụ (Không thu tiền)",
+          "ĐVT": "Lần",
+          "Đầu Kỳ (SL)": 0,
+          "Đầu Kỳ (Tiền)": 0,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 0,
+          "Cuối Kỳ (Tiền)": 0
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-O1M - Phụ kiện & vật tư phụ (> 1M)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1364,
+          "Đầu Kỳ (Tiền)": 219492430,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 1364,
+          "Cuối Kỳ (Tiền)": 219492430
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-U200K - Phụ kiện & vật tư phụ (< 200k)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1390,
+          "Đầu Kỳ (Tiền)": 221870945,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 1390,
+          "Cuối Kỳ (Tiền)": 221870945
+        },
+        {
+          "Mã - Tên Hàng": "CABLE-SIG - Cáp truyền tín hiệu HDMI/VGA/USB",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1307,
+          "Đầu Kỳ (Tiền)": 214252290,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 1307,
+          "Cuối Kỳ (Tiền)": 214252290
+        }
+      ]
+    },
+    "Tháng 8": {
+      "columns": [
+        "Mã - Tên Hàng",
+        "ĐVT",
+        "Đầu Kỳ (SL)",
+        "Đầu Kỳ (Tiền)",
+        "Nhập (SL)",
+        "Nhập (Tiền)",
+        "Xuất (SL)",
+        "Xuất (Tiền)",
+        "Cuối Kỳ (SL)",
+        "Cuối Kỳ (Tiền)"
+      ],
+      "head": [
+        {
+          "Mã - Tên Hàng": "ACC-GEN-200K_1M - Phụ kiện & vật tư phụ (200k - 1M)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 14212,
+          "Đầu Kỳ (Tiền)": 13644167371,
+          "Nhập (SL)": 3154,
+          "Nhập (Tiền)": 1752344624,
+          "Xuất (SL)": 2370,
+          "Xuất (Tiền)": 1949899571,
+          "Cuối Kỳ (SL)": 14996,
+          "Cuối Kỳ (Tiền)": 13446612424
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-FREE - Phụ kiện & vật tư phụ (Không thu tiền)",
+          "ĐVT": "Lần",
+          "Đầu Kỳ (SL)": 0,
+          "Đầu Kỳ (Tiền)": 0,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 0,
+          "Cuối Kỳ (Tiền)": 0
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-O1M - Phụ kiện & vật tư phụ (> 1M)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1364,
+          "Đầu Kỳ (Tiền)": 219492430,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 1364,
+          "Cuối Kỳ (Tiền)": 219492430
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-U200K - Phụ kiện & vật tư phụ (< 200k)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1390,
+          "Đầu Kỳ (Tiền)": 221870945,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 1390,
+          "Cuối Kỳ (Tiền)": 221870945
+        },
+        {
+          "Mã - Tên Hàng": "CABLE-SIG - Cáp truyền tín hiệu HDMI/VGA/USB",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1307,
+          "Đầu Kỳ (Tiền)": 214252290,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 1307,
+          "Cuối Kỳ (Tiền)": 214252290
+        }
+      ]
+    },
+    "Tháng 9": {
+      "columns": [
+        "Mã - Tên Hàng",
+        "ĐVT",
+        "Đầu Kỳ (SL)",
+        "Đầu Kỳ (Tiền)",
+        "Nhập (SL)",
+        "Nhập (Tiền)",
+        "Xuất (SL)",
+        "Xuất (Tiền)",
+        "Cuối Kỳ (SL)",
+        "Cuối Kỳ (Tiền)"
+      ],
+      "head": [
+        {
+          "Mã - Tên Hàng": "ACC-GEN-200K_1M - Phụ kiện & vật tư phụ (200k - 1M)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 14996,
+          "Đầu Kỳ (Tiền)": 13446612424,
+          "Nhập (SL)": 5457,
+          "Nhập (Tiền)": 2267645960,
+          "Xuất (SL)": 3352,
+          "Xuất (Tiền)": 1702965399,
+          "Cuối Kỳ (SL)": 17101,
+          "Cuối Kỳ (Tiền)": 14011292985
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-FREE - Phụ kiện & vật tư phụ (Không thu tiền)",
+          "ĐVT": "Lần",
+          "Đầu Kỳ (SL)": 0,
+          "Đầu Kỳ (Tiền)": 0,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 0,
+          "Cuối Kỳ (Tiền)": 0
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-O1M - Phụ kiện & vật tư phụ (> 1M)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1364,
+          "Đầu Kỳ (Tiền)": 219492430,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 1364,
+          "Cuối Kỳ (Tiền)": 219492430
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-U200K - Phụ kiện & vật tư phụ (< 200k)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1390,
+          "Đầu Kỳ (Tiền)": 221870945,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 1390,
+          "Cuối Kỳ (Tiền)": 221870945
+        },
+        {
+          "Mã - Tên Hàng": "CABLE-SIG - Cáp truyền tín hiệu HDMI/VGA/USB",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1307,
+          "Đầu Kỳ (Tiền)": 214252290,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 1307,
+          "Cuối Kỳ (Tiền)": 214252290
+        }
+      ]
+    },
+    "Tháng 10": {
+      "columns": [
+        "Mã - Tên Hàng",
+        "ĐVT",
+        "Đầu Kỳ (SL)",
+        "Đầu Kỳ (Tiền)",
+        "Nhập (SL)",
+        "Nhập (Tiền)",
+        "Xuất (SL)",
+        "Xuất (Tiền)",
+        "Cuối Kỳ (SL)",
+        "Cuối Kỳ (Tiền)"
+      ],
+      "head": [
+        {
+          "Mã - Tên Hàng": "ACC-GEN-200K_1M - Phụ kiện & vật tư phụ (200k - 1M)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 17101,
+          "Đầu Kỳ (Tiền)": 14011292985,
+          "Nhập (SL)": 3214,
+          "Nhập (Tiền)": 1303525511,
+          "Xuất (SL)": 2062,
+          "Xuất (Tiền)": 1507543809,
+          "Cuối Kỳ (SL)": 18253,
+          "Cuối Kỳ (Tiền)": 13807274687
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-FREE - Phụ kiện & vật tư phụ (Không thu tiền)",
+          "ĐVT": "Lần",
+          "Đầu Kỳ (SL)": 0,
+          "Đầu Kỳ (Tiền)": 0,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 0,
+          "Cuối Kỳ (Tiền)": 0
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-O1M - Phụ kiện & vật tư phụ (> 1M)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1364,
+          "Đầu Kỳ (Tiền)": 219492430,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 1364,
+          "Cuối Kỳ (Tiền)": 219492430
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-U200K - Phụ kiện & vật tư phụ (< 200k)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1390,
+          "Đầu Kỳ (Tiền)": 221870945,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 1390,
+          "Cuối Kỳ (Tiền)": 221870945
+        },
+        {
+          "Mã - Tên Hàng": "CABLE-SIG - Cáp truyền tín hiệu HDMI/VGA/USB",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1307,
+          "Đầu Kỳ (Tiền)": 214252290,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 1307,
+          "Cuối Kỳ (Tiền)": 214252290
+        }
+      ]
+    },
+    "Tháng 11": {
+      "columns": [
+        "Mã - Tên Hàng",
+        "ĐVT",
+        "Đầu Kỳ (SL)",
+        "Đầu Kỳ (Tiền)",
+        "Nhập (SL)",
+        "Nhập (Tiền)",
+        "Xuất (SL)",
+        "Xuất (Tiền)",
+        "Cuối Kỳ (SL)",
+        "Cuối Kỳ (Tiền)"
+      ],
+      "head": [
+        {
+          "Mã - Tên Hàng": "ACC-GEN-200K_1M - Phụ kiện & vật tư phụ (200k - 1M)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 18253,
+          "Đầu Kỳ (Tiền)": 13807274687,
+          "Nhập (SL)": 4622,
+          "Nhập (Tiền)": 2123573490,
+          "Xuất (SL)": 1332,
+          "Xuất (Tiền)": 1394113638,
+          "Cuối Kỳ (SL)": 21543,
+          "Cuối Kỳ (Tiền)": 14536734539
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-FREE - Phụ kiện & vật tư phụ (Không thu tiền)",
+          "ĐVT": "Lần",
+          "Đầu Kỳ (SL)": 0,
+          "Đầu Kỳ (Tiền)": 0,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 0,
+          "Cuối Kỳ (Tiền)": 0
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-O1M - Phụ kiện & vật tư phụ (> 1M)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1364,
+          "Đầu Kỳ (Tiền)": 219492430,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 1364,
+          "Cuối Kỳ (Tiền)": 219492430
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-U200K - Phụ kiện & vật tư phụ (< 200k)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1390,
+          "Đầu Kỳ (Tiền)": 221870945,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 1390,
+          "Cuối Kỳ (Tiền)": 221870945
+        },
+        {
+          "Mã - Tên Hàng": "CABLE-SIG - Cáp truyền tín hiệu HDMI/VGA/USB",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1307,
+          "Đầu Kỳ (Tiền)": 214252290,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 1307,
+          "Cuối Kỳ (Tiền)": 214252290
+        }
+      ]
+    },
+    "Tháng 12": {
+      "columns": [
+        "Mã - Tên Hàng",
+        "ĐVT",
+        "Đầu Kỳ (SL)",
+        "Đầu Kỳ (Tiền)",
+        "Nhập (SL)",
+        "Nhập (Tiền)",
+        "Xuất (SL)",
+        "Xuất (Tiền)",
+        "Cuối Kỳ (SL)",
+        "Cuối Kỳ (Tiền)"
+      ],
+      "head": [
+        {
+          "Mã - Tên Hàng": "ACC-GEN-200K_1M - Phụ kiện & vật tư phụ (200k - 1M)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 21543,
+          "Đầu Kỳ (Tiền)": 14536734539,
+          "Nhập (SL)": 4766,
+          "Nhập (Tiền)": 3682544702,
+          "Xuất (SL)": 3165,
+          "Xuất (Tiền)": 2638224688,
+          "Cuối Kỳ (SL)": 23144,
+          "Cuối Kỳ (Tiền)": 15581054553
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-FREE - Phụ kiện & vật tư phụ (Không thu tiền)",
+          "ĐVT": "Lần",
+          "Đầu Kỳ (SL)": 0,
+          "Đầu Kỳ (Tiền)": 0,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 0,
+          "Cuối Kỳ (Tiền)": 0
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-O1M - Phụ kiện & vật tư phụ (> 1M)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1364,
+          "Đầu Kỳ (Tiền)": 219492430,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 1364,
+          "Cuối Kỳ (Tiền)": 219492430
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-U200K - Phụ kiện & vật tư phụ (< 200k)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1390,
+          "Đầu Kỳ (Tiền)": 221870945,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 1390,
+          "Cuối Kỳ (Tiền)": 221870945
+        },
+        {
+          "Mã - Tên Hàng": "CABLE-SIG - Cáp truyền tín hiệu HDMI/VGA/USB",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1307,
+          "Đầu Kỳ (Tiền)": 214252290,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 1307,
+          "Cuối Kỳ (Tiền)": 214252290
+        }
+      ]
+    },
+    "xnt12thang": {
+      "columns": [
+        "Mã - Tên Hàng",
+        "ĐVT",
+        "Đầu Kỳ (SL)",
+        "Đầu Kỳ (Tiền)",
+        "Nhập (SL)",
+        "Nhập (Tiền)",
+        "Xuất (SL)",
+        "Xuất (Tiền)",
+        "Cuối Kỳ (SL)",
+        "Cuối Kỳ (Tiền)"
+      ],
+      "head": [
+        {
+          "Mã - Tên Hàng": "ACC-GEN-200K_1M - Phụ kiện & vật tư phụ (200k - 1M)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 14558,
+          "Đầu Kỳ (Tiền)": 13786317411,
+          "Nhập (SL)": 40820,
+          "Nhập (Tiền)": 20337528471,
+          "Xuất (SL)": 32234,
+          "Xuất (Tiền)": 18542791329,
+          "Cuối Kỳ (SL)": 23144,
+          "Cuối Kỳ (Tiền)": 15581054553
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-FREE - Phụ kiện & vật tư phụ (Không thu tiền)",
+          "ĐVT": "Lần",
+          "Đầu Kỳ (SL)": 0,
+          "Đầu Kỳ (Tiền)": 0,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 0,
+          "Cuối Kỳ (Tiền)": 0
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-O1M - Phụ kiện & vật tư phụ (> 1M)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1364,
+          "Đầu Kỳ (Tiền)": 219492430,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 1364,
+          "Cuối Kỳ (Tiền)": 219492430
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-U200K - Phụ kiện & vật tư phụ (< 200k)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1390,
+          "Đầu Kỳ (Tiền)": 221870945,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 1390,
+          "Cuối Kỳ (Tiền)": 221870945
+        },
+        {
+          "Mã - Tên Hàng": "CABLE-SIG - Cáp truyền tín hiệu HDMI/VGA/USB",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1307,
+          "Đầu Kỳ (Tiền)": 214252290,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 1307,
+          "Cuối Kỳ (Tiền)": 214252290
+        }
+      ]
+    }
+  },
+  "/chikiet/kata2025/ragketoan/docs/huyvu/dulieuchuan/Huyvu2025.xlsx": {
+    "sheets": [
+      "Hoadon",
+      "Tháng 1",
+      "Tháng 2",
+      "Tháng 3",
+      "Tháng 4",
+      "Tháng 5",
+      "Tháng 6",
+      "Tháng 7",
+      "Tháng 8",
+      "Tháng 9",
+      "Tháng 10",
+      "Tháng 11",
+      "Tháng 12",
+      "xnt12thang"
+    ],
+    "Hoadon": {
+      "columns": [
+        "Tháng",
+        "Loại HD",
+        "Tình trạng (Mã)",
+        "Số lượng",
+        "Tổng giá tiền (VNĐ)"
+      ],
+      "head": [
+        {
+          "Tháng": "01/2025",
+          "Loại HD": "Bán ra",
+          "Tình trạng (Mã)": "1 (Hợp lệ)",
+          "Số lượng": 1123,
+          "Tổng giá tiền (VNĐ)": 384948018
+        },
+        {
+          "Tháng": "01/2025",
+          "Loại HD": "Mua vào",
+          "Tình trạng (Mã)": "1 (Hợp lệ)",
+          "Số lượng": 2093,
+          "Tổng giá tiền (VNĐ)": 493438497
+        },
+        {
+          "Tháng": "02/2025",
+          "Loại HD": "Bán ra",
+          "Tình trạng (Mã)": "1 (Hợp lệ)",
+          "Số lượng": 617,
+          "Tổng giá tiền (VNĐ)": 706488897
+        },
+        {
+          "Tháng": "02/2025",
+          "Loại HD": "Mua vào",
+          "Tình trạng (Mã)": "1 (Hợp lệ)",
+          "Số lượng": 2120,
+          "Tổng giá tiền (VNĐ)": 1440998133
+        },
+        {
+          "Tháng": "03/2025",
+          "Loại HD": "Bán ra",
+          "Tình trạng (Mã)": "1 (Hợp lệ)",
+          "Số lượng": 7897,
+          "Tổng giá tiền (VNĐ)": 2376411221
+        }
+      ]
+    },
+    "Tháng 1": {
+      "columns": [
+        "Mã - Tên Hàng",
+        "ĐVT",
+        "Đầu Kỳ (SL)",
+        "Đầu Kỳ (Tiền)",
+        "Nhập (SL)",
+        "Nhập (Tiền)",
+        "Xuất (SL)",
+        "Xuất (Tiền)",
+        "Cuối Kỳ (SL)",
+        "Cuối Kỳ (Tiền)"
+      ],
+      "head": [
+        {
+          "Mã - Tên Hàng": "ACC-GEN-200K_1M - Phụ kiện & vật tư phụ (200k - 1M)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 23144,
+          "Đầu Kỳ (Tiền)": 15581054553,
+          "Nhập (SL)": 2093,
+          "Nhập (Tiền)": 493438497,
+          "Xuất (SL)": 1123,
+          "Xuất (Tiền)": 384948018,
+          "Cuối Kỳ (SL)": 24114,
+          "Cuối Kỳ (Tiền)": 15689545032
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-FREE - Phụ kiện & vật tư phụ (Không thu tiền)",
+          "ĐVT": "Lần",
+          "Đầu Kỳ (SL)": 0,
+          "Đầu Kỳ (Tiền)": 0,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 0,
+          "Cuối Kỳ (Tiền)": 0
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-O1M - Phụ kiện & vật tư phụ (> 1M)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1364,
+          "Đầu Kỳ (Tiền)": 219492430,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 1364,
+          "Cuối Kỳ (Tiền)": 219492430
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-U200K - Phụ kiện & vật tư phụ (< 200k)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1390,
+          "Đầu Kỳ (Tiền)": 221870945,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 1390,
+          "Cuối Kỳ (Tiền)": 221870945
+        },
+        {
+          "Mã - Tên Hàng": "CABLE-SIG - Cáp truyền tín hiệu HDMI/VGA/USB",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1307,
+          "Đầu Kỳ (Tiền)": 214252290,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 1307,
+          "Cuối Kỳ (Tiền)": 214252290
+        }
+      ]
+    },
+    "Tháng 2": {
+      "columns": [
+        "Mã - Tên Hàng",
+        "ĐVT",
+        "Đầu Kỳ (SL)",
+        "Đầu Kỳ (Tiền)",
+        "Nhập (SL)",
+        "Nhập (Tiền)",
+        "Xuất (SL)",
+        "Xuất (Tiền)",
+        "Cuối Kỳ (SL)",
+        "Cuối Kỳ (Tiền)"
+      ],
+      "head": [
+        {
+          "Mã - Tên Hàng": "ACC-GEN-200K_1M - Phụ kiện & vật tư phụ (200k - 1M)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 24114,
+          "Đầu Kỳ (Tiền)": 15689545032,
+          "Nhập (SL)": 2120,
+          "Nhập (Tiền)": 1440998133,
+          "Xuất (SL)": 617,
+          "Xuất (Tiền)": 706488897,
+          "Cuối Kỳ (SL)": 25617,
+          "Cuối Kỳ (Tiền)": 16424054268
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-FREE - Phụ kiện & vật tư phụ (Không thu tiền)",
+          "ĐVT": "Lần",
+          "Đầu Kỳ (SL)": 0,
+          "Đầu Kỳ (Tiền)": 0,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 0,
+          "Cuối Kỳ (Tiền)": 0
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-O1M - Phụ kiện & vật tư phụ (> 1M)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1364,
+          "Đầu Kỳ (Tiền)": 219492430,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 1364,
+          "Cuối Kỳ (Tiền)": 219492430
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-U200K - Phụ kiện & vật tư phụ (< 200k)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1390,
+          "Đầu Kỳ (Tiền)": 221870945,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 1390,
+          "Cuối Kỳ (Tiền)": 221870945
+        },
+        {
+          "Mã - Tên Hàng": "CABLE-SIG - Cáp truyền tín hiệu HDMI/VGA/USB",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1307,
+          "Đầu Kỳ (Tiền)": 214252290,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 1307,
+          "Cuối Kỳ (Tiền)": 214252290
+        }
+      ]
+    },
+    "Tháng 3": {
+      "columns": [
+        "Mã - Tên Hàng",
+        "ĐVT",
+        "Đầu Kỳ (SL)",
+        "Đầu Kỳ (Tiền)",
+        "Nhập (SL)",
+        "Nhập (Tiền)",
+        "Xuất (SL)",
+        "Xuất (Tiền)",
+        "Cuối Kỳ (SL)",
+        "Cuối Kỳ (Tiền)"
+      ],
+      "head": [
+        {
+          "Mã - Tên Hàng": "ACC-GEN-200K_1M - Phụ kiện & vật tư phụ (200k - 1M)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 25617,
+          "Đầu Kỳ (Tiền)": 16424054268,
+          "Nhập (SL)": 3869,
+          "Nhập (Tiền)": 1335557846,
+          "Xuất (SL)": 7897,
+          "Xuất (Tiền)": 2376411221,
+          "Cuối Kỳ (SL)": 21589,
+          "Cuối Kỳ (Tiền)": 15383200893
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-FREE - Phụ kiện & vật tư phụ (Không thu tiền)",
+          "ĐVT": "Lần",
+          "Đầu Kỳ (SL)": 0,
+          "Đầu Kỳ (Tiền)": 0,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 0,
+          "Cuối Kỳ (Tiền)": 0
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-O1M - Phụ kiện & vật tư phụ (> 1M)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1364,
+          "Đầu Kỳ (Tiền)": 219492430,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 1364,
+          "Cuối Kỳ (Tiền)": 219492430
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-U200K - Phụ kiện & vật tư phụ (< 200k)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1390,
+          "Đầu Kỳ (Tiền)": 221870945,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 1390,
+          "Cuối Kỳ (Tiền)": 221870945
+        },
+        {
+          "Mã - Tên Hàng": "CABLE-SIG - Cáp truyền tín hiệu HDMI/VGA/USB",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1307,
+          "Đầu Kỳ (Tiền)": 214252290,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 1307,
+          "Cuối Kỳ (Tiền)": 214252290
+        }
+      ]
+    },
+    "Tháng 4": {
+      "columns": [
+        "Mã - Tên Hàng",
+        "ĐVT",
+        "Đầu Kỳ (SL)",
+        "Đầu Kỳ (Tiền)",
+        "Nhập (SL)",
+        "Nhập (Tiền)",
+        "Xuất (SL)",
+        "Xuất (Tiền)",
+        "Cuối Kỳ (SL)",
+        "Cuối Kỳ (Tiền)"
+      ],
+      "head": [
+        {
+          "Mã - Tên Hàng": "ACC-GEN-200K_1M - Phụ kiện & vật tư phụ (200k - 1M)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 21589,
+          "Đầu Kỳ (Tiền)": 15383200893,
+          "Nhập (SL)": 1744,
+          "Nhập (Tiền)": 846046530,
+          "Xuất (SL)": 2267,
+          "Xuất (Tiền)": 1305382294,
+          "Cuối Kỳ (SL)": 21066,
+          "Cuối Kỳ (Tiền)": 14923865129
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-FREE - Phụ kiện & vật tư phụ (Không thu tiền)",
+          "ĐVT": "Lần",
+          "Đầu Kỳ (SL)": 0,
+          "Đầu Kỳ (Tiền)": 0,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 0,
+          "Cuối Kỳ (Tiền)": 0
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-O1M - Phụ kiện & vật tư phụ (> 1M)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1364,
+          "Đầu Kỳ (Tiền)": 219492430,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 1364,
+          "Cuối Kỳ (Tiền)": 219492430
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-U200K - Phụ kiện & vật tư phụ (< 200k)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1390,
+          "Đầu Kỳ (Tiền)": 221870945,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 1390,
+          "Cuối Kỳ (Tiền)": 221870945
+        },
+        {
+          "Mã - Tên Hàng": "CABLE-SIG - Cáp truyền tín hiệu HDMI/VGA/USB",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1307,
+          "Đầu Kỳ (Tiền)": 214252290,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 1307,
+          "Cuối Kỳ (Tiền)": 214252290
+        }
+      ]
+    },
+    "Tháng 5": {
+      "columns": [
+        "Mã - Tên Hàng",
+        "ĐVT",
+        "Đầu Kỳ (SL)",
+        "Đầu Kỳ (Tiền)",
+        "Nhập (SL)",
+        "Nhập (Tiền)",
+        "Xuất (SL)",
+        "Xuất (Tiền)",
+        "Cuối Kỳ (SL)",
+        "Cuối Kỳ (Tiền)"
+      ],
+      "head": [
+        {
+          "Mã - Tên Hàng": "ACC-GEN-200K_1M - Phụ kiện & vật tư phụ (200k - 1M)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 21066,
+          "Đầu Kỳ (Tiền)": 14923865129,
+          "Nhập (SL)": 1930,
+          "Nhập (Tiền)": 1291777028,
+          "Xuất (SL)": 2868,
+          "Xuất (Tiền)": 1848661893,
+          "Cuối Kỳ (SL)": 20128,
+          "Cuối Kỳ (Tiền)": 14366980264
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-FREE - Phụ kiện & vật tư phụ (Không thu tiền)",
+          "ĐVT": "Lần",
+          "Đầu Kỳ (SL)": 0,
+          "Đầu Kỳ (Tiền)": 0,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 0,
+          "Cuối Kỳ (Tiền)": 0
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-O1M - Phụ kiện & vật tư phụ (> 1M)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1364,
+          "Đầu Kỳ (Tiền)": 219492430,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 1364,
+          "Cuối Kỳ (Tiền)": 219492430
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-U200K - Phụ kiện & vật tư phụ (< 200k)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1390,
+          "Đầu Kỳ (Tiền)": 221870945,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 1390,
+          "Cuối Kỳ (Tiền)": 221870945
+        },
+        {
+          "Mã - Tên Hàng": "CABLE-SIG - Cáp truyền tín hiệu HDMI/VGA/USB",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1307,
+          "Đầu Kỳ (Tiền)": 214252290,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 1307,
+          "Cuối Kỳ (Tiền)": 214252290
+        }
+      ]
+    },
+    "Tháng 6": {
+      "columns": [
+        "Mã - Tên Hàng",
+        "ĐVT",
+        "Đầu Kỳ (SL)",
+        "Đầu Kỳ (Tiền)",
+        "Nhập (SL)",
+        "Nhập (Tiền)",
+        "Xuất (SL)",
+        "Xuất (Tiền)",
+        "Cuối Kỳ (SL)",
+        "Cuối Kỳ (Tiền)"
+      ],
+      "head": [
+        {
+          "Mã - Tên Hàng": "ACC-GEN-200K_1M - Phụ kiện & vật tư phụ (200k - 1M)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 20128,
+          "Đầu Kỳ (Tiền)": 14366980264,
+          "Nhập (SL)": 5143,
+          "Nhập (Tiền)": 2241110859,
+          "Xuất (SL)": 2923,
+          "Xuất (Tiền)": 3145659054,
+          "Cuối Kỳ (SL)": 22348,
+          "Cuối Kỳ (Tiền)": 13462432069
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-FREE - Phụ kiện & vật tư phụ (Không thu tiền)",
+          "ĐVT": "Lần",
+          "Đầu Kỳ (SL)": 0,
+          "Đầu Kỳ (Tiền)": 0,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 0,
+          "Cuối Kỳ (Tiền)": 0
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-O1M - Phụ kiện & vật tư phụ (> 1M)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1364,
+          "Đầu Kỳ (Tiền)": 219492430,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 1364,
+          "Cuối Kỳ (Tiền)": 219492430
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-U200K - Phụ kiện & vật tư phụ (< 200k)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1390,
+          "Đầu Kỳ (Tiền)": 221870945,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 1390,
+          "Cuối Kỳ (Tiền)": 221870945
+        },
+        {
+          "Mã - Tên Hàng": "CABLE-SIG - Cáp truyền tín hiệu HDMI/VGA/USB",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1307,
+          "Đầu Kỳ (Tiền)": 214252290,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 1307,
+          "Cuối Kỳ (Tiền)": 214252290
+        }
+      ]
+    },
+    "Tháng 7": {
+      "columns": [
+        "Mã - Tên Hàng",
+        "ĐVT",
+        "Đầu Kỳ (SL)",
+        "Đầu Kỳ (Tiền)",
+        "Nhập (SL)",
+        "Nhập (Tiền)",
+        "Xuất (SL)",
+        "Xuất (Tiền)",
+        "Cuối Kỳ (SL)",
+        "Cuối Kỳ (Tiền)"
+      ],
+      "head": [
+        {
+          "Mã - Tên Hàng": "ACC-GEN-200K_1M - Phụ kiện & vật tư phụ (200k - 1M)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 22348,
+          "Đầu Kỳ (Tiền)": 13462432069,
+          "Nhập (SL)": 2708,
+          "Nhập (Tiền)": 1283062128,
+          "Xuất (SL)": 2258,
+          "Xuất (Tiền)": 1021639682,
+          "Cuối Kỳ (SL)": 22798,
+          "Cuối Kỳ (Tiền)": 13723854515
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-FREE - Phụ kiện & vật tư phụ (Không thu tiền)",
+          "ĐVT": "Lần",
+          "Đầu Kỳ (SL)": 0,
+          "Đầu Kỳ (Tiền)": 0,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 0,
+          "Cuối Kỳ (Tiền)": 0
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-O1M - Phụ kiện & vật tư phụ (> 1M)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1364,
+          "Đầu Kỳ (Tiền)": 219492430,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 1364,
+          "Cuối Kỳ (Tiền)": 219492430
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-U200K - Phụ kiện & vật tư phụ (< 200k)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1390,
+          "Đầu Kỳ (Tiền)": 221870945,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 1390,
+          "Cuối Kỳ (Tiền)": 221870945
+        },
+        {
+          "Mã - Tên Hàng": "CABLE-SIG - Cáp truyền tín hiệu HDMI/VGA/USB",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1307,
+          "Đầu Kỳ (Tiền)": 214252290,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 1307,
+          "Cuối Kỳ (Tiền)": 214252290
+        }
+      ]
+    },
+    "Tháng 8": {
+      "columns": [
+        "Mã - Tên Hàng",
+        "ĐVT",
+        "Đầu Kỳ (SL)",
+        "Đầu Kỳ (Tiền)",
+        "Nhập (SL)",
+        "Nhập (Tiền)",
+        "Xuất (SL)",
+        "Xuất (Tiền)",
+        "Cuối Kỳ (SL)",
+        "Cuối Kỳ (Tiền)"
+      ],
+      "head": [
+        {
+          "Mã - Tên Hàng": "ACC-GEN-200K_1M - Phụ kiện & vật tư phụ (200k - 1M)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 22798,
+          "Đầu Kỳ (Tiền)": 13723854515,
+          "Nhập (SL)": 3154,
+          "Nhập (Tiền)": 1902225600,
+          "Xuất (SL)": 2370,
+          "Xuất (Tiền)": 1393627043,
+          "Cuối Kỳ (SL)": 23582,
+          "Cuối Kỳ (Tiền)": 14232453072
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-FREE - Phụ kiện & vật tư phụ (Không thu tiền)",
+          "ĐVT": "Lần",
+          "Đầu Kỳ (SL)": 0,
+          "Đầu Kỳ (Tiền)": 0,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 0,
+          "Cuối Kỳ (Tiền)": 0
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-O1M - Phụ kiện & vật tư phụ (> 1M)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1364,
+          "Đầu Kỳ (Tiền)": 219492430,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 1364,
+          "Cuối Kỳ (Tiền)": 219492430
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-U200K - Phụ kiện & vật tư phụ (< 200k)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1390,
+          "Đầu Kỳ (Tiền)": 221870945,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 1390,
+          "Cuối Kỳ (Tiền)": 221870945
+        },
+        {
+          "Mã - Tên Hàng": "CABLE-SIG - Cáp truyền tín hiệu HDMI/VGA/USB",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1307,
+          "Đầu Kỳ (Tiền)": 214252290,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 1307,
+          "Cuối Kỳ (Tiền)": 214252290
+        }
+      ]
+    },
+    "Tháng 9": {
+      "columns": [
+        "Mã - Tên Hàng",
+        "ĐVT",
+        "Đầu Kỳ (SL)",
+        "Đầu Kỳ (Tiền)",
+        "Nhập (SL)",
+        "Nhập (Tiền)",
+        "Xuất (SL)",
+        "Xuất (Tiền)",
+        "Cuối Kỳ (SL)",
+        "Cuối Kỳ (Tiền)"
+      ],
+      "head": [
+        {
+          "Mã - Tên Hàng": "ACC-GEN-200K_1M - Phụ kiện & vật tư phụ (200k - 1M)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 23582,
+          "Đầu Kỳ (Tiền)": 14232453072,
+          "Nhập (SL)": 5457,
+          "Nhập (Tiền)": 2964283031,
+          "Xuất (SL)": 3352,
+          "Xuất (Tiền)": 2754601177,
+          "Cuối Kỳ (SL)": 25687,
+          "Cuối Kỳ (Tiền)": 14442134926
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-FREE - Phụ kiện & vật tư phụ (Không thu tiền)",
+          "ĐVT": "Lần",
+          "Đầu Kỳ (SL)": 0,
+          "Đầu Kỳ (Tiền)": 0,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 0,
+          "Cuối Kỳ (Tiền)": 0
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-O1M - Phụ kiện & vật tư phụ (> 1M)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1364,
+          "Đầu Kỳ (Tiền)": 219492430,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 1364,
+          "Cuối Kỳ (Tiền)": 219492430
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-U200K - Phụ kiện & vật tư phụ (< 200k)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1390,
+          "Đầu Kỳ (Tiền)": 221870945,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 1390,
+          "Cuối Kỳ (Tiền)": 221870945
+        },
+        {
+          "Mã - Tên Hàng": "CABLE-SIG - Cáp truyền tín hiệu HDMI/VGA/USB",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1307,
+          "Đầu Kỳ (Tiền)": 214252290,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 1307,
+          "Cuối Kỳ (Tiền)": 214252290
+        }
+      ]
+    },
+    "Tháng 10": {
+      "columns": [
+        "Mã - Tên Hàng",
+        "ĐVT",
+        "Đầu Kỳ (SL)",
+        "Đầu Kỳ (Tiền)",
+        "Nhập (SL)",
+        "Nhập (Tiền)",
+        "Xuất (SL)",
+        "Xuất (Tiền)",
+        "Cuối Kỳ (SL)",
+        "Cuối Kỳ (Tiền)"
+      ],
+      "head": [
+        {
+          "Mã - Tên Hàng": "ACC-GEN-200K_1M - Phụ kiện & vật tư phụ (200k - 1M)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 25687,
+          "Đầu Kỳ (Tiền)": 14442134926,
+          "Nhập (SL)": 3214,
+          "Nhập (Tiền)": 1266819448,
+          "Xuất (SL)": 2062,
+          "Xuất (Tiền)": 1408558897,
+          "Cuối Kỳ (SL)": 26839,
+          "Cuối Kỳ (Tiền)": 14300395477
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-FREE - Phụ kiện & vật tư phụ (Không thu tiền)",
+          "ĐVT": "Lần",
+          "Đầu Kỳ (SL)": 0,
+          "Đầu Kỳ (Tiền)": 0,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 0,
+          "Cuối Kỳ (Tiền)": 0
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-O1M - Phụ kiện & vật tư phụ (> 1M)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1364,
+          "Đầu Kỳ (Tiền)": 219492430,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 1364,
+          "Cuối Kỳ (Tiền)": 219492430
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-U200K - Phụ kiện & vật tư phụ (< 200k)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1390,
+          "Đầu Kỳ (Tiền)": 221870945,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 1390,
+          "Cuối Kỳ (Tiền)": 221870945
+        },
+        {
+          "Mã - Tên Hàng": "CABLE-SIG - Cáp truyền tín hiệu HDMI/VGA/USB",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1307,
+          "Đầu Kỳ (Tiền)": 214252290,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 1307,
+          "Cuối Kỳ (Tiền)": 214252290
+        }
+      ]
+    },
+    "Tháng 11": {
+      "columns": [
+        "Mã - Tên Hàng",
+        "ĐVT",
+        "Đầu Kỳ (SL)",
+        "Đầu Kỳ (Tiền)",
+        "Nhập (SL)",
+        "Nhập (Tiền)",
+        "Xuất (SL)",
+        "Xuất (Tiền)",
+        "Cuối Kỳ (SL)",
+        "Cuối Kỳ (Tiền)"
+      ],
+      "head": [
+        {
+          "Mã - Tên Hàng": "ACC-GEN-200K_1M - Phụ kiện & vật tư phụ (200k - 1M)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 26839,
+          "Đầu Kỳ (Tiền)": 14300395477,
+          "Nhập (SL)": 4622,
+          "Nhập (Tiền)": 1579986407,
+          "Xuất (SL)": 1332,
+          "Xuất (Tiền)": 1470804640,
+          "Cuối Kỳ (SL)": 30129,
+          "Cuối Kỳ (Tiền)": 14409577244
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-FREE - Phụ kiện & vật tư phụ (Không thu tiền)",
+          "ĐVT": "Lần",
+          "Đầu Kỳ (SL)": 0,
+          "Đầu Kỳ (Tiền)": 0,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 0,
+          "Cuối Kỳ (Tiền)": 0
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-O1M - Phụ kiện & vật tư phụ (> 1M)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1364,
+          "Đầu Kỳ (Tiền)": 219492430,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 1364,
+          "Cuối Kỳ (Tiền)": 219492430
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-U200K - Phụ kiện & vật tư phụ (< 200k)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1390,
+          "Đầu Kỳ (Tiền)": 221870945,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 1390,
+          "Cuối Kỳ (Tiền)": 221870945
+        },
+        {
+          "Mã - Tên Hàng": "CABLE-SIG - Cáp truyền tín hiệu HDMI/VGA/USB",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1307,
+          "Đầu Kỳ (Tiền)": 214252290,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 1307,
+          "Cuối Kỳ (Tiền)": 214252290
+        }
+      ]
+    },
+    "Tháng 12": {
+      "columns": [
+        "Mã - Tên Hàng",
+        "ĐVT",
+        "Đầu Kỳ (SL)",
+        "Đầu Kỳ (Tiền)",
+        "Nhập (SL)",
+        "Nhập (Tiền)",
+        "Xuất (SL)",
+        "Xuất (Tiền)",
+        "Cuối Kỳ (SL)",
+        "Cuối Kỳ (Tiền)"
+      ],
+      "head": [
+        {
+          "Mã - Tên Hàng": "ACC-GEN-200K_1M - Phụ kiện & vật tư phụ (200k - 1M)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 30129,
+          "Đầu Kỳ (Tiền)": 14409577244,
+          "Nhập (SL)": 4766,
+          "Nhập (Tiền)": 2471766836,
+          "Xuất (SL)": 3165,
+          "Xuất (Tiền)": 2431331064,
+          "Cuối Kỳ (SL)": 31730,
+          "Cuối Kỳ (Tiền)": 14450013016
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-FREE - Phụ kiện & vật tư phụ (Không thu tiền)",
+          "ĐVT": "Lần",
+          "Đầu Kỳ (SL)": 0,
+          "Đầu Kỳ (Tiền)": 0,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 0,
+          "Cuối Kỳ (Tiền)": 0
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-O1M - Phụ kiện & vật tư phụ (> 1M)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1364,
+          "Đầu Kỳ (Tiền)": 219492430,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 1364,
+          "Cuối Kỳ (Tiền)": 219492430
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-U200K - Phụ kiện & vật tư phụ (< 200k)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1390,
+          "Đầu Kỳ (Tiền)": 221870945,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 1390,
+          "Cuối Kỳ (Tiền)": 221870945
+        },
+        {
+          "Mã - Tên Hàng": "CABLE-SIG - Cáp truyền tín hiệu HDMI/VGA/USB",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1307,
+          "Đầu Kỳ (Tiền)": 214252290,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 1307,
+          "Cuối Kỳ (Tiền)": 214252290
+        }
+      ]
+    },
+    "xnt12thang": {
+      "columns": [
+        "Mã - Tên Hàng",
+        "ĐVT",
+        "Đầu Kỳ (SL)",
+        "Đầu Kỳ (Tiền)",
+        "Nhập (SL)",
+        "Nhập (Tiền)",
+        "Xuất (SL)",
+        "Xuất (Tiền)",
+        "Cuối Kỳ (SL)",
+        "Cuối Kỳ (Tiền)"
+      ],
+      "head": [
+        {
+          "Mã - Tên Hàng": "ACC-GEN-200K_1M - Phụ kiện & vật tư phụ (200k - 1M)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 23144,
+          "Đầu Kỳ (Tiền)": 15581054553,
+          "Nhập (SL)": 40820,
+          "Nhập (Tiền)": 19117072343,
+          "Xuất (SL)": 32234,
+          "Xuất (Tiền)": 20248113880,
+          "Cuối Kỳ (SL)": 31730,
+          "Cuối Kỳ (Tiền)": 14450013016
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-FREE - Phụ kiện & vật tư phụ (Không thu tiền)",
+          "ĐVT": "Lần",
+          "Đầu Kỳ (SL)": 0,
+          "Đầu Kỳ (Tiền)": 0,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 0,
+          "Cuối Kỳ (Tiền)": 0
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-O1M - Phụ kiện & vật tư phụ (> 1M)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1364,
+          "Đầu Kỳ (Tiền)": 219492430,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 1364,
+          "Cuối Kỳ (Tiền)": 219492430
+        },
+        {
+          "Mã - Tên Hàng": "ACC-GEN-U200K - Phụ kiện & vật tư phụ (< 200k)",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1390,
+          "Đầu Kỳ (Tiền)": 221870945,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 1390,
+          "Cuối Kỳ (Tiền)": 221870945
+        },
+        {
+          "Mã - Tên Hàng": "CABLE-SIG - Cáp truyền tín hiệu HDMI/VGA/USB",
+          "ĐVT": "Cái",
+          "Đầu Kỳ (SL)": 1307,
+          "Đầu Kỳ (Tiền)": 214252290,
+          "Nhập (SL)": 0,
+          "Nhập (Tiền)": 0,
+          "Xuất (SL)": 0,
+          "Xuất (Tiền)": 0,
+          "Cuối Kỳ (SL)": 1307,
+          "Cuối Kỳ (Tiền)": 214252290
+        }
+      ]
+    }
+  }
+}
