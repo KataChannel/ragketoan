@@ -109,6 +109,8 @@ def generate_mock_product(invoice_id_str):
         ("Chuột máy tính không dây", 200000),
         ("Cáp mạng RJ45 2m", 50000),
         ("Thiết bị mạng Switch TP-Link", 1200000),
+        ("Dịch vụ Viễn thông tháng", 500000),
+        ("Phí chuyển phát nhanh hàng hóa", 150000),
         ("Bản quyền MS Windows", 2000000)
     ]
     return mocks[h % len(mocks)]
@@ -288,8 +290,8 @@ def build_xnt_reports():
                 'DT Không Thuế (VNĐ)': df_list[(df_list['loaihd'] == 'banra') & ((df_list['tgtthue'] == 0) | df_list['tgtthue'].isnull()) & (df_list['tdlap'].dt.year == y) & (df_list['tdlap'].dt.month == m)]['tgtttbso'].sum(),
                 'SL Bán': m_rev_sl,
                 'Chi Phí Mua (VNĐ)': m_pur_vnd,
-                'CP Mua Hàng Hóa (VNĐ)': muavao[~muavao['cat_ma'].isin(['OTH-004', 'OTH-005', 'SRV-004', 'OTH-059', 'OTH-045'])]['thtien'].sum(),
-                'CP Dịch Vụ - Khác (VNĐ)': muavao[muavao['cat_ma'].isin(['OTH-004', 'OTH-005', 'SRV-004', 'OTH-059', 'OTH-045'])]['thtien'].sum(),
+                'CP Mua Hàng Hóa (VNĐ)': monthly_tx[(monthly_tx['loaihd'] == 'muavao') & (~monthly_tx['cat_ma'].str.startswith('SRV-')) & (~monthly_tx['cat_ma'].isin(['OTH-004', 'OTH-005', 'OTH-006', 'OTH-009', 'OTH-010', 'OTH-011', 'OTH-044', 'OTH-045', 'OTH-059', 'OTH-060']))]['thtien'].sum(),
+                'CP Dịch Vụ - Khác (VNĐ)': monthly_tx[(monthly_tx['loaihd'] == 'muavao') & ((monthly_tx['cat_ma'].str.startswith('SRV-')) | (monthly_tx['cat_ma'].isin(['OTH-004', 'OTH-005', 'OTH-006', 'OTH-009', 'OTH-010', 'OTH-011', 'OTH-044', 'OTH-045', 'OTH-059', 'OTH-060'])))]['thtien'].sum(),
                 'SL Mua': m_pur_sl,
                 'Chênh Lệch': m_rev_vnd - m_pur_vnd
             })
@@ -308,6 +310,18 @@ def build_xnt_reports():
     for r in md_rows:
         if r['Doanh Thu Bán (VNĐ)'] == 0 and r['Chi Phí Mua (VNĐ)'] == 0 and r['Tháng'].startswith('2026'): continue 
         md_content += f"| **{r['Tháng']}** | {r['Doanh Thu Bán (VNĐ)']:,.0f} | {r['DT Không Thuế (VNĐ)']:,.0f} | {r['SL Bán']:,.0f} | {r['Chi Phí Mua (VNĐ)']:,.0f} | {r['CP Mua Hàng Hóa (VNĐ)']:,.0f} | {r['CP Dịch Vụ - Khác (VNĐ)']:,.0f} | {r['SL Mua']:,.0f} | {r['Chênh Lệch']:,.0f} |\n"
+    
+    # Grand Total
+    total_rev = sum(r['Doanh Thu Bán (VNĐ)'] for r in md_rows)
+    total_no_tax = sum(r['DT Không Thuế (VNĐ)'] for r in md_rows)
+    total_sl_ban = sum(r['SL Bán'] for r in md_rows)
+    total_pur = sum(r['Chi Phí Mua (VNĐ)'] for r in md_rows)
+    total_hw = sum(r['CP Mua Hàng Hóa (VNĐ)'] for r in md_rows)
+    total_sv = sum(r['CP Dịch Vụ - Khác (VNĐ)'] for r in md_rows)
+    total_sl_mua = sum(r['SL Mua'] for r in md_rows)
+    total_diff = sum(r['Chênh Lệch'] for r in md_rows)
+    
+    md_content += f"| **TỔNG CỘNG** | **{total_rev:,.0f}** | **{total_no_tax:,.0f}** | **{total_sl_ban:,.0f}** | **{total_pur:,.0f}** | **{total_hw:,.0f}** | **{total_sv:,.0f}** | **{total_sl_mua:,.0f}** | **{total_diff:,.0f}** |\n"
         
     md_path = os.path.join(DOCS_DIR, "tong_hop_hoa_don_2023_2026.md")
     with open(md_path, 'w', encoding='utf-8') as f:
