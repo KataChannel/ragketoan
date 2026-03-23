@@ -1,4 +1,4 @@
-1. Tổng Tiền Đầu Kỳ Năm 2023 : 20.528.682.383
+1. Tổng Tiền Đầu Kỳ Năm 2023 : 20.528.682.383 (phân bổ cho tất cả sản phẩm một cách hợp lý, có thể dựa vào số lượng tồn kho, giá thành của từng mặt hàng để phân bổ cho hợp lý, để báo cáo cho cơ quan thế)
 2. Mặt Hàng : Phân bổ theo DANH MỤC NHÓM SẢN PHẨM docs/huyvu/DANH_MUC_NHOM_SAN_PHAM.md làm Mã Hàng - Tên Hàng
 3. Sử dụng hóa đơn, hóa đơn chi tiết từ database Công Ty Huy Vũ
 4. Form báo cáo xuất nhập tồn theo các cột : STT - Mã Nhóm - Tên Nhóm Sản Phẩm - Tồn Đầu Kỳ (SL) - Tồn Đầu Kỳ (VNĐ) -   Nhập (SL) - Nhập (VNĐ) - Xuất (SL) - Xuất (VNĐ) - Tồn Cuối (SL) - Tồn Cuối (VNĐ)

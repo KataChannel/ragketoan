@@ -1,79 +1,79 @@
-# DANH MỤC NHÓM SẢN PHẨM & CHI PHÍ (KẾ TOÁN)
+# DANH MỤC NHÓM SẢN PHẨM & DỊCH VỤ (HUY VŨ - BÁO CÁO THUẾ)
 
-Dưới đây là danh mục phân rã chuyên sâu theo số liệu thực tế tổng hợp của 3 năm (2023, 2024, 2025).
-Danh mục đã được phân tách rõ ràng giữa **Hàng hóa/Vật tư** và **Dịch vụ/Chi phí**.
+Danh mục này được tối ưu hóa từ dữ liệu thực tế giai đoạn 2023-2025, phục vụ công tác phân loại hạch toán kế toán và báo cáo Thuế. Các nhóm được phân chia rõ ràng theo tính chất hàng hóa và dịch vụ.
 
 ## 1. PHẦN HÀNG HÓA & VẬT TƯ KỸ THUẬT
-| STT | Mã Nhóm (Đại diện) | Tên Nhóm Sản Phẩm | Từ khóa tương đồng (Alias) |
-|:---:|:-------------------|:-------------------|:---------------------------|
-| 1 | OTH-003 | Thiết bị Ghi hình & Hội nghị kỹ thuật số | hội nghị, điểm cầu, phòng họp, polycom, webcam logitech c, hội truyền hình |
-| 2 | OTH-007 | Cáp tín hiệu & Thiết bị chuyển đổi đồ họa | cáp mạng, cáp hdmi, cáp vga, cáp chuyển, chuyển đổi, converter, hdmi, vga |
-| 3 | OTH-013 | Thiết bị mạng & Router Mesh chuyên dụng | mesh, router, wifi, aruba, unifi, tplink, ubiquiti, phát wifi |
-| 4 | OTH-017 | Vật tư kỹ thuật khác chưa phân loại |  |
-| 5 | OTH-022 | Thiết bị lưu trữ di dộng & Thẻ nhớ NAND | thẻ nhớ, usb, flash, sandisk, kingston 32gb, pen drive |
-| 6 | OTH-034 | Hệ thống lưu trữ mảng NAS chuyên dụng | nas, synology, qnap, hdd nas, lưu trữ mạng |
-| 7 | OTH-037 | Card đồ họa Rời & Xử lý hình ảnh chuyên sâu | card đồ họa, vga, rtx, gtx, quadro, rx |
-| 8 | OTH-044 | Biên lai tự in & Ấn chỉ thuế bảo mật | biên lai, ấn chỉ, hóa đơn, tem, vé |
-| 9 | OTH-045 | Chiết khấu thương mại & Giảm giá đặc biệt | chiết khấu, giảm giá, khuyến mại |
-| 10 | OTH-054 | Bo mạch chủ (Mainboard) lắp ráp PC phổ thông | mainboard, bo mạch chủ, socket, h61, h81, h110, h310, h410, h510, b365, b460, b660, b760 |
-| 11 | OTH-061 | Linh kiện vi xử lý Intel chính hãng | intel, core i3, core i5, core i7, xeon, pentium |
-| 12 | OTH-063 | Linh kiện bộ nhớ Kingston chính hãng | kingston, ram kingston, ssd kingston |
-| 13 | OTH-065 | Máy chiếu & Thiết bị trình chiếu kỹ thuật số | máy chiếu, projector, epson, sony, panasonic, viewsonic |
-| 14 | PC-004 | Máy tính (PC/Laptop) - 12100 | 12100 |
-| 15 | PC-005 | Máy tính (PC/Laptop) - 12400 | 12400 |
-| 16 | PC-006 | Máy tính (PC/Laptop) - 13100 | 13100 |
-| 17 | PC-007 | Máy tính (PC/Laptop) - 13400 | 13400 |
-| 18 | PC-009 | Máy tính (PC/Laptop) - 2000 | 2000 |
-| 19 | PC-010 | Máy tính (PC/Laptop) - 3000 | 3000 |
-| 20 | PC-011 | Máy tính (PC/Laptop) - 3020 | 3020 |
-| 21 | PC-012 | Máy tính (PC/Laptop) - 3420 | 3420 |
-| 22 | PC-013 | Máy tính (PC/Laptop) - 3520 | 3520 |
-| 23 | PC-014 | Máy tính (PC/Laptop) - 3530 | 3530 |
-| 24 | PC-016 | Máy tính (PC/Laptop) - 4X40K09936 | 4X40K09936 |
-| 25 | PC-020 | Máy tính (PC/Laptop) - ASUS | ASUS |
-| 26 | PC-021 | Máy tính (PC/Laptop) - B100 | B100 |
-| 27 | PC-026 | Máy tính (PC/Laptop) - DELL | DELL |
-| 28 | PC-034 | Máy tính (PC/Laptop) - H111 | H111 |
-| 29 | PC-035 | Máy tính (PC/Laptop) - H20215FE0 | H20215FE0 |
-| 30 | PC-040 | Máy tính (PC/Laptop) - LENOVO | LENOVO |
-| 31 | PC-043 | Máy tính (PC/Laptop) - M185 | M185 |
-| 32 | PC-044 | Máy tính (PC/Laptop) - M331 | M331 |
-| 33 | PC-047 | Máy tính (PC/Laptop) - MSI | MSI |
-| 34 | PC-048 | Máy tính (PC/Laptop) - NK2600 | NK2600 |
-| 35 | PC-050 | Máy tính (PC/Laptop) - PQ3480 | PQ3480 |
-| 36 | PC-053 | Máy tính (PC/Laptop) - TAY | TAY |
-| 37 | PC-057 | Máy tính (PC/Laptop) - Khác | pc, máy tính, laptop, màn hình, cpu, main, ram, vga, ssd, ổ cứng, bo mạch, desktop |
-| 38 | PC-060 | Máy tính (PC/Laptop) - Bàn phím | Bàn phím |
-| 39 | PC-061 | Máy tính (PC/Laptop) - Chuột máy | Chuột máy |
-| 40 | PC-062 | Máy tính (PC/Laptop) - DDR4-2400 | DDR4-2400 |
-| 41 | PC-064 | Máy tính (PC/Laptop) - G102 | g102 |
-| 42 | PC-065 | Máy tính (PC/Laptop) - JETEK | jetek |
-| 43 | PC-067 | Máy tính (PC/Laptop) - LOGITECH | logitech, chuột logitech, bàn phím logitech, webcam logitech, chuột quang logitech |
-| 44 | PC-069 | Máy tính (PC/Laptop) - Tản nhiệt | tản nhiệt, cooler master, fan, quat, tảng nhiệt, aio |
-| 45 | VP-001 | Thiết bị văn phòng - 12A | 12A |
-| 46 | VP-002 | Thiết bị văn phòng - 2240 | 2240 |
-| 47 | VP-003 | Thiết bị văn phòng - 35A | 35A |
-| 48 | VP-004 | Thiết bị văn phòng - 49A | 49A |
-| 49 | VP-006 | Thiết bị văn phòng - BROTHER | BROTHER |
-| 50 | VP-009 | Thiết bị văn phòng - CANON | CANON |
-| 51 | VP-019 | Thiết bị văn phòng - HL-B2100D | HL-B2100D |
-| 52 | VP-020 | Thiết bị văn phòng - HL-B2180DW | HL-B2180DW |
-| 53 | VP-024 | Thiết bị văn phòng - LASER | LASER |
-| 54 | VP-027 | Thiết bị văn phòng - LQ310 | LQ310 |
-| 55 | VP-029 | Thiết bị văn phòng - M20 | M20 |
-| 56 | VP-035 | Thiết bị văn phòng - MOUSE | MOUSE |
-| 57 | VP-036 | Thiết bị văn phòng - Mực nước | mực nước, mực màu, mực in epson |
-| 58 | VP-037 | Thiết bị văn phòng - N100 | N100 |
-| 59 | VP-042 | Thiết bị văn phòng - RAPOO | RAPOO |
-| 60 | VP-049 | Thiết bị văn phòng - Khác | máy in, mực, chuột, bàn phím, văn phòng, máy photo, giấy, bút, kẹp, bìa, băng dính |
-| 61 | IT-001 | Màn hình máy tính & Tivi | màn hình, tivi, lcd, monitor, display |
-| 62 | IT-003 | Máy quét văn bản (Scanner) | máy quét, scanner, scanjet |
-| 63 | VP-050 | Nội thất & Thiết bị văn phòng | ghế, nệm, giường, kệ mica, bàn, đệm, tủ |
-| 64 | OTH-085 | Thiết bị liên lạc vô tuyến | bộ đàm, kenwood, motorola |
+
+### A. Máy tính & Thiết bị xử lý dữ liệu
+| STT | Mã Nhóm | Tên Nhóm Sản Phẩm (Hạch toán Thuế) | Từ khóa tương đồng (Alias) |
+|:---:|:--------|:-----------------------------------|:---------------------------|
+| 1 | **PC-026** | Máy tính xách tay (Laptop) - DELL | dell, inspiron, vostro, latitude, xps |
+| 2 | **PC-020** | Máy tính xách tay (Laptop) - ASUS | asus, vivobook, zenbook, expertbook |
+| 3 | **PC-040** | Máy tính xách tay (Laptop) - LENOVO | lenovo, thinkpad, ideapad, v14, v15 |
+| 4 | **PC-047** | Máy tính xách tay (Laptop) - MSI | msi, modern, prestige |
+| 5 | **PC-057** | Hệ thống máy tính để bàn (PC Desktop) | pc, máy tính, desktop, laptop, workstation, bộ máy |
+| 6 | **IT-001** | Màn hình máy tính (LCD/Monitor) | màn hình, tivi, lcd, monitor, display, samsung, dell, lg, viewsonic |
+| 7 | **PC-004** | Hệ thống máy tính (Chipset 12100) | 12100 |
+| 8 | **PC-006** | Hệ thống máy tính (Chipset 13100) | 13100 |
+| 9 | **PC-007** | Hệ thống máy tính (Chipset 13400) | 13400 |
+
+### B. Máy in, Mực in & Thiết bị văn phòng
+| STT | Mã Nhóm | Tên Nhóm Sản Phẩm (Hạch toán Thuế) | Từ khóa tương đồng (Alias) |
+|:---:|:--------|:-----------------------------------|:---------------------------|
+| 10 | **VP-009** | Máy in Laser/Phun - CANON | canon, lbp, imageclass, pixma |
+| 11 | **VP-006** | Máy in Laser/Phun - BROTHER | brother, hl-l, dcp, mfc |
+| 12 | **IT-003** | Máy quét tài liệu (Scanner) | máy quét, scanner, scanjet, fujitsu, hp scan, máy đọc mã vạch, máy đọc, scan, bar code, đầu đọc mã vạch, od7200 |
+| 13 | **VP-001** | Hộp mực in Laser (Cartridge 12A) | 12a, canon 303, fx9 |
+| 14 | **VP-003** | Hộp mực in Laser (Cartridge 35A/85A) | 35a, 85a, 78a |
+| 15 | **VP-043** | Hộp mực in Laser (Brother TN) | tn-2385, tnb027, tn-1010, tn-2280, mực brother |
+| 16 | **VP-036** | Mực nước/Mực màu (Ink Bottle) | mực nước, mực màu, mực in epson, gi-71, 003 |
+| 17 | **VP-049** | Vật tư in ấn, Máy hủy tài liệu & Linh kiện thay thế | máy in, văn phòng phẩm, giấy in, mực, cartridge, hộp mực, ru lô, photo, chíp m, bộ cò, máy đếm tiền, đếm tiền, chấm công, màn chiếu, giá treo, projector, máy chiếu, máy hủy, drum, trống in, su adf, cò sấy |
+| 18 | **VP-050** | Nội thất văn phòng (Bàn, Ghế, Tủ) | ghế, bàn, tủ, kệ mica, nội thất, giường, đệm |
+
+### C. Linh kiện, Phụ kiện & TB Lưu trữ
+| STT | Mã Nhóm | Tên Nhóm Sản Phẩm (Hạch toán Thuế) | Từ khóa tương đồng (Alias) |
+|:---:|:--------|:-----------------------------------|:---------------------------|
+| 19 | **OTH-061** | Linh kiện Vi xử lý (CPU) | intel, core i3, core i5, core i7, i9, xeon, pentium, cpu |
+| 20 | **OTH-054** | Bo mạch chủ (Mainboard) | mainboard, bo mạch chủ, h61, h510, b660, b760, asus main, msi main |
+| 21 | **OTH-063** | Linh kiện Bộ nhớ (RAM) | ram, ddr4, ddr5, kingston, hx, lexar, bộ nhớ |
+| 22 | **LNK-010** | Ổ cứng lưu trữ (SSD/HDD) | ssd, hdd, ổ cứng, ổ đĩa, western, seagate, m.2, nvme |
+| 23 | **OTH-037** | Card đồ họa & Xử lý hình ảnh (VGA) | card đồ họa, vga, rtx, gtx, quadro, rx  |
+| 24 | **OTH-022** | Thiết bị lưu trữ di dộng (USB/Thẻ nhớ) | thẻ nhớ, usb, flash, sandisk, pen drive |
+| 25 | **LNK-020** | Vỏ máy (Case) & Bộ nguồn (PSU) | vỏ máy, case, psu, bộ nguồn, nguồn máy tính, jetek, adapter, sạc |
+| 26 | **PC-069** | Thiết bị tản nhiệt (Fan/Cooler) | tản nhiệt, cooler master, fan, quạt, aio |
+| 27 | **ACC-001** | Phụ kiện, Bút trình chiếu & Điện thoại bàn | tai nghe, headphone, chuột, bàn phím, mouse, keyboard, logitech, rapoo, soundmax, loa, balo, ổ cắm, pin , điện thoại, micro, headset, bút trình chiếu, presenter, cliptec, hub, bộ chia cổng |
+| 28 | **OTH-075** | Bộ lưu điện & Bảo vệ nguồn (UPS) | ups, santak, apc, maruson, bộ lưu điện, lưu điện |
+
+### D. Thiết bị Mạng, An ninh & Viễn thông
+| STT | Mã Nhóm | Tên Nhóm Sản Phẩm (Hạch toán Thuế) | Từ khóa tương đồng (Alias) |
+|:---:|:--------|:-----------------------------------|:---------------------------|
+| 29 | **CAM-001** | Camera quan sát & Hệ thống Kiểm soát an ninh | camera, hikvision, ezviz, imou, đầu ghi, cctv, quan sát, kbone, khóa chốt, bát dưới |
+| 30 | **OTH-013** | Thiết bị Mạng (WiFi/Switch/Router) | router, wifi, mesh, aruba, unifi, tplink, tp-link, switch, tenda, totolink, chuyển mạch, bộ định tuyến, rg-ew, cudy |
+| 31 | **OTH-007** | Cáp tín hiệu (Dữ liệu/Hình ảnh) | cáp, hdmi, vga, chuyển đổi, converter, ugreen |
+| 32 | **OTH-073** | Đầu nối & Vật tư viễn thông | hạt mạng, rj45, đầu hạt, amp, commscope, đầu nối |
+| 33 | **OTH-085** | Thiết bị Liên lạc & Định vị (Bộ đàm, GPS) | bộ đàm, kenwood, motorola, máy định vị, gps |
+| 34 | **OTH-003** | Thiết bị Hội nghị truyền hình | họp trực tuyến, polycom, webcam, microphone, hội nghị |
+
+### E. Phần mềm & Nhóm hàng khác
+| STT | Mã Nhóm | Tên Nhóm Sản Phẩm (Hạch toán Thuế) | Từ khóa tương đồng (Alias) |
+|:---:|:--------|:-----------------------------------|:---------------------------|
+| 35 | **SW-001** | Phần mềm bản quyền & Bản quyền số | windows, office, kaspersky, diệt virus, license, bản quyền, chữ ký số |
+| 36 | **OTH-044** | Ấn chỉ, Biên lai & Tem nhãn | biên lai, hóa đơn, tem, vé, ấn chỉ |
+| 37 | **FUEL-001** | Nhiên liệu (Xăng dầu vận hành) | xăng, dầu, ron95, ron92, diesel |
+
+### F. Nhóm hàng hóa lẻ & Vật tư khác
+| STT | Mã Nhóm | Tên Nhóm Sản Phẩm (Hạch toán Thuế) | Từ khóa tương đồng (Alias) |
+|:---:|:--------|:-----------------------------------|:---------------------------|
+| 38 | **OTH-017** | Vật tư hàng hóa khác chưa phân loại | (Catch-all cho các mặt hàng lẻ khác) |
 
 ## 2. PHẦN DỊCH VỤ & CHI PHÍ HOẠT ĐỘNG
-| STT | Mã Nhóm (Đại diện) | Tên Nhóm Sản Phẩm | Từ khóa tương đồng (Alias) |
-|:---:|:-------------------|:-------------------|:---------------------------|
-| 1 | OTH-010 | Dịch vụ tin nhắn thông báo (SMS Brandname) | sms, tin nhắn, brandname |
-| 2 | OTH-073 | Hạt mạng & Đầu nối viễn thông chuẩn RJ45 | hạt mạng, rj45, đầu hạt, amp, commscope, đầu nối |
-| 3 | SRV-002 | Dịch vụ & Thi công - 2025 | 2025 |
+| STT | Mã Nhóm | Tên Nhóm Sản Phẩm (Hạch toán Thuế) | Từ khóa tương đồng (Alias) |
+|:---:|:--------|:-----------------------------------|:---------------------------|
+| 49 | **SRV-001** | Dịch vụ Lắp đặt & Triển khai hạ tầng | thi công, lắp đặt, triển khai, phí dịch vụ, vệ sinh, bảo trì, cài đặt, công sửa |
+| 50 | **OTH-010** | Dịch vụ Viễn thông (SMS Brandname) | sms, tin nhắn, brandname |
+| 51 | **SRV-003** | Cước vận chuyển & Chuyển phát nhanh | cước vận chuyển, phí ship, viettel post, chuyển phát |
+| 52 | **FIN-001** | Chi phí Tài chính & Phí ngân hàng | phí ngân hàng, lãi vay, phí duy trì |
+| 53 | **OTH-045** | Chiết khấu thanh toán & Khuyến mại | chiết khấu, giảm giá, khuyến mại |
+
+---
+**Ghi chú:** Danh mục được thiết kế để tách bạch giữa hoạt động kinh doanh CNTT cốt lõi của Huy Vũ và các chi phí quản lý, phù hợp với quy định về phân loại hàng hóa của cơ quan Thuế.
