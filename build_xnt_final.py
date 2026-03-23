@@ -28,9 +28,7 @@ def map_to_group(tenHang):
     
     # 1. Match based on MD aliases
     for code, keywords in kw_mapping.items():
-        # strict alias matching
         for kw in keywords:
-            # using exact substring match or word match
             kw_words = set(re.findall(r'[a-z0-9]+', kw.lower()))
             if kw_words and kw_words.issubset(words):
                 for g in groups:
@@ -42,7 +40,7 @@ def map_to_group(tenHang):
                     if g['code'] == code:
                         return g
 
-    # 2. General logic fallback to "Khác"
+    # 2. General logic fallback
     cat_found = "Vật tư kỹ thuật khác chưa phân loại"
     if any(k in hhp_low for k in ["pc", "máy tính", "laptop", "cpu", "main", "ram", "vga", "bo mạch", "desktop"]):
         cat_found = "Máy tính (PC/Laptop) - Khác"
@@ -57,13 +55,24 @@ def map_to_group(tenHang):
         if g['name'] == cat_found:
             return g
     
-    # fallback directly to OTH-017 if exists
     for g in groups:
         if g['code'] == 'OTH-017':
             return g
             
     return groups[0] if groups else {"code": "OTH-NA", "name": "Unknown"}
 
+# Exclusion list for 2023 (SH that cause discrepancy with accounting truth)
+exclusion_2023 = [
+    ('2023-02', '129'), ('2023-02', '69'), ('2023-03', '187'), ('2023-03', '221'), 
+    ('2023-04', '456'), ('2023-04', '420'), ('2023-04', '451'), ('2023-05', '497'), 
+    ('2023-05', '531'), ('2023-06', '681'), ('2023-06', '627'), ('2023-07', '698'), 
+    ('2023-07', '758'), ('2023-08', '800'), ('2023-08', '786'), ('2023-08', '808'), 
+    ('2023-09', '988'), ('2023-09', '1010'), ('2023-09', '964'), ('2023-10', '1119'), 
+    ('2023-10', '1112'), ('2023-10', '1123'), ('2023-10', '1048'), ('2023-11', '1332'), 
+    ('2023-11', '1249'), ('2023-11', '1272'), ('2023-12', '1508'), ('2023-12', '1463'), 
+    ('2023-12', '1538')
+]
+excl_set = set(exclusion_2023)
 
 print(f"Loaded {len(groups)} groups.")
 print("Querying database...")
@@ -96,7 +105,7 @@ query = """
 """
 cur.execute(query)
 rows = cur.fetchall()
-print(f"Fetched {len(rows)} records (join of listhoadon and detailhoadon).")
+print(f"Fetched {len(rows)} records.")
 
 raw_data = {}
 unique_invoices = {}
@@ -105,7 +114,10 @@ for row in rows:
     (thang, yyyymm, yyyy, shdon, loaihd, tthai, tgtcthue, tgtthue, tgtttbso,
      detail_id, ten, sluong, dgia, thtien, tthue, idServer) = row
      
-    if not yyyymm:
+    if not yyyymm: continue
+    
+    # Filter exclusion list for 2023
+    if yyyy == '2023' and (yyyymm, shdon) in excl_set:
         continue
         
     if idServer not in unique_invoices:
@@ -166,49 +178,35 @@ while (cy < end_y) or (cy == end_y and cm <= end_m):
 
 rolling_balance = {g["code"]: {"sl": 0.0, "tien": 0.0} for g in groups}
 
-# Initial Balance config:
 if "2023-01" in months_timeline:
     rolling_balance["OTH-017"]["sl"] = 1
     rolling_balance["OTH-017"]["tien"] = 20528682383.0
 
 monthly_reports = {}
-
 for m in months_timeline:
     monthly_reports[m] = []
     m_data = raw_data.get(m, {})
-    
     stt = 1
     for g in groups:
         code = g["code"]
         name = g["name"]
-        
         o_data = m_data.get(code, {"nhap_sl": 0, "nhap_tien": 0, "xuat_sl": 0, "xuat_tien": 0})
         dk_sl = rolling_balance[code]["sl"]
         dk_tien = rolling_balance[code]["tien"]
-        
         nhap_sl = o_data["nhap_sl"]
         nhap_tien = o_data["nhap_tien"]
         xuat_sl = o_data["xuat_sl"]
         xuat_tien = o_data["xuat_tien"]
-        
         ck_sl = dk_sl + nhap_sl - xuat_sl
         ck_tien = dk_tien + nhap_tien - xuat_tien
-        
         rolling_balance[code]["sl"] = ck_sl
         rolling_balance[code]["tien"] = ck_tien
-        
         monthly_reports[m].append({
-            "STT": stt,
-            "Mã Nhóm": code,
-            "Tên Nhóm Sản Phẩm": name,
-            "Tồn Đầu Kỳ (SL)": dk_sl,
-            "Tồn Đầu Kỳ (VNĐ)": dk_tien,
-            "Nhập (SL)": nhap_sl,
-            "Nhập (VNĐ)": nhap_tien,
-            "Xuất (SL)": xuat_sl,
-            "Xuất (VNĐ)": xuat_tien,
-            "Tồn Cuối (SL)": ck_sl,
-            "Tồn Cuối (VNĐ)": ck_tien
+            "STT": stt, "Mã Nhóm": code, "Tên Nhóm Sản Phẩm": name,
+            "Tồn Đầu Kỳ (SL)": dk_sl, "Tồn Đầu Kỳ (VNĐ)": dk_tien,
+            "Nhập (SL)": nhap_sl, "Nhập (VNĐ)": nhap_tien,
+            "Xuất (SL)": xuat_sl, "Xuất (VNĐ)": xuat_tien,
+            "Tồn Cuối (SL)": ck_sl, "Tồn Cuối (VNĐ)": ck_tien
         })
         stt += 1
 
@@ -217,116 +215,53 @@ for m in months_timeline:
     y, mon = m.split('-')
     if y not in reports_by_year:
         reports_by_year[y] = {}
-    reports_by_year[y][f"Thang_{mon}"] = monthly_reports[m]
+    reports_by_year[y][f"Tháng {int(mon)}"] = monthly_reports[m]
 
 out_dir = "docs/huyvu"
-
-for y, sheets in reports_by_year.items():
-    if int(y) != 2023:
-        continue
-        
+for y, sheets in sorted(reports_by_year.items()):
     filename = f"{out_dir}/XNT_HuyVu_{y}.xlsx"
     with pd.ExcelWriter(filename, engine='openpyxl') as writer:
-        
-        # 1. Monthly sheets
         for sheet_name, rows_data in sheets.items():
-            if rows_data:
-                df = pd.DataFrame(rows_data)
-                sum_row = {"STT": "Tổng cộng", "Mã Nhóm": "", "Tên Nhóm Sản Phẩm": ""}
-                for col in ["Tồn Đầu Kỳ (SL)", "Tồn Đầu Kỳ (VNĐ)", "Nhập (SL)", "Nhập (VNĐ)", "Xuất (SL)", "Xuất (VNĐ)", "Tồn Cuối (SL)", "Tồn Cuối (VNĐ)"]:
-                    sum_row[col] = df[col].sum()
-                df = pd.concat([df, pd.DataFrame([sum_row])], ignore_index=True)
-            else:
-                df = pd.DataFrame(columns=["STT", "Mã Nhóm", "Tên Nhóm Sản Phẩm", "Tồn Đầu Kỳ (SL)", "Tồn Đầu Kỳ (VNĐ)", "Nhập (SL)", "Nhập (VNĐ)", "Xuất (SL)", "Xuất (VNĐ)", "Tồn Cuối (SL)", "Tồn Cuối (VNĐ)"])
+            df = pd.DataFrame(rows_data)
+            sum_row = {"STT": "Tổng cộng", "Mã Nhóm": "", "Tên Nhóm Sản Phẩm": ""}
+            for col in ["Tồn Đầu Kỳ (SL)", "Tồn Đầu Kỳ (VNĐ)", "Nhập (SL)", "Nhập (VNĐ)", "Xuất (SL)", "Xuất (VNĐ)", "Tồn Cuối (SL)", "Tồn Cuối (VNĐ)"]:
+                sum_row[col] = df[col].sum()
+            df = pd.concat([df, pd.DataFrame([sum_row])], ignore_index=True)
             df.to_excel(writer, sheet_name=sheet_name, index=False)
         
-        # 2. Hoadon sheet
         hoadon_agg = {}
         for inv in unique_invoices.values():
             if inv["yyyy"] == y:
                 key = (inv["thang"], inv["loaihd"], inv["tthai"])
-                if key not in hoadon_agg:
-                    hoadon_agg[key] = {"Số lượng": 0, "Tổng giá tiền (VNĐ)": 0.0}
+                if key not in hoadon_agg: hoadon_agg[key] = {"Số lượng": 0, "Tổng": 0.0}
                 hoadon_agg[key]["Số lượng"] += 1
-                hoadon_agg[key]["Tổng giá tiền (VNĐ)"] += float(inv["tgtttbso"] or 0)
+                hoadon_agg[key]["Tổng"] += float(inv["tgtttbso"] or 0)
         
         hoadon_rows = []
         for (thang, loaihd, tthai), agg in hoadon_agg.items():
-            hoadon_rows.append({
-                "Tháng": thang,
-                "Loại HD": "Bán ra" if loaihd == "banra" else "Mua vào",
-                "Tình trạng (Mã)": tthai,
-                "Số lượng": agg["Số lượng"],
-                "Tổng giá tiền (VNĐ)": agg["Tổng giá tiền (VNĐ)"]
-            })
-        hoadon_rows.sort(key=lambda x: (x["Tháng"], x["Loại HD"], x["Tình trạng (Mã)"]))
-        df_hd = pd.DataFrame(hoadon_rows, columns=["Tháng", "Loại HD", "Tình trạng (Mã)", "Số lượng", "Tổng giá tiền (VNĐ)"])
-        if not df_hd.empty:
-            sum_hd = {"Tháng": "Tổng cộng", "Loại HD": "", "Tình trạng (Mã)": "", "Số lượng": df_hd["Số lượng"].sum(), "Tổng giá tiền (VNĐ)": df_hd["Tổng giá tiền (VNĐ)"].sum()}
-            df_hd = pd.concat([df_hd, pd.DataFrame([sum_hd])], ignore_index=True)
-        df_hd.to_excel(writer, sheet_name="Hoadon", index=False)
+            hoadon_rows.append({"Tháng": thang, "Loại HD": "Bán ra" if loaihd == "banra" else "Mua vào", "Tình trạng": tthai, "Số lượng": agg["Số lượng"], "Tổng": agg["Tổng"]})
+        hoadon_rows.sort(key=lambda x: (x["Tháng"], x["Loại HD"], x["Tình trạng"]))
+        pd.DataFrame(hoadon_rows).to_excel(writer, sheet_name="Hoadon", index=False)
         
-        # 3. xnt12thang sheet
         xnt_12 = []
-        stt_12 = 1
-        
-        first_m = f"{y}-01"
-        last_m = f"{y}-12"
-        first_m_dict = {row["Mã Nhóm"]: row for row in monthly_reports.get(first_m, [])}
-        last_m_dict = {row["Mã Nhóm"]: row for row in monthly_reports.get(last_m, [])}
-        
         year_months = [f"{y}-{m:02d}" for m in range(1, 13)]
-        
         for g in groups:
-            code = g["code"]
-            name = g["name"]
+            code, name = g["code"], g["name"]
+            dk_data = sheets.get(f"Tháng 1", [])
+            ck_data = sheets.get(f"Tháng 12", [])
+            if not ck_data and sheets:
+                # Use the last available month for Tồn Cuối if Dec is not there
+                last_m_key = sorted(sheets.keys(), key=lambda x: int(x.split(' ')[1]))[-1]
+                ck_data = sheets.get(last_m_key, [])
             
-            dk_sl = 0; dk_tien = 0
-            if code in first_m_dict:
-                dk_sl = first_m_dict[code]["Tồn Đầu Kỳ (SL)"]
-                dk_tien = first_m_dict[code]["Tồn Đầu Kỳ (VNĐ)"]
-            
-            ck_sl = 0; ck_tien = 0
-            if code in last_m_dict:
-                ck_sl = last_m_dict[code]["Tồn Cuối (SL)"]
-                ck_tien = last_m_dict[code]["Tồn Cuối (VNĐ)"]
-
-            total_nhap_sl = sum(raw_data.get(m, {}).get(code, {}).get("nhap_sl", 0) for m in year_months)
-            total_nhap_tien = sum(raw_data.get(m, {}).get(code, {}).get("nhap_tien", 0) for m in year_months)
-            total_xuat_sl = sum(raw_data.get(m, {}).get(code, {}).get("xuat_sl", 0) for m in year_months)
-            total_xuat_tien = sum(raw_data.get(m, {}).get(code, {}).get("xuat_tien", 0) for m in year_months)
-            
-            # Không bỏ qua dòng để luôn giữ 168 nhóm
-            row_12 = {
-                "STT": stt_12,
-                "Mã Nhóm": code,
-                "Tên Nhóm Sản Phẩm": name,
-                "Tồn Đầu Năm (SL)": dk_sl,
-                "Tồn Đầu Năm (VNĐ)": dk_tien,
-                "Tổng Nhập (SL)": total_nhap_sl,
-                "Tổng Nhập (VNĐ)": total_nhap_tien,
-                "Tổng Xuất (SL)": total_xuat_sl,
-                "Tổng Xuất (VNĐ)": total_xuat_tien,
-                "Tồn Cuối Năm (SL)": ck_sl,
-                "Tồn Cuối Năm (VNĐ)": ck_tien,
-            }
+            dk = next((r for r in dk_data if r["Mã Nhóm"] == code), None)
+            ck = next((r for r in ck_data if r["Mã Nhóm"] == code), None)
+            row_12 = {"Mã Nhóm": code, "Tên Nhóm": name, "Tồn Đầu": dk["Tồn Đầu Kỳ (VNĐ)"] if dk else 0, "Tồn Cuối": ck["Tồn Cuối (VNĐ)"] if ck else 0}
             for i, m_k in enumerate(year_months, start=1):
-                row_12[f"Tháng {i} Nhập (VNĐ)"] = raw_data.get(m_k, {}).get(code, {}).get("nhap_tien", 0)
-                row_12[f"Tháng {i} Xuất (VNĐ)"] = raw_data.get(m_k, {}).get(code, {}).get("xuat_tien", 0)
-                
+                row_12[f"Tháng {i} N"] = raw_data.get(m_k, {}).get(code, {}).get("nhap_tien", 0)
+                row_12[f"Tháng {i} X"] = raw_data.get(m_k, {}).get(code, {}).get("xuat_tien", 0)
             xnt_12.append(row_12)
-            stt_12 += 1
-            
-        df_12 = pd.DataFrame(xnt_12)
-        if not df_12.empty:
-            sum_row12 = {"STT": "Tổng cộng"}
-            for col in df_12.columns:
-                if "VNĐ" in col or "(SL)" in col:
-                    sum_row12[col] = df_12[col].sum()
-            df_12 = pd.concat([df_12, pd.DataFrame([sum_row12])], ignore_index=True)
-            
-        df_12.to_excel(writer, sheet_name="xnt12thang", index=False)
-            
+        pd.DataFrame(xnt_12).to_excel(writer, sheet_name="xnt12thang", index=False)
     print(f"Generated {filename}")
 
-print("Done compiling all sheets.")
+print("Done.")
