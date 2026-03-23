@@ -14,7 +14,7 @@ with open(MD_PATH, "r", encoding="utf-8") as f:
             parts = [p.strip() for p in line.split("|")]
             stt_str = parts[1]
             if stt_str.isdigit():
-                code = parts[2]
+                code = parts[2].replace('*', '')
                 name = parts[3]
                 aliases_raw = parts[4]
                 aliases = [a.strip().lower() for a in aliases_raw.split(',') if a.strip()]
@@ -72,9 +72,9 @@ cur = conn.cursor()
 
 query = """
     SELECT 
-        to_char(h.tdlap, 'MM') as thang,
-        to_char(h.tdlap, 'YYYY-MM') as yyyymm,
-        to_char(h.tdlap, 'YYYY') as yyyy,
+        to_char(h.tdlap AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Ho_Chi_Minh', 'MM') as thang,
+        to_char(h.tdlap AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Ho_Chi_Minh', 'YYYY-MM') as yyyymm,
+        to_char(h.tdlap AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Ho_Chi_Minh', 'YYYY') as yyyy,
         h.shdon,
         h.loaihd,
         h.tthai,
@@ -90,7 +90,8 @@ query = """
         h."idServer"
     FROM ext_listhoadon h
     LEFT JOIN ext_detailhoadon d ON h."idServer" = d."idhdonServer"
-    WHERE h.nbmst='5900363291' OR h.nmmst='5900363291'
+    WHERE (h.nbmst='5900363291' OR h.nmmst='5900363291')
+      AND h.tthai IN ('1', '2', '4', '5')
     ORDER BY h.tdlap ASC
 """
 cur.execute(query)
@@ -135,10 +136,10 @@ for row in rows:
         raw_data[yyyymm] = {}
         
     if grp_code not in raw_data[yyyymm]:
-        raw_data[yyyymm][grp_code] = {"nhap_sl": 0, "nhap_tien": 0, "xuat_sl": 0, "xuat_tien": 0}
+        raw_data[yyyymm][grp_code] = {"nhap_sl": 0.0, "nhap_tien": 0.0, "xuat_sl": 0.0, "xuat_tien": 0.0}
         
-    s = sluong
-    t = thtien
+    s = float(sluong or 0)
+    t = float(thtien or 0)
     if loaihd == 'muavao':
         raw_data[yyyymm][grp_code]["nhap_sl"] += s
         raw_data[yyyymm][grp_code]["nhap_tien"] += t
@@ -163,7 +164,7 @@ while (cy < end_y) or (cy == end_y and cm <= end_m):
         cm = 1
         cy += 1
 
-rolling_balance = {g["code"]: {"sl": 0, "tien": 0} for g in groups}
+rolling_balance = {g["code"]: {"sl": 0.0, "tien": 0.0} for g in groups}
 
 # Initial Balance config:
 if "2023-01" in months_timeline:
@@ -247,7 +248,7 @@ for y, sheets in reports_by_year.items():
                 if key not in hoadon_agg:
                     hoadon_agg[key] = {"Số lượng": 0, "Tổng giá tiền (VNĐ)": 0.0}
                 hoadon_agg[key]["Số lượng"] += 1
-                hoadon_agg[key]["Tổng giá tiền (VNĐ)"] += inv["tgtttbso"]
+                hoadon_agg[key]["Tổng giá tiền (VNĐ)"] += float(inv["tgtttbso"] or 0)
         
         hoadon_rows = []
         for (thang, loaihd, tthai), agg in hoadon_agg.items():
