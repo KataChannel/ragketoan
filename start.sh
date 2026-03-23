@@ -24,7 +24,7 @@ SERVICE=""
 
 # Backup settings
 BACKUP_DIR="$SCRIPT_DIR/backups"
-MAX_BACKUPS=5  # Số lượng backup tối đa giữ lại
+MAX_BACKUPS=10  # Số lượng backup tối đa giữ lại
 COMPRESSION_LEVEL=9  # Mức nén cao nhất cho gzip
 
 # Function to show banner
