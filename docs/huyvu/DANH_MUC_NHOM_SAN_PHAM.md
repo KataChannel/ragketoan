@@ -1,79 +1,207 @@
-# DANH MỤC NHÓM SẢN PHẨM & DỊCH VỤ (HUY VŨ - BÁO CÁO THUẾ)
-
-Danh mục này được tối ưu hóa từ dữ liệu thực tế giai đoạn 2023-2025, phục vụ công tác phân loại hạch toán kế toán và báo cáo Thuế. Các nhóm được phân chia rõ ràng theo tính chất hàng hóa và dịch vụ.
+# DANH MỤC NHÓM SẢN PHẨM (MAPPING CATALOG)
+*Phiên bản: 3.0 (Hyper-Granular) - Tối ưu cho AI Mapping & RAG*
 
 ## 1. PHẦN HÀNG HÓA & VẬT TƯ KỸ THUẬT
 
-### A. Máy tính & Thiết bị xử lý dữ liệu
-| STT | Mã Nhóm | Tên Nhóm Sản Phẩm (Hạch toán Thuế) | Từ khóa tương đồng (Alias) |
-|:---:|:--------|:-----------------------------------|:---------------------------|
-| 1 | **PC-026** | Máy tính xách tay (Laptop) - DELL | dell, inspiron, vostro, latitude, xps |
-| 2 | **PC-020** | Máy tính xách tay (Laptop) - ASUS | asus, vivobook, zenbook, expertbook |
-| 3 | **PC-040** | Máy tính xách tay (Laptop) - LENOVO | lenovo, thinkpad, ideapad, v14, v15 |
-| 4 | **PC-047** | Máy tính xách tay (Laptop) - MSI | msi, modern, prestige |
-| 5 | **PC-057** | Hệ thống máy tính để bàn (PC Desktop) | pc, máy tính, desktop, laptop, workstation, bộ máy |
-| 6 | **IT-001** | Màn hình máy tính (LCD/Monitor) | màn hình, tivi, lcd, monitor, display, samsung, dell, lg, viewsonic |
-| 7 | **PC-004** | Hệ thống máy tính (Chipset 12100) | 12100 |
-| 8 | **PC-006** | Hệ thống máy tính (Chipset 13100) | 13100 |
-| 9 | **PC-007** | Hệ thống máy tính (Chipset 13400) | 13400 |
+### A. Máy tính & Thiết bị xử lý dữ liệu (A.1 - A.3)
 
-### B. Máy in, Mực in & Thiết bị văn phòng
-| STT | Mã Nhóm | Tên Nhóm Sản Phẩm (Hạch toán Thuế) | Từ khóa tương đồng (Alias) |
-|:---:|:--------|:-----------------------------------|:---------------------------|
-| 10 | **VP-009** | Máy in Laser/Phun - CANON | canon, lbp, imageclass, pixma |
-| 11 | **VP-006** | Máy in Laser/Phun - BROTHER | brother, hl-l, dcp, mfc |
-| 12 | **IT-003** | Máy quét tài liệu (Scanner) | máy quét, scanner, scanjet, fujitsu, hp scan, máy đọc mã vạch, máy đọc, scan, bar code, đầu đọc mã vạch, od7200 |
-| 13 | **VP-001** | Hộp mực in Laser (Cartridge 12A) | 12a, canon 303, fx9 |
-| 14 | **VP-003** | Hộp mực in Laser (Cartridge 35A/85A) | 35a, 85a, 78a |
-| 15 | **VP-043** | Hộp mực in Laser (Brother TN) | tn-2385, tnb027, tn-1010, tn-2280, mực brother |
-| 16 | **VP-036** | Mực nước/Mực màu (Ink Bottle) | mực nước, mực màu, mực in epson, gi-71, 003 |
-| 17 | **VP-049** | Vật tư in ấn, Máy hủy tài liệu & Linh kiện thay thế | máy in, văn phòng phẩm, giấy in, mực, cartridge, hộp mực, ru lô, photo, chíp m, bộ cò, máy đếm tiền, đếm tiền, chấm công, màn chiếu, giá treo, projector, máy chiếu, máy hủy, drum, trống in, su adf, cò sấy |
-| 18 | **VP-050** | Nội thất văn phòng (Bàn, Ghế, Tủ) | ghế, bàn, tủ, kệ mica, nội thất, giường, đệm |
+#### A.1 Nhóm Laptop & Thiết bị di động (Cao cấp > 10 triệu VNĐ)
+| STT | Mã Nhóm | Hàng hóa / Dòng Sản Phẩm | Từ khóa Mapping (Alias) |
+|:---:|:--------|:-------------------------|:------------------------|
+| 1.1 | **PC-DELL-LAT** | Laptop DELL Latitude Series | dell latitude, latitude 3420, 3520, 5420 |
+| 1.2 | **PC-DELL-VOS** | Laptop DELL Vostro Series | dell vostro, vostro 3400, 3500, 3510, 5510 |
+| 1.3 | **PC-DELL-INS** | Laptop DELL Inspiron Series | dell inspiron, inspiron 3511, 5511, 7415 |
+| 1.4 | **PC-DELL-XPS** | Laptop DELL XPS Premium | dell xps, xps 13, xps 15, xps 17 |
+| 1.5 | **PC-ASU-VIVO** | Laptop ASUS VivoBook | asus vivobook, vivobook 14, 15, oled |
+| 1.6 | **PC-ASU-ZEN** | Laptop ASUS ZenBook | asus zenbook, zenbook 13, 14, flip |
+| 1.7 | **PC-ASU-EXP** | Laptop ASUS ExpertBook | asus expertbook, b1400, b1500 |
+| 1.8 | **PC-ASU-ROG** | Laptop ASUS Gaming (ROG/TUF) | rog strix, tuf gaming, zephyrus |
+| 1.9 | **PC-LEN-TP** | Laptop LENOVO ThinkPad | thinkpad l14, l15, e14, e15, x1 carbon |
+| 1.10 | **PC-LEN-IP** | Laptop LENOVO IdeaPad | ideapad 3, ideapad 5, slim 3, slim 5 |
+| 1.11 | **PC-LEN-V** | Laptop LENOVO V-Series | lenovo v14, v15, v-series |
+| 1.12 | **PC-MSI-MOD** | Laptop MSI Modern Series | msi modern 14, modern 15 |
+| 1.13 | **PC-MSI-GF** | Laptop MSI Gaming Series | msi gf63, gf65, katana, bravo |
+| 1.14 | **PC-HP-PAV** | Laptop HP Pavilion | hp pavilion 14, pavilion 15 |
+| 1.15 | **PC-HP-PRO** | Laptop HP ProBook | hp probook 440, 450, g8, g9 |
+| 1.16 | **PC-HP-EL** | Laptop HP EliteBook | hp elitebook 830, 840, g8 |
+| 1.17 | **PC-ACER-ASP** | Laptop ACER Aspire | acer aspire 3, aspire 5, aspire 7 |
+| 1.18 | **PC-ACER-NIT** | Laptop ACER Nitro Gaming | acer nitro 5, nitro 7 |
+| 1.19 | **PC-MAC-AIR** | Apple MacBook Air | macbook air m1, m2, m3 |
+| 1.20 | **PC-MAC-PRO** | Apple MacBook Pro | macbook pro 13, 14, 16, m1 pro, m2 max |
+| 1.21 | **PC-TAB-IPAD** | Apple iPad Tablet | ipad air, ipad pro, ipad gen 9, gen 10 |
+| 1.22 | **PC-TAB-SAM** | Samsung Galaxy Tab | galaxy tab s7, s8, s9, tab a7, a8 |
 
-### C. Linh kiện, Phụ kiện & TB Lưu trữ
-| STT | Mã Nhóm | Tên Nhóm Sản Phẩm (Hạch toán Thuế) | Từ khóa tương đồng (Alias) |
-|:---:|:--------|:-----------------------------------|:---------------------------|
-| 19 | **OTH-061** | Linh kiện Vi xử lý (CPU) | intel, core i3, core i5, core i7, i9, xeon, pentium, cpu |
-| 20 | **OTH-054** | Bo mạch chủ (Mainboard) | mainboard, bo mạch chủ, h61, h510, b660, b760, asus main, msi main |
-| 21 | **OTH-063** | Linh kiện Bộ nhớ (RAM) | ram, ddr4, ddr5, kingston, hx, lexar, bộ nhớ |
-| 22 | **LNK-010** | Ổ cứng lưu trữ (SSD/HDD) | ssd, hdd, ổ cứng, ổ đĩa, western, seagate, m.2, nvme |
-| 23 | **OTH-037** | Card đồ họa & Xử lý hình ảnh (VGA) | card đồ họa, vga, rtx, gtx, quadro, rx  |
-| 24 | **OTH-022** | Thiết bị lưu trữ di dộng (USB/Thẻ nhớ) | thẻ nhớ, usb, flash, sandisk, pen drive |
-| 25 | **LNK-020** | Vỏ máy (Case) & Bộ nguồn (PSU) | vỏ máy, case, psu, bộ nguồn, nguồn máy tính, jetek, adapter, sạc |
-| 26 | **PC-069** | Thiết bị tản nhiệt (Fan/Cooler) | tản nhiệt, cooler master, fan, quạt, aio |
-| 27 | **ACC-001** | Phụ kiện, Bút trình chiếu & Điện thoại bàn | tai nghe, headphone, chuột, bàn phím, mouse, keyboard, logitech, rapoo, soundmax, loa, balo, ổ cắm, pin , điện thoại, micro, headset, bút trình chiếu, presenter, cliptec, hub, bộ chia cổng |
-| 28 | **OTH-075** | Bộ lưu điện & Bảo vệ nguồn (UPS) | ups, santak, apc, maruson, bộ lưu điện, lưu điện |
+#### A.2 Hệ thống PC & Workstation (Giá trị 5 - 15 triệu VNĐ)
+| STT | Mã Nhóm | Hàng hóa / Cấu hình PC | Từ khóa Mapping (Alias) |
+|:---:|:--------|:-----------------------|:------------------------|
+| 2.1 | **PC-SYS-I3** | PC Văn phòng Core i3 | pc i3, máy tính i3, bộ máy i3 |
+| 2.2 | **PC-SYS-I5** | PC Văn phòng Core i5 | pc i5, máy tính i5, bộ máy i5 |
+| 2.3 | **PC-SYS-I7** | PC Đồ họa Core i7 | pc i7, máy tính i7, đồ họa i7 |
+| 2.4 | **PC-SYS-G** | PC Gaming (Entry/Mid) | pc gaming, máy tính chơi game |
+| 2.5 | **PC-WS-XEON** | Workstation / Server Xeon | workstation xeon, server dell, hp proliant |
+| 2.6 | **PC-AIO-DELL** | All-in-One DELL | dell aio, optiplex aio |
+| 2.7 | **PC-AIO-HP** | All-in-One HP | hp aio, proone |
+| 2.8 | **PC-MINI** | NUC / Mini PC | intel nuc, mini pc, asus pn |
 
-### D. Thiết bị Mạng, An ninh & Viễn thông
-| STT | Mã Nhóm | Tên Nhóm Sản Phẩm (Hạch toán Thuế) | Từ khóa tương đồng (Alias) |
-|:---:|:--------|:-----------------------------------|:---------------------------|
-| 29 | **CAM-001** | Camera quan sát & Hệ thống Kiểm soát an ninh | camera, hikvision, ezviz, imou, đầu ghi, cctv, quan sát, kbone, khóa chốt, bát dưới |
-| 30 | **OTH-013** | Thiết bị Mạng (WiFi/Switch/Router) | router, wifi, mesh, aruba, unifi, tplink, tp-link, switch, tenda, totolink, chuyển mạch, bộ định tuyến, rg-ew, cudy |
-| 31 | **OTH-007** | Cáp tín hiệu (Dữ liệu/Hình ảnh) | cáp, hdmi, vga, chuyển đổi, converter, ugreen |
-| 32 | **OTH-073** | Đầu nối & Vật tư viễn thông | hạt mạng, rj45, đầu hạt, amp, commscope, đầu nối |
-| 33 | **OTH-085** | Thiết bị Liên lạc & Định vị (Bộ đàm, GPS) | bộ đàm, kenwood, motorola, máy định vị, gps |
-| 34 | **OTH-003** | Thiết bị Hội nghị truyền hình | họp trực tuyến, polycom, webcam, microphone, hội nghị |
+#### A.3 Nhóm Màn hình & Hiển thị (Giá trị 2 - 10 triệu VNĐ)
+| STT | Mã Nhóm | Hàng hóa / Kích thước LCD | Từ khóa Mapping (Alias) |
+|:---:|:--------|:--------------------------|:------------------------|
+| 3.1 | **LCD-SAM-19** | Màn hình Samsung 19-20 inch | samsung 19, 20 inch, f390 |
+| 3.2 | **LCD-SAM-24** | Màn hình Samsung 24-27 inch | samsung 24, 27 inch, lc24, ls24 |
+| 3.3 | **LCD-DELL-22** | Màn hình DELL 22 inch | dell e22, p22, 21.5 inch |
+| 3.4 | **LCD-DELL-24** | Màn hình DELL 24 inch | dell e24, p24, u24 (ultrasharp) |
+| 3.5 | **LCD-DELL-27** | Màn hình DELL 27 inch | dell u27, p27, s27 |
+| 3.6 | **LCD-ASU-24** | Màn hình ASUS 24 inch | asus va24, vz24, vg24 |
+| 3.7 | **LCD-LG-24** | Màn hình LG 24-27 inch | lg 24mp, 27mp, 27ul |
+| 3.8 | **LCD-VIEW-24** | Màn hình ViewSonic | viewsonic va24, vx24 |
+| 3.9 | **LCD-GAM-144** | Màn hình Gaming (144Hz+) | 144hz, 165hz, 240hz, gaming monitor |
+| 3.10 | **LCD-PRO-4K** | Màn hình Đồ họa 4K | 4k monitor, đồ họa chuyên nghiệp |
 
-### E. Phần mềm & Nhóm hàng khác
-| STT | Mã Nhóm | Tên Nhóm Sản Phẩm (Hạch toán Thuế) | Từ khóa tương đồng (Alias) |
-|:---:|:--------|:-----------------------------------|:---------------------------|
-| 35 | **SW-001** | Phần mềm bản quyền & Bản quyền số | windows, office, kaspersky, diệt virus, license, bản quyền, chữ ký số |
-| 36 | **OTH-044** | Ấn chỉ, Biên lai & Tem nhãn | biên lai, hóa đơn, tem, vé, ấn chỉ |
-| 37 | **FUEL-001** | Nhiên liệu (Xăng dầu vận hành) | xăng, dầu, ron95, ron92, diesel |
+### B. Máy in, Mực in & Thiết bị văn phòng (B.1 - B.3)
 
-### F. Nhóm hàng hóa lẻ & Vật tư khác
-| STT | Mã Nhóm | Tên Nhóm Sản Phẩm (Hạch toán Thuế) | Từ khóa tương đồng (Alias) |
-|:---:|:--------|:-----------------------------------|:---------------------------|
-| 38 | **OTH-017** | Vật tư hàng hóa khác chưa phân loại | (Catch-all cho các mặt hàng lẻ khác) |
+#### B.1 Máy in, Máy quét & Photocopy (Giá trị > 2 triệu VNĐ)
+| STT | Mã Nhóm | Hàng hóa / Loại máy | Từ khóa Mapping (Alias) |
+|:---:|:--------|:--------------------|:------------------------|
+| 4.1 | **PRN-CAN-LBP** | Máy in Laser Canon (LBP) | canon lbp 2900, 6030, 6230, 223dw |
+| 4.2 | **PRN-CAN-MF** | Máy in Đa năng Canon (MF) | canon mf 241, 235, 264 |
+| 4.3 | **PRN-BRO-HL** | Máy in Laser Brother (HL) | brother hl-l2321, 2361, b2000 |
+| 4.4 | **PRN-BRO-DCP** | Máy in Đa năng Brother (DCP) | brother dcp-l2520, b7535, t420 |
+| 4.5 | **PRN-HP-LJ** | Máy in Laser HP (LaserJet) | hp laserjet m15, m102, m404 |
+| 4.6 | **PRN-EPS-L** | Máy in Phun màu Epson (L-Series) | epson l3110, l3210, l805, l1800 |
+| 4.7 | **SCN-CAN-CANO** | Máy quét Canon (LiDE) | canon lide 300, 400 |
+| 4.8 | **SCN-HP-SJ** | Máy quét HP (ScanJet) | hp scanjet pro 2000, 3000 |
+| 4.9 | **PRN-POS-80** | Máy in Hóa đơn (K80) | xprinter 80, bixolon, prp 085 |
+| 4.10 | **SCN-BAR** | Đầu đọc mã vạch | honeywell, zebra, 1d, 2d, scan bar |
 
-## 2. PHẦN DỊCH VỤ & CHI PHÍ HOẠT ĐỘNG
-| STT | Mã Nhóm | Tên Nhóm Sản Phẩm (Hạch toán Thuế) | Từ khóa tương đồng (Alias) |
-|:---:|:--------|:-----------------------------------|:---------------------------|
-| 49 | **SRV-001** | Dịch vụ Lắp đặt & Triển khai hạ tầng | thi công, lắp đặt, triển khai, phí dịch vụ, vệ sinh, bảo trì, cài đặt, công sửa |
-| 50 | **OTH-010** | Dịch vụ Viễn thông (SMS Brandname) | sms, tin nhắn, brandname |
-| 51 | **SRV-003** | Cước vận chuyển & Chuyển phát nhanh | cước vận chuyển, phí ship, viettel post, chuyển phát |
-| 52 | **FIN-001** | Chi phí Tài chính & Phí ngân hàng | phí ngân hàng, lãi vay, phí duy trì |
-| 53 | **OTH-045** | Chiết khấu thanh toán & Khuyến mại | chiết khấu, giảm giá, khuyến mại |
+#### B.2 Nội thất & Thiết bị văn phòng khác
+| STT | Mã Nhóm | Hàng hóa | Từ khóa Mapping (Alias) |
+|:---:|:--------|:---------|:------------------------|
+| 5.1 | **OFF-CHAIR-ST** | Ghế văn phòng (Xoay/Lưới) | ghế xoay, ghế lưới, ghế trưởng phòng |
+| 5.2 | **OFF-DESK-W** | Bàn làm việc gỗ | bàn gỗ, bàn làm việc, bàn 1m2 |
+| 5.3 | **OFF-CAB-I** | Tủ hồ sơ sắt/gỗ | tủ sắt, tủ hồ sơ, kệ tài liệu |
+| 5.4 | **OFF-PROJ-P** | Máy chiếu (Projector) | panasonic, sony, epson projector |
+| 5.5 | **OFF-SCR-P** | Màn chiếu | màn chiếu 100, 120 inch, giá treo |
+| 5.6 | **OFF-SHRED** | Máy hủy tài liệu | máy hủy giấy, hủy tài liệu |
+| 5.7 | **OFF-BIND** | Máy đóng sách / Ép nhựa | máy ép nhựa, máy đóng gáy |
+
+#### B.3 Nhóm Mực in & Vật tư tiêu hao (Giá trị < 1 triệu VNĐ)
+| STT | Mã Nhóm | Hàng hóa / Mã mực | Từ khóa Mapping (Alias) |
+|:---:|:--------|:------------------|:------------------------|
+| 6.1 | **INK-CAN-12A** | Hộp mực Canon 12A / Cartridge 303 | 12a, canon 303, fx9 |
+| 6.2 | **INK-CAN-35A** | Hộp mực Canon 35A / 85A | 35a, 85a, 78a, 325 |
+| 6.3 | **INK-CAN-051** | Hộp mực Canon 051 / 054 | canon 051, 054, 057 |
+| 6.4 | **INK-BRO-2385** | Hộp mực Brother TN-2385 | tn-2385, tn 2385 |
+| 6.5 | **INK-BRO-B022** | Hộp mực Brother TN-B022 / B027 | tnb022, tnb027 |
+| 6.6 | **INK-BRO-1010** | Hộp mực Brother TN-1010 | tn-1010, tn 1010 |
+| 6.7 | **INK-HP-17A** | Hộp mực HP 17A / 107A | hp 17a, cf217, hp 107a |
+| 6.8 | **INK-EPS-673** | Mực nước Epson 673 (L805) | t6731, t6732, t6733, t6734, t6735, t6736 |
+| 6.9 | **INK-EPS-003** | Mực nước Epson 003 (L3110) | mực epson 003, 003 đen, 003 màu |
+| 6.10 | **INK-CAN-71** | Mực nước Canon GI-71 (G1020) | gi-71, 71 bk, 71 c, 71 m, 71 y |
+| 6.11 | **INK-RIB-80** | Ruy băng / Phim fax | ribbon epson, ribbon lq310, phim fax |
+| 6.12 | **WST-DRUM** | Trống máy in (Drum) | trống in, cụm drum, drum 12a, drum 35a |
+| 6.13 | **WST-ROLL** | Trục sấy / Trục từ / Rulo | trục sấy, trục từ, rulo ép, quả đào |
+| 6.14 | **WST-CHIP** | Chip mực / Cò sấy | chíp mực, cò sấy, lá sấy |
+| 6.15 | **WST-PAPER-A4** | Giấy in A4 (Double A/Paper One) | giấy a4, double a, paper one, bãi bằng |
+
+### C. Linh kiện, Phụ kiện & TB Lưu trữ (C.1 - C.2)
+
+#### C.1 Nhóm Linh kiện cốt yếu & Bảo vệ nguồn (Linh kiện lõi)
+| STT | Mã Nhóm | Hàng hóa / Model | Từ khóa Mapping (Alias) |
+|:---:|:--------|:-----------------|:------------------------|
+| 7.1 | **CPU-INT-I3** | CPU Intel Core i3 | i3-10100, i3-12100, i3-13100 |
+| 7.2 | **CPU-INT-I5** | CPU Intel Core i5 | i5-10400, i5-11400, i5-12400, i5-13400 |
+| 7.3 | **CPU-INT-I7** | CPU Intel Core i7 | i7-10700, i7-12700, i7-13700 |
+| 7.4 | **CPU-AMD-RY** | CPU AMD Ryzen | ryzen 3, ryzen 5, ryzen 7, ryzen 9 |
+| 7.5 | **MB-H610** | Mainboard H610 | h610m, gigabyte h610, asus h610 |
+| 7.6 | **MB-B760** | Mainboard B760 / B660 | b760m, b660m pro, mortal |
+| 7.7 | **MB-Z790** | Mainboard Z690 / Z790 | z690 apex, z790 aorus |
+| 7.8 | **RAM-8G-D4** | RAM 8GB DDR4 | ddr4 8gb, bus 2666, bus 3200 |
+| 7.9 | **RAM-16G-D4** | RAM 16GB DDR4 | ddr4 16gb, kit 2x8gb |
+| 7.10 | **RAM-D5** | RAM DDR5 (8GB/16GB/32GB) | ddr5 16gb, 32gb ddr5 |
+| 7.11 | **VGA-GTX-16** | VGA GTX 1650 / 1660 | gtx 1650, gtx 1660 super |
+| 7.12 | **VGA-RTX-30** | VGA RTX 3050 / 3060 | rtx 3050, 3060ti |
+| 7.13 | **VGA-RTX-40** | VGA RTX 4060 / 4070 / 4080 | rtx 4060, 4090 |
+| 7.14 | **UPS-SAN-500** | UPS Santak 500VA / 1000VA | santak tg500, tg1000 |
+| 7.15 | **UPS-APC-PRO** | UPS APC / Maruson High-end | apc smart, maruson 2000va |
+
+#### C.2 Phụ kiện, Lưu trữ & Ngoại vi phổ thông
+| STT | Mã Nhóm | Hàng hóa / Thông số | Từ khóa Mapping (Alias) |
+|:---:|:--------|:--------------------|:------------------------|
+| 8.1 | **SSD-128-256** | SSD 120GB / 128GB / 240GB / 256GB | ssd 120g, ssd 240g, sata 128g |
+| 8.2 | **SSD-480-512** | SSD 480GB / 500GB / 512GB | ssd 500g, nvme 512g, m.2 500g |
+| 8.3 | **SSD-1T-2T** | SSD 1TB / 2TB | ssd 1tb, m.2 1tb, 2tb nvme |
+| 8.4 | **HDD-1TB** | HDD 1TB Desktop | hdd 1tb, 1tb western, seagate 1tb |
+| 8.5 | **HDD-2TB-4TB** | HDD 2TB / 4TB / 8TB (Video/Server) | hdd 2tb, hdd 4tb skyhawk, hdd purple |
+| 8.6 | **HDD-EXT** | HDD/SSD Di động | hdd di động, ssd di động, hdd external |
+| 8.7 | **USB-32G** | USB 16GB / 32GB | usb 32g, sandisk 32g, kingston 32g |
+| 8.8 | **USB-64-128** | USB 64GB / 128GB | usb 64g, usb 128g |
+| 8.9 | **SD-CARD** | Thẻ nhớ MicroSD / SD | thẻ nhớ 32g, 64g, 128g, thẻ nhớ camera |
+| 8.10 | **CASE-OFF** | Vỏ máy tính văn phòng | vỏ case, thùng máy, case vsp, case xigmatek |
+| 8.11 | **CASE-GAM** | Vỏ máy tính Gaming / LED | case led, case kính cường lực |
+| 8.12 | **PSU-OFF** | Nguồn văn phòng (350W-450W) | nguồn 350w, jetek s450, acbel |
+| 8.13 | **PSU-GAM** | Nguồn công suất thực (500W-1000W) | nguồn 550w, 650w bronze, 750w gold |
+| 8.14 | **COOL-FAN** | Quạt tản nhiệt / Tản khí | quạt case, fan led, tản nhiệt khí, t400i |
+| 8.15 | **COOL-AIO** | Tản nhiệt nước AIO | tản nước, aio 240, aio 360 |
+| 8.16 | **MS-LOGI** | Chuột Logitech | logitech b100, m90, m185, m221, m331 |
+| 8.17 | **MS-GAM** | Chuột Gaming | logitech g102, g502, chuột lighspeed, razer |
+| 8.18 | **MS-RAPO** | Chuột Rapoo / Mitsumi | rapoo n100, 1620, mitsumi dây |
+| 8.19 | **KB-OFF** | Bàn phím văn phòng | bàn phím logitech, bàn phím k120, dell kb216 |
+| 8.20 | **KB-MECH** | Bàn phím cơ / Gaming | bàn phím cơ, blue switch, brown switch |
+| 8.21 | **HDSET-OFF** | Tai nghe văn phòng | tai nghe h110, h111, tai nghe có mic |
+| 8.22 | **SPK-2.0** | Loa máy tính 2.0 / 2.1 | loa soundmax, loa microlab, loa gỗ |
+| 8.23 | **HUB-USB** | Bộ chia cổng USB / Hub Type-C | hub usb 3.0, ugreen hub, baseus hub |
+| 8.24 | **CAM-WC** | Webcam dạy học / họp | webcam 720p, 1080p, webcam logitech c270, c922 |
+
+### D. Thiết bị Mạng, An ninh & Viễn thông (D.1 - D.3)
+
+#### D.1 Thiết bị Mạng & Hạ tầng truyền thông (Mạng tập trung)
+| STT | Mã Nhóm | Hàng hóa / Phân khúc | Từ khóa Mapping (Alias) |
+|:---:|:--------|:---------------------|:------------------------|
+| 9.1 | **NET-WF-HOME** | Router WiFi gia đình (N/AC) | tplink 840n, 841n, tenda n301 |
+| 9.2 | **NET-WF-DUAL** | Router WiFi Băng tần kép (AC/AX) | tplink archer c24, c6, ax10, ax23 |
+| 9.3 | **NET-WF-MESH** | Hệ thống WiFi Mesh | deco x20, deco m4, mesh nội địa, nova mw6 |
+| 9.4 | **NET-WF-PRO** | WiFi Chuyên dụng (Aruba/Unifi) | unifi ac lite, ac pro, u6-lite, aruba 305, 315, 325 |
+| 9.5 | **NET-SW-OFF** | Switch văn phòng (5/8/16 cổng) | switch 5 port, 8 port gigabit, tplink 1005, 1008 |
+| 9.6 | **NET-SW-RACK** | Switch Rackmount (24/48 cổng) | switch 24 port, 48 port, switch cisco, hp |
+| 9.7 | **NET-SW-POE** | Switch cấp nguồn PoE (Camera) | switch poe 4 port, poe 8 port, dahua poe |
+| 9.8 | **NET-CARD** | Card mạng / USB WiFi | usb thu wifi, lb-link, card wifi pcie |
+| 9.9 | **NET-4G-W** | Bộ phát WiFi 4G/LTE | tplink m7350, phát wifi di động |
+| 9.10 | **NET-CAB-NET** | Tủ mạng / Tủ Rack | tủ rack 6u, 10u, 12u, 27u, 42u |
+
+#### D.2 Camera quan sát & Hệ thống An ninh
+| STT | Mã Nhóm | Hàng hóa / Độ phân giải | Từ khóa Mapping (Alias) |
+|:---:|:--------|:------------------------|:------------------------|
+| 10.1 | **CAM-WIFI-2M** | Camera WiFi 2MP (Cố định/Xoay) | c6n, ty1, ty2, imou a22, a42 |
+| 10.2 | **CAM-WIFI-4M** | Camera WiFi 4MP / Outdoor | imou bullet, f22, f42, c8w, c3w |
+| 10.3 | **CAM-IP-DOME** | Camera IP Dome (Trong nhà) | camera ip hikvision, dahua dome |
+| 10.4 | **CAM-IP-BUL** | Camera IP Thân (Ngoài trời) | camera ip bullet, ip dahua |
+| 10.5 | **CAM-DVR-4C** | Đầu ghi hình 4 kênh | đầu ghi 4 kênh, dvr 4 port, nvr 4 port |
+| 10.6 | **CAM-DVR-8C** | Đầu ghi hình 8 kênh | đầu ghi 8 kênh, hikvision 8 port |
+| 10.7 | **CAM-DVR-16** | Đầu ghi hình 16/32 kênh | đầu ghi 16 kênh, nvr 32 port |
+| 10.8 | **CAM-ACC-BS** | Chân đế / Hộp kỹ thuật Camera | chân đế camera, hộp kỹ thuật |
+
+#### D.3 Cáp, Vật tư & Thiết bị Viễn thông khác
+| STT | Mã Nhóm | Hàng hóa | Từ khóa Mapping (Alias) |
+|:---:|:--------|:---------|:------------------------|
+| 11.1 | **CAB-LAN-C5** | Dây cáp mạng Cat5e | cáp mạng cat5e, thùng cáp cat5e |
+| 11.2 | **CAB-LAN-C6** | Dây cáp mạng Cat6 | cáp mạng cat6, cáp xanh, cáp xanh dương |
+| 11.3 | **CAB-HDMI-3** | Cáp HDMI (1.5m - 5m) | cáp hdmi 1.5m, hdmi 3m, hdmi 5m |
+| 11.4 | **CAB-HDMI-15** | Cáp HDMI dài (10m - 30m) | cáp hdmi 10m, 15m, 20m |
+| 11.5 | **CAB-VGA-DP** | Cáp VGA / DisplayPort / DVI | cáp vga 1.5m, cáp displayport, dp to hdmi |
+| 11.6 | **VT-RJ45** | Đầu bấm mạng (Hạt mạng) | hạt mạng rj45, modplug rj45, đầu hạt |
+| 11.7 | **VT-RJ11** | Hạt điện thoại / Mặt wallplate | hạt điện thoại, mặt wallplate, nhân mạng |
+| 11.8 | **RADIO-W** | Bộ đàm (Walkie Talkie) | bộ đàm kenwood, motorola, bộ đàm baofeng |
+| 11.9 | **TEL-PHONE** | Điện thoại bàn / IP Phone | điện thoại panasonic, ip phone yealink |
+| 11.10 | **VT-TOOLS** | Công cụ thi công (Kềm, Máy test) | kềm bấm mạng, máy test mạng, dao phập |
 
 ---
-**Ghi chú:** Danh mục được thiết kế để tách bạch giữa hoạt động kinh doanh CNTT cốt lõi của Huy Vũ và các chi phí quản lý, phù hợp với quy định về phân loại hàng hóa của cơ quan Thuế.
+
+### E. Phần mềm, Dịch vụ & Hàng hóa khác
+| STT | Mã Nhóm | Nội dung | Từ khóa Mapping (Alias) |
+|:---:|:--------|:---------|:------------------------|
+| 12.1 | **SW-WIN-PRO** | Bản quyền Windows | windows 10 pro, windows 11 home, oem, fpp |
+| 12.2 | **SW-OFF-365** | Bản quyền Office 365 / 2021 | office 365 personal, office home business |
+| 12.3 | **SW-AV-KAS** | Phần mềm Diệt Virus | kaspersky, bkv, nod32 |
+| 12.4 | **SRV-INSTALL** | Phí lắp đặt / Cài đặt | nhân công, phí lắp đặt camera, phí cài win |
+| 12.5 | **SRV-MAINT** | Phí bảo trì / Sửa chữa | phí sửa chữa, bảo trì định kỳ, vệ sinh pc |
+| 12.6 | **OTH-GEN** | Hàng hóa khác không phân loại | linh tinh, khác |
