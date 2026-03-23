@@ -1,0 +1,146 @@
+STT,Mã Nhóm,Tên Nhóm Sản Phẩm
+1.1,PC-DELL-LAT,Laptop DELL Latitude Series
+1.2,PC-DELL-VOS,Laptop DELL Vostro Series
+1.3,PC-DELL-INS,Laptop DELL Inspiron Series
+1.4,PC-DELL-XPS,Laptop DELL XPS Premium
+1.5,PC-ASU-VIVO,Laptop ASUS VivoBook
+1.6,PC-ASU-ZEN,Laptop ASUS ZenBook
+1.7,PC-ASU-EXP,Laptop ASUS ExpertBook
+1.8,PC-ASU-ROG,Laptop ASUS Gaming (ROG/TUF)
+1.9,PC-LEN-TP,Laptop LENOVO ThinkPad
+1.10,PC-LEN-IP,Laptop LENOVO IdeaPad
+1.11,PC-LEN-V,Laptop LENOVO V-Series
+1.12,PC-MSI-MOD,Laptop MSI Modern Series
+1.13,PC-MSI-GF,Laptop MSI Gaming Series
+1.14,PC-HP-PAV,Laptop HP Pavilion
+1.15,PC-HP-PRO,Laptop HP ProBook
+1.16,PC-HP-EL,Laptop HP EliteBook
+1.17,PC-ACER-ASP,Laptop ACER Aspire
+1.18,PC-ACER-NIT,Laptop ACER Nitro Gaming
+1.19,PC-MAC-AIR,Apple MacBook Air
+1.20,PC-MAC-PRO,Apple MacBook Pro
+1.21,PC-TAB-IPAD,Apple iPad Tablet
+1.22,PC-TAB-SAM,Samsung Galaxy Tab
+2.1,PC-SYS-I3,PC Văn phòng Core i3
+2.2,PC-SYS-I5,PC Văn phòng Core i5
+2.3,PC-SYS-I7,PC Đồ họa Core i7
+2.4,PC-SYS-G,PC Gaming (Entry/Mid)
+2.5,PC-WS-XEON,Workstation / Server Xeon
+2.6,PC-AIO-DELL,All-in-One DELL
+2.7,PC-AIO-HP,All-in-One HP
+2.8,PC-MINI,NUC / Mini PC
+3.1,LCD-SAM-19,Màn hình Samsung 19-20 inch
+3.2,LCD-SAM-24,Màn hình Samsung 24-27 inch
+3.3,LCD-DELL-22,Màn hình DELL 22 inch
+3.4,LCD-DELL-24,Màn hình DELL 24 inch
+3.5,LCD-DELL-27,Màn hình DELL 27 inch
+3.6,LCD-ASU-24,Màn hình ASUS 24 inch
+3.7,LCD-LG-24,Màn hình LG 24-27 inch
+3.8,LCD-VIEW-24,Màn hình ViewSonic
+3.9,LCD-GAM-144,Màn hình Gaming (144Hz+)
+3.10,LCD-PRO-4K,Màn hình Đồ họa 4K
+4.1,PRN-CAN-LBP,Máy in Laser Canon (LBP)
+4.2,PRN-CAN-MF,Máy in Đa năng Canon (MF)
+4.3,PRN-BRO-HL,Máy in Laser Brother (HL)
+4.4,PRN-BRO-DCP,Máy in Đa năng Brother (DCP)
+4.5,PRN-HP-LJ,Máy in Laser HP (LaserJet)
+4.6,PRN-EPS-L,Máy in Phun màu Epson (L-Series)
+4.7,SCN-CAN-CANO,Máy quét Canon (LiDE)
+4.8,SCN-HP-SJ,Máy quét HP (ScanJet)
+4.9,PRN-POS-80,Máy in Hóa đơn (K80)
+4.10,SCN-BAR,Đầu đọc mã vạch
+5.1,OFF-CHAIR-ST,Ghế văn phòng (Xoay/Lưới)
+5.2,OFF-DESK-W,Bàn làm việc gỗ
+5.3,OFF-CAB-I,Tủ hồ sơ sắt/gỗ
+5.4,OFF-PROJ-P,Máy chiếu (Projector)
+5.5,OFF-SCR-P,Màn chiếu
+5.6,OFF-SHRED,Máy hủy tài liệu
+5.7,OFF-BIND,Máy đóng sách / Ép nhựa
+6.1,INK-CAN-12A,Hộp mực Canon 12A / Cartridge 303
+6.2,INK-CAN-35A,Hộp mực Canon 35A / 85A
+6.3,INK-CAN-051,Hộp mực Canon 051 / 054
+6.4,INK-BRO-2385,Hộp mực Brother TN-2385
+6.5,INK-BRO-B022,Hộp mực Brother TN-B022 / B027
+6.6,INK-BRO-1010,Hộp mực Brother TN-1010
+6.7,INK-HP-17A,Hộp mực HP 17A / 107A
+6.8,INK-EPS-673,Mực nước Epson 673 (L805)
+6.9,INK-EPS-003,Mực nước Epson 003 (L3110)
+6.10,INK-CAN-71,Mực nước Canon GI-71 (G1020)
+6.11,INK-RIB-80,Ruy băng / Phim fax
+6.12,WST-DRUM,Trống máy in (Drum)
+6.13,WST-ROLL,Trục sấy / Trục từ / Rulo
+6.14,WST-CHIP,Chip mực / Cò sấy
+6.15,WST-PAPER-A4,Giấy in A4 (Double A/Paper One)
+7.1,CPU-INT-I3,CPU Intel Core i3
+7.2,CPU-INT-I5,CPU Intel Core i5
+7.3,CPU-INT-I7,CPU Intel Core i7
+7.4,CPU-AMD-RY,CPU AMD Ryzen
+7.5,MB-H610,Mainboard H610
+7.6,MB-B760,Mainboard B760 / B660
+7.7,MB-Z790,Mainboard Z690 / Z790
+7.8,RAM-8G-D4,RAM 8GB DDR4
+7.9,RAM-16G-D4,RAM 16GB DDR4
+7.10,RAM-D5,RAM DDR5 (8GB/16GB/32GB)
+7.11,VGA-GTX-16,VGA GTX 1650 / 1660
+7.12,VGA-RTX-30,VGA RTX 3050 / 3060
+7.13,VGA-RTX-40,VGA RTX 4060 / 4070 / 4080
+7.14,UPS-SAN-500,UPS Santak 500VA / 1000VA
+7.15,UPS-APC-PRO,UPS APC / Maruson High-end
+8.1,SSD-128-256,SSD 120GB / 128GB / 240GB / 256GB
+8.2,SSD-480-512,SSD 480GB / 500GB / 512GB
+8.3,SSD-1T-2T,SSD 1TB / 2TB
+8.4,HDD-1TB,HDD 1TB Desktop
+8.5,HDD-2TB-4TB,HDD 2TB / 4TB / 8TB (Video/Server)
+8.6,HDD-EXT,HDD/SSD Di động
+8.7,USB-32G,USB 16GB / 32GB
+8.8,USB-64-128,USB 64GB / 128GB
+8.9,SD-CARD,Thẻ nhớ MicroSD / SD
+8.10,CASE-OFF,Vỏ máy tính văn phòng
+8.11,CASE-GAM,Vỏ máy tính Gaming / LED
+8.12,PSU-OFF,Nguồn văn phòng (350W-450W)
+8.13,PSU-GAM,Nguồn công suất thực (500W-1000W)
+8.14,COOL-FAN,Quạt tản nhiệt / Tản khí
+8.15,COOL-AIO,Tản nhiệt nước AIO
+8.16,MS-LOGI,Chuột Logitech
+8.17,MS-GAM,Chuột Gaming
+8.18,MS-RAPO,Chuột Rapoo / Mitsumi
+8.19,KB-OFF,Bàn phím văn phòng
+8.20,KB-MECH,Bàn phím cơ / Gaming
+8.21,HDSET-OFF,Tai nghe văn phòng
+8.22,SPK-2.0,Loa máy tính 2.0 / 2.1
+8.23,HUB-USB,Bộ chia cổng USB / Hub Type-C
+8.24,CAM-WC,Webcam dạy học / họp
+9.1,NET-WF-HOME,Router WiFi gia đình (N/AC)
+9.2,NET-WF-DUAL,Router WiFi Băng tần kép (AC/AX)
+9.3,NET-WF-MESH,Hệ thống WiFi Mesh
+9.4,NET-WF-PRO,WiFi Chuyên dụng (Aruba/Unifi)
+9.5,NET-SW-OFF,Switch văn phòng (5/8/16 cổng)
+9.6,NET-SW-RACK,Switch Rackmount (24/48 cổng)
+9.7,NET-SW-POE,Switch cấp nguồn PoE (Camera)
+9.8,NET-CARD,Card mạng / USB WiFi
+9.9,NET-4G-W,Bộ phát WiFi 4G/LTE
+9.10,NET-CAB-NET,Tủ mạng / Tủ Rack
+10.1,CAM-WIFI-2M,Camera WiFi 2MP (Cố định/Xoay)
+10.2,CAM-WIFI-4M,Camera WiFi 4MP / Outdoor
+10.3,CAM-IP-DOME,Camera IP Dome (Trong nhà)
+10.4,CAM-IP-BUL,Camera IP Thân (Ngoài trời)
+10.5,CAM-DVR-4C,Đầu ghi hình 4 kênh
+10.6,CAM-DVR-8C,Đầu ghi hình 8 kênh
+10.7,CAM-DVR-16,Đầu ghi hình 16/32 kênh
+10.8,CAM-ACC-BS,Chân đế / Hộp kỹ thuật Camera
+11.1,CAB-LAN-C5,Dây cáp mạng Cat5e
+11.2,CAB-LAN-C6,Dây cáp mạng Cat6
+11.3,CAB-HDMI-3,Cáp HDMI (1.5m - 5m)
+11.4,CAB-HDMI-15,Cáp HDMI dài (10m - 30m)
+11.5,CAB-VGA-DP,Cáp VGA / DisplayPort / DVI
+11.6,VT-RJ45,Đầu bấm mạng (Hạt mạng)
+11.7,VT-RJ11,Hạt điện thoại / Mặt wallplate
+11.8,RADIO-W,Bộ đàm (Walkie Talkie)
+11.9,TEL-PHONE,Điện thoại bàn / IP Phone
+11.10,VT-TOOLS,Công cụ thi công (Kềm, Máy test)
+12.1,SW-WIN-PRO,Bản quyền Windows
+12.2,SW-OFF-365,Bản quyền Office 365 / 2021
+12.3,SW-AV-KAS,Phần mềm Diệt Virus
+12.4,SRV-INSTALL,Phí lắp đặt / Cài đặt
+12.5,SRV-MAINT,Phí bảo trì / Sửa chữa
+12.6,OTH-GEN,Hàng hóa khác không phân loại
