@@ -2,6 +2,7 @@
 2. Mặt Hàng : Phân bổ theo DANH MỤC NHÓM SẢN PHẨM docs/huyvu/DANH_MUC_NHOM_SAN_PHAM.md làm Mã Hàng - Tên Hàng
 3. Sử dụng hóa đơn, hóa đơn chi tiết từ database Công Ty Huy Vũ
 4. Form báo cáo xuất nhập tồn theo các cột : STT - Mã Nhóm - Tên Nhóm Sản Phẩm - Tồn Đầu Kỳ (SL) - Tồn Đầu Kỳ (VNĐ) -   Nhập (SL) - Nhập (VNĐ) - Xuất (SL) - Xuất (VNĐ) - Tồn Cuối (SL) - Tồn Cuối (VNĐ)
-5. Mỗi Sheet là số liệu của 1 tháng
+5. Mỗi năm 1 file excel, Mỗi Sheet là số liệu của 1 tháng có hàng tổng ở dưới cùng, có thêm 1 sheet Hoadon (các cột : Tháng - Loại HD - Tình trạng (Mã) - Số lượng - Tổng giá tiền (VNĐ)), 1 sheet xnt12thang
 6. Nguồn Dữ Liệu postgresql://root:password@localhost:5432/ketoan?schema=public Công Ty Huy Vũ (5900363291)
+7. Không có tình trạng âm số lượng, tiền.
 KHÔNG THAM CHIẾU TỪ NGUỒN NÀO KHÁC ĐỂ TRÁNH LOÃNG DỮ LIỆU VÀ KHÔNG ĐÚNG LUỒNG
