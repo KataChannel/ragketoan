@@ -213,6 +213,41 @@ def format_lines_for_year(year, inv_data, det_data):
     lines.append("")
     return lines
 
+def format_summary_table(stats):
+    lines = [
+        "## BẢNG TỔNG HỢP SỐ LIỆU ĐA NĂM (2023 - 2025)",
+        "",
+        "| Năm | Phân loại | Trạng thái (Mã) | Tổng Hóa Đơn | Tổng giá trị HĐ (sau VAT) | Tổng Chi Tiết | Tổng giá trị Chi Tiết (chưa VAT) |",
+        "|:---:|:---:|:---:|---:|---:|---:|---:|"
+    ]
+    
+    for y in [2023, 2024, 2025]:
+        inv_data, det_data = stats[y]
+        
+        combined = {}
+        for r in inv_data:
+            loaihd, tthai, cnt, _, _, tgt = r
+            key = (loaihd, tthai)
+            combined[key] = {"inv_cnt": cnt, "inv_val": float(tgt or 0), "det_cnt": 0, "det_val": 0.0}
+            
+        for r in det_data:
+            loaihd, tthai, cnt, thtien, _ = r
+            key = (loaihd, tthai)
+            if key not in combined:
+                combined[key] = {"inv_cnt": 0, "inv_val": 0.0, "det_cnt": 0, "det_val": 0.0}
+            combined[key]["det_cnt"] = cnt
+            combined[key]["det_val"] = float(thtien or 0)
+            
+        sorted_keys = sorted(list(combined.keys()), key=lambda x: (x[0], x[1]))
+        
+        for loaihd, tthai in sorted_keys:
+            d = combined[(loaihd, tthai)]
+            loai_str = "Bán ra" if loaihd == 'banra' else "Mua vào"
+            lines.append(f"| {y} | {loai_str} | {tthai} | {d['inv_cnt']:,} | {d['inv_val']:,.0f} | {d['det_cnt']:,} | {d['det_val']:,.0f} |")
+            
+    lines.append("")
+    return lines
+
 report_lines = [
     "# Tổng Hợp Dữ Liệu Hóa Đơn - Công Ty Huy Vũ (Cập nhật 2023 - 2025)",
     "",
@@ -223,6 +258,11 @@ report_lines = [
     "Dưới đây là kết quả rà soát và tổng hợp dữ liệu hóa đơn của công ty qua 3 năm, cập nhật trực tiếp tại thời điểm hiện tại.",
     ""
 ]
+
+report_lines.extend(format_summary_table(stats))
+report_lines.append("---")
+report_lines.append("")
+
 
 for y in [2023, 2024, 2025]:
     inv_data, det_data = stats[y]
