@@ -326,7 +326,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "/chikiet/kata2025/ragketoan/ketoan/prisma/generated-client",
+      "value": "/mnt/chikiet/kata2025/ragketoan/ketoan/prisma/generated-client",
       "fromEnvVar": null
     },
     "config": {
@@ -342,7 +342,7 @@ const config = {
     "previewFeatures": [
       "postgresqlExtensions"
     ],
-    "sourceFilePath": "/chikiet/kata2025/ragketoan/ketoan/prisma/schema.prisma",
+    "sourceFilePath": "/mnt/chikiet/kata2025/ragketoan/ketoan/prisma/schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
