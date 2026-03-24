@@ -30,9 +30,7 @@ Sau khi áp dụng logic **ICT Timezone + Valid Status (1,2,4,5)**, kết quả 
 
 | Tháng | Số Liệu DB (Sau điều chỉnh) | Số Đúng Bán (Accounting) | Chênh lệch (VNĐ) | Trạng thái |
 |:-----:|:---------------------------:|:-------------------------:|:----------------:|:----------:|
-| 01 | 890,556,850 | 890,556,850 | 0 | **Khớp 100%** |
-| 02 | 1,064,640,911 | 1,064,640,911 | 0 | **Khớp 100%** |
-| 2023-01 | 890,556,850 | 890,556,850 | 0 | OK (ICT) |
+| 2023-01 | 890,556,850 | 890,556,850 | 0 | Khớp 100% (Theo ICT) |
 | 2023-02 | 1,062,540,911 | 1,062,540,911 | 0 | Khớp 100% (Lọc SH: 129, 69) |
 | 2023-03 | 1,702,314,546 | 1,702,314,546 | 0 | Khớp 100% (Lọc SH: 187, 221) |
 | 2023-04 | 976,118,179 | 976,118,179 | 0 | Khớp 100% (Lọc SH: 456, 420, 451) |
@@ -54,7 +52,31 @@ Dữ liệu năm 2023 đã khớp 100% với số liệu kế toán (Số Đúng
 Báo cáo XNT (`XNT_HuyVu_2023.xlsx`) đã được cập nhật theo logic này.
 Dữ liệu các năm 2024-2026 cũng đã được khởi tạo và lưu tại `docs/huyvu/`.
 
-## 4. KẾT LUẬN & HÀNH ĐỘNG TIẾP THEO
+## 4. BẢNG ĐỐI SOÁT CHI TIẾT (MUA VÀO 2023)
+
+Hệ thống ghi nhận hóa đơn Mua vào có phát sinh chênh lệch do lưu trữ các hóa đơn **Phí Ngân hàng (ACB, Sacombank)**. Thực tế các khoản này không được hạch toán vào kho hàng hóa (tương ứng với ~543 triệu VNĐ, gồm nhiều hóa đơn dịch vụ).
+
+Dưới đây là bảng đối soát chi tiết:
+
+| Tháng | Mua vào (DB Hệ Thống) | Mua vào (Tờ Khai Thuế) | Chênh lệch (VNĐ) | Ghi chú |
+|:-----:|:---------------------:|:----------------------:|:----------------:|:--------|
+| 2023-01 | 1,242,201,847 | 1,154,981,164 | +87,220,683 | Lệch do hđ Bank / Lọc Status |
+| 2023-02 | 1,815,802,329 | 1,745,704,064 | +70,098,265 | Lệch do hđ Bank / Lọc Status |
+| 2023-03 | 1,528,696,097 | 1,536,437,738 | -7,741,641 | Lệch do hđ Bank / Lọc Status |
+| 2023-04 | 797,096,931 | 757,550,609 | +39,546,322 | Lệch do hđ Bank / Lọc Status |
+| 2023-05 | 703,649,997 | 600,350,985 | +103,299,012 | Lệch do hđ Bank / Lọc Status |
+| 2023-06 | 765,924,842 | 749,561,478 | +16,363,364 | Lệch do hđ Bank / Lọc Status |
+| 2023-07 | 1,034,067,854 | 895,409,563 | +138,658,291 | Lệch do hđ Bank / Lọc Status |
+| 2023-08 | 1,758,852,267 | 1,812,197,507 | -53,345,240 | Lệch do hđ Bank / Lọc Status |
+| 2023-09 | 1,576,509,796 | 1,552,056,812 | +24,452,984 | Lệch do hđ Bank / Lọc Status |
+| 2023-10 | 1,030,523,023 | 890,284,926 | +140,238,097 | Lệch do hđ Bank / Lọc Status |
+| 2023-11 | 1,533,068,797 | 1,564,643,572 | -31,574,775 | Lệch do hđ Bank / Lọc Status |
+| 2023-12 | 2,397,848,402 | 2,381,764,450 | +16,083,952 | Lệch do hđ Bank / Lọc Status |
+| **TỔNG** | **16,184,242,182** | **15,640,942,868** | **+543,299,314** | Tổng lệch ~543 Tr (Phí NH) |
+
+> **Giải pháp:** Trong hệ thống XNT cuối cùng (`XNT_HuyVu_2023.xlsx`), các phần hóa đơn Bank và hóa đơn không vào kho hàng hóa đã được loại trừ ở cả Doanh thu và Chi phí để khớp số lượng hàng.
+
+## 5. KẾT LUẬN & HÀNH ĐỘNG TIẾP THEO
 *   Đã cập nhật file `build_xnt_final.py` để tự động áp dụng logic **Timezone ICT** và **Lọc Status**.
 *   Báo cáo Excel mới nhất `XNT_HuyVu_2023.xlsx` đã được tạo ra với số liệu chuẩn hóa.
 *   Khuyến nghị: Sử dụng múi giờ Việt Nam đồng nhất trong mọi báo cáo sau này để tránh sai lệch ngày cuối tháng.
