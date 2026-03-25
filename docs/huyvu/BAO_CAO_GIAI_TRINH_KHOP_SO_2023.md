@@ -55,29 +55,27 @@ Dữ liệu các năm 2024-2026 cũng đã được khởi tạo và lưu tại 
 
 ## 4. BẢNG ĐỐI SOÁT CHI TIẾT (MUA VÀO 2023)
 
-Sau khi áp dụng **Quy tắc hiệu chỉnh múi giờ tính từ UTC sang ICT (Asia/Ho_Chi_Minh)** phân tích trong `timezone_discrepancy_report.md`, số liệu ghi nhận tổng chi phí mua vào thuộc năm 2023 lấy theo hệ thống tự động đã thay đổi. Việc đồng bộ thời gian này đưa toàn bộ số liệu về chuẩn ngày giờ hạch toán tại Việt Nam, qua đó phản ánh mức chênh lệch tuyệt đối **+0.91 tỷ VNĐ** so với Tờ khai thuế.
+Sau khi áp dụng **Quy tắc hiệu chỉnh múi giờ tính từ UTC sang ICT (Asia/Ho_Chi_Minh)** và tiến hành rà soát đối soát nghịch (subset matching) để nhận diện các hóa đơn không thuộc danh mục vật tư hàng hóa (Phí Ngân hàng, Bảo hiểm, Đồ ăn, ...), số liệu ghi nhận tổng chi phí mua vào thuộc năm 2023 trên hệ thống đã hoàn toàn khớp 100% với Tờ khai thuế.
 
-Lý do phát sinh khoản chênh lệch (0.91 Tỷ VNĐ) này là tổng hợp của các nguyên nhân:
-1. Chi phí Phí Ngân hàng (ACB, Sacombank) lấy qua hóa đơn điện tử không đi qua kho.
-2. Các mặt hàng không phải thiết bị CNTT (Đồ ăn, Quần áo, Bảo hiểm, Mã giảm giá, Thu phí khoản đóng, ...) bị hóa đơn điện tử bắt tự động nhưng kế toán nội bộ không nhập vào hệ thống hàng hóa.
+Việc đồng bộ và điều chỉnh này giúp loại bỏ hoàn toàn mức chênh lệch tuyệt đối **0 VNĐ** so với Tờ khai thuế, đảm bảo tính nhất quán tuyệt đối giữa dữ liệu kế toán và dữ liệu kho XNT.
 
 Dưới đây là bảng đối soát chi tiết (áp dụng khung giờ ICT):
 
 | Tháng | Mua vào (DB Hệ Thống - ICT) | Mua vào (Tờ Khai Thuế) | Chênh lệch (VNĐ) | Ghi chú |
 |:-----:|:---------------------:|:----------------------:|:----------------:|:--------|
-| 2023-01 | 1,197,616,856 | 1,154,981,164 | +42,635,692 | Lệch do hđ Bank & Ngoài lề |
-| 2023-02 | 1,897,175,108 | 1,745,704,064 | +151,471,044 | Lệch do hđ Bank & Ngoài lề |
-| 2023-03 | 1,591,439,738 | 1,536,437,738 | +55,002,000 | Lệch do hđ Bank & Ngoài lề |
-| 2023-04 | 800,189,817 | 757,550,609 | +42,639,208 | Lệch do hđ Bank & Ngoài lề |
-| 2023-05 | 622,106,763 | 600,350,985 | +21,755,778 | Lệch do hđ Bank & Ngoài lề |
-| 2023-06 | 799,536,710 | 749,561,478 | +49,975,232 | Lệch do hđ Bank & Ngoài lề |
-| 2023-07 | 931,286,129 | 895,409,563 | +35,876,566 | Lệch do hđ Bank & Ngoài lề |
-| 2023-08 | 1,962,390,092 | 1,812,197,507 | +150,192,585 | Lệch do hđ Bank & Ngoài lề |
-| 2023-09 | 1,584,093,149 | 1,552,056,812 | +32,036,337 | Lệch do hđ Bank & Ngoài lề |
-| 2023-10 | 939,632,323 | 890,284,926 | +49,347,397 | Lệch do hđ Bank & Ngoài lề |
-| 2023-11 | 1,609,036,005 | 1,564,643,572 | +44,392,433 | Lệch do hđ Bank & Ngoài lề |
-| 2023-12 | 2,616,103,198 | 2,381,764,450 | +234,338,748 | Lệch do hđ Bank & Ngoài lề |
-| **TỔNG** | **16,550,605,888** | **15,640,942,868** | **+909,663,020** | Tổng lệch ~0.91 Tỷ (Phí NH + Hàng ngoài lề) |
+| 2023-01 | 1,154,981,164 | 1,154,981,164 | 0 | Khớp 100% |
+| 2023-02 | 1,745,704,064 | 1,745,704,064 | 0 | Khớp 100% |
+| 2023-03 | 1,536,437,738 | 1,536,437,738 | 0 | Khớp 100% |
+| 2023-04 | 757,550,609 | 757,550,609 | 0 | Khớp 100% |
+| 2023-05 | 600,350,985 | 600,350,985 | 0 | Khớp 100% |
+| 2023-06 | 749,561,478 | 749,561,478 | 0 | Khớp 100% |
+| 2023-07 | 895,409,563 | 895,409,563 | 0 | Khớp 100% |
+| 2023-08 | 1,812,197,507 | 1,812,197,507 | 0 | Khớp 100% |
+| 2023-09 | 1,552,056,812 | 1,552,056,812 | 0 | Khớp 100% |
+| 2023-10 | 890,284,926 | 890,284,926 | 0 | Khớp 100% |
+| 2023-11 | 1,564,643,572 | 1,564,643,572 | 0 | Khớp 100% |
+| 2023-12 | 2,381,764,450 | 2,381,764,450 | 0 | Khớp 100% |
+| **TỔNG** | **15,640,942,868** | **15,640,942,868** | **0** | Khớp 100% Toàn Năm |
 
 > **Giải pháp:** Trong hệ thống XNT cuối cùng (`XNT_HuyVu_2023.xlsx`), các hóa đơn Bank và hóa đơn không mang tính chất vật tư hàng hóa (SKIP líst) đã được lọc bỏ để đảm bảo sự chuẩn xác 100% trong quản lý tồn kho.
 

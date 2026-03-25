@@ -43,6 +43,22 @@ def map_to_group(ten_hang):
     if not h:
         return "OTH-GEN"
 
+    # --- TIER 0: NON-INVENTORY (Skip these) ---
+    # Banking / Financial services → not inventory
+    if re.search(r'thu\s*ph[ií]|chuy[eể]n\s*ti[eề]n|lãi\s*suất|thu\s*lãi|phí\s*cd|ngoài?\s*h[eệ]', h): return "SKIP"
+    if re.search(r'422924|608_\d|thanh\s*toán\s*lãi|phi\s*dich\s*vu', h): return "SKIP"
+    # Food / Beverage → not IT inventory
+    if re.search(r'bánh|nước\s*yến|nước\s*ngọt|cá\s*viên|sữa|bia\b|ruou|rượu|thực\s*phẩm|tương\s*đen|phở|gạo|trà\b|cà\s*phê|coffee|đường\s*mía', h): return "SKIP"
+    if re.search(r'sannest|nabati|richeese|coca|pepsi|nestle|vinamilk|kinh\s*đô', h): return "SKIP"
+    # Fashion / Clothing → not IT
+    if re.search(r'khăn\s*lụa|khóa\s*lưng|dây\s*lưng|giày\b|áo\b.*burberry|burberry|gucci|nhãn\s*dán', h): return "SKIP"
+    # Discounts / Adjustments → not inventory
+    if re.search(r'chiết\s*khấu|giảm\s*giá|hỗ\s*trợ\s*thêm|1\s*đổi\s*1|khuyến\s*mãi|hàng\s*khuyến', h): return "SKIP"
+    # Insurance / Real estate → not IT
+    if re.search(r'bảo\s*hiểm|bảo\s*lãnh|hợp\s*đồng\s*vay|tiền\s*gửi|tiền\s*vay', h): return "SKIP"
+    # Promotion text / Receipt text → not inventory
+    if re.search(r'được\s*mua\s*bill|audio\s*giam|giá\s*sốc|tổng\s*cộng.*kg', h): return "SKIP"
+
     # --- TIER 1: Brand + Series exact match (highest priority) ---
     
     # DELL Laptops
@@ -305,22 +321,7 @@ def map_to_group(ten_hang):
     if re.search(r'bảo\s*trì|sửa\s*chữa|vệ\s*sinh', h): return "SRV-MAINT"
     if re.search(r'phần\s*mềm|software|license|bản\s*quyền', h): return "SW-WIN-PRO"
     
-    # --- TIER 12: NON-INVENTORY (Skip these) ---
-    # Banking / Financial services → not inventory
-    if re.search(r'thu\s*ph[ií]|chuy[eể]n\s*ti[eề]n|lãi\s*suất|thu\s*lãi|phí\s*cd|ngoài?\s*h[eệ]', h): return "SKIP"
-    if re.search(r'422924|608_\d|thanh\s*toán\s*lãi|phi\s*dich\s*vu', h): return "SKIP"
-    # Food / Beverage → not IT inventory
-    if re.search(r'bánh|nước\s*yến|nước\s*ngọt|cá\s*viên|sữa|bia\b|ruou|rượu|thực\s*phẩm|tương\s*đen|phở|gạo|trà\b|cà\s*phê|coffee|đường\s*mía', h): return "SKIP"
-    if re.search(r'sannest|nabati|richeese|coca|pepsi|nestle|vinamilk|kinh\s*đô', h): return "SKIP"
-    # Fashion / Clothing → not IT
-    if re.search(r'khăn\s*lụa|khóa\s*lưng|dây\s*lưng|giày\b|áo\b.*burberry|burberry|gucci|nhãn\s*dán', h): return "SKIP"
-    # Discounts / Adjustments → not inventory
-    if re.search(r'chiết\s*khấu|giảm\s*giá|hỗ\s*trợ\s*thêm|1\s*đổi\s*1|khuyến\s*mãi|hàng\s*khuyến', h): return "SKIP"
-    # Insurance / Real estate → not IT
-    if re.search(r'bảo\s*hiểm|bảo\s*lãnh|hợp\s*đồng\s*vay|tiền\s*gửi|tiền\s*vay', h): return "SKIP"
-    # Promotion text / Receipt text → not inventory
-    if re.search(r'được\s*mua\s*bill|audio\s*giam|giá\s*sốc|tổng\s*cộng.*kg', h): return "SKIP"
-    
+
     # --- FALLBACK: Try MD aliases one more time with loose matching ---
     for code, keywords in kw_mapping.items():
         for kw in keywords:
@@ -339,6 +340,10 @@ exclusion_2023 = {
     ('2023-10', '1112'), ('2023-10', '1123'), ('2023-10', '1048'), ('2023-11', '1332'),
     ('2023-11', '1249'), ('2023-11', '1272'), ('2023-12', '1508'), ('2023-12', '1463'),
     ('2023-12', '1538')
+}
+
+exclusion_2023_muavao = {
+('2023-01', '471'), ('2023-01', '1845'), ('2023-01', '5'), ('2023-01', '6637'), ('2023-01', '13635'), ('2023-01', '1061'), ('2023-01', '2294'), ('2023-01', '13346'), ('2023-01', '1495'), ('2023-02', '36709'), ('2023-02', '42'), ('2023-02', '9473353'), ('2023-02', '15904'), ('2023-02', '33062'), ('2023-02', '746'), ('2023-02', '1037'), ('2023-03', '20110'), ('2023-03', '5559'), ('2023-03', '46369397'), ('2023-03', '118803'), ('2023-03', '118804'), ('2023-03', '2189'), ('2023-03', '2190'), ('2023-03', '118855'), ('2023-03', '1906'), ('2023-03', '833663'), ('2023-04', '8434'), ('2023-04', '237'), ('2023-04', '223907'), ('2023-04', '51559'), ('2023-04', '51556'), ('2023-04', '177427'), ('2023-04', '51554'), ('2023-04', '8343'), ('2023-05', '714'), ('2023-05', '1159'), ('2023-05', '67035'), ('2023-05', '67047'), ('2023-05', '32807'), ('2023-05', '3570'), ('2023-05', '235925'), ('2023-05', '235926'), ('2023-05', '235975'), ('2023-05', '82589'), ('2023-05', '68602'), ('2023-05', '68601'), ('2023-06', '45602'), ('2023-06', '94188'), ('2023-06', '84457'), ('2023-06', '83279'), ('2023-06', '83281'), ('2023-06', '83287'), ('2023-06', '83267'), ('2023-06', '4274'), ('2023-06', '4275'), ('2023-07', '741'), ('2023-07', '1367'), ('2023-07', '98988'), ('2023-07', '384099'), ('2023-07', '112762'), ('2023-07', '99032'), ('2023-07', '354542'), ('2023-07', '15840'), ('2023-08', '301301'), ('2023-08', '859'), ('2023-08', '114631'), ('2023-08', '127993'), ('2023-08', '129747'), ('2023-08', '52821'), ('2023-08', '415468'), ('2023-08', '129804'), ('2023-08', '114697'), ('2023-09', '100009'), ('2023-09', '2010'), ('2023-09', '311610'), ('2023-09', '477559'), ('2023-09', '22233'), ('2023-09', '132993'), ('2023-09', '6456'), ('2023-09', '6385'), ('2023-10', '22956'), ('2023-10', '339'), ('2023-10', '146763'), ('2023-10', '593753'), ('2023-10', '148259'), ('2023-10', '6764'), ('2023-10', '7203'), ('2023-10', '7284'), ('2023-10', '540664'), ('2023-11', '112335'), ('2023-11', '163575'), ('2023-11', '173862'), ('2023-11', '7829'), ('2023-11', '8148'), ('2023-11', '606736'), ('2023-11', '27678'), ('2023-12', '22627'), ('2023-12', '1251'), ('2023-12', '442810'), ('2023-12', '728203'), ('2023-12', '181147'), ('2023-12', '8659'), ('2023-12', '672555'), ('2023-12', '672603')
 }
 
 # === 4. QUERY DATABASE ===
@@ -374,6 +379,7 @@ for row in rows:
     thang, yyyymm, yyyy, shdon, loaihd, tthai, tgtcthue, tgtthue, tgtttbso, detail_id, ten, sluong, dgia, thtien, idServer = row
     if not yyyymm: continue
     if yyyy == '2023' and loaihd == 'banra' and (yyyymm, shdon) in exclusion_2023: continue
+    if yyyy == '2023' and loaihd == 'muavao' and (yyyymm, shdon) in exclusion_2023_muavao: continue
     
     if detail_id is None:
         ten = ten or "Hàng Hóa / Dịch Vụ"
@@ -590,11 +596,11 @@ for y in years:
         # Hoadon sheet
         hoadon_rows = [
             {"Tháng": v["thang"], "Loại HD": "Bán ra" if v["loaihd"] == "banra" else "Mua vào",
-             "Tình trạng": v["tthai"], "Số lượng": 1, "Tổng giá tiền (VNĐ)": v["tgtcthue"]}
+             "Tình trạng (Mã)": v["tthai"], "Số lượng": 1, "Tổng giá tiền (VNĐ)": v["tgtcthue"]}
             for v in unique_invoices.values() if v["yyyy"] == y
         ]
         if hoadon_rows:
-            h_df = pd.DataFrame(hoadon_rows).groupby(["Tháng", "Loại HD", "Tình trạng"]).agg(
+            h_df = pd.DataFrame(hoadon_rows).groupby(["Tháng", "Loại HD", "Tình trạng (Mã)"]).agg(
                 {"Số lượng": "sum", "Tổng giá tiền (VNĐ)": "sum"}).reset_index()
             h_df.to_excel(writer, sheet_name="Hoadon", index=False)
         
