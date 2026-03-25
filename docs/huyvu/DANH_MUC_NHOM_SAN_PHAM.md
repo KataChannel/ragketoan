@@ -1,5 +1,8 @@
 # DANH MỤC NHÓM SẢN PHẨM (MAPPING CATALOG)
-*Phiên bản: 3.0 (Hyper-Granular) - Tối ưu cho AI Mapping & RAG*
+*Phiên bản: 3.1 (Actual Data Driven) - Cập nhật theo dữ liệu thực tế hệ thống v3*
+
+> [!NOTE]
+> Danh mục này được tinh chỉnh dựa trên phân tích đơn giá thực tế từ hệ thống (Dưới 50k, 50k-500k, 500k-5M) để phục vụ tính Giá vốn (COGS) và quản lý tồn kho theo Nhóm.
 
 ## 1. PHẦN HÀNG HÓA & VẬT TƯ KỸ THUẬT
 
@@ -102,6 +105,8 @@
 | 6.13 | **WST-ROLL** | Trục sấy / Trục từ / Rulo | trục sấy, trục từ, rulo ép, quả đào |
 | 6.14 | **WST-CHIP** | Chip mực / Cò sấy | chíp mực, cò sấy, lá sấy |
 | 6.15 | **WST-PAPER-A4** | Giấy in A4 (Double A/Paper One) | giấy a4, double a, paper one, bãi bằng |
+| 6.16 | **WST-PAPER-BILL** | Giấy nhiệt / Giấy in BILL (K80/K57) | giấy nhiệt, giấy in bill, k80, k57 |
+| 6.17 | **WST-INK-REFILL** | Mực nạp / Mực đổ lẻ | mực nạp, mực đổ, mực chai, mực xp12 |
 
 ### C. Linh kiện, Phụ kiện & TB Lưu trữ (C.1 - C.2)
 
@@ -193,6 +198,8 @@
 | 11.8 | **RADIO-W** | Bộ đàm (Walkie Talkie) | bộ đàm kenwood, motorola, bộ đàm baofeng |
 | 11.9 | **TEL-PHONE** | Điện thoại bàn / IP Phone | điện thoại panasonic, ip phone yealink |
 | 11.10 | **VT-TOOLS** | Công cụ thi công (Kềm, Máy test) | kềm bấm mạng, máy test mạng, dao phập |
+| 11.11 | **CAB-LAN-LOW** | Dây mạng lẻ / Đầu hạt thi công | dây mạng lẻ, mét cáp mạng, rj45 lẻ |
+| 11.12 | **WST-BATTERY** | Pin thiết bị (AA/AAA/CMOS) | pin philips, pin aa, pin aaa, pin cmos |
 
 ---
 
@@ -204,4 +211,9 @@
 | 12.3 | **SW-AV-KAS** | Phần mềm Diệt Virus | kaspersky, bkv, nod32 |
 | 12.4 | **SRV-INSTALL** | Phí lắp đặt / Cài đặt | nhân công, phí lắp đặt camera, phí cài win |
 | 12.5 | **SRV-MAINT** | Phí bảo trì / Sửa chữa | phí sửa chữa, bảo trì định kỳ, vệ sinh pc |
-| 12.6 | **OTH-GEN** | Hàng hóa khác không phân loại | linh tinh, khác |
+| 12.6 | **OTH-PROMO-0** | Hàng quà tặng / Khuyến mãi 0đ | quà tặng, chuột tặng, túi chống sốc, áo mưa |
+| 12.7 | **OTH-GEN-LOW** | Hàng hóa khác (Giá < 50k) | linh tinh giá thấp, phụ kiện lẻ |
+| 12.8 | **OTH-GEN-MID** | Hàng hóa khác (50k - 500k) | linh kiện khác, ngoại vi khác |
+| 12.9 | **OTH-GEN-HIGH** | Hàng hóa khác (500k - 5M) | thiết bị khác, linh kiện cao cấp |
+| 12.10 | **OTH-PREMIUM** | Tài sản / Hàng giá trị cao (> 5M) | hàng giá trị cao, tài sản cố định |
+| 12.11 | **UNKNOWN** | Chưa phân loại | hàng hóa chưa xác định nhóm |

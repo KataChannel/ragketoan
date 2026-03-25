@@ -48,7 +48,6 @@
 ## 2. Tổng Số Lượng Theo Nhóm (Đã Phân Tách OTH-GEN)
 | Mã Nhóm Sản Phẩm | Tổng Số Lượng | Mô tả dải giá |
 | :--- | :---: | :--- |
-| ERROR-DATA-ENTRY | 863,636.00 | Sai lệch dữ liệu (Số lượng lớn giá 1đ) |
 | INK-CAN-12A | 23,816.00 |  |
 | MS-RAPO | 8,827.00 |  |
 | SSD-128-256 | 6,703.00 |  |
@@ -59,7 +58,7 @@
 | OTH-GEN-MID | 3,650.50 | 50k - 500k (Phụ kiện phổ thông) |
 | LCD-DELL-24 | 3,495.00 |  |
 | OTH-PROMO-0 | 3,489.00 | Quà tặng / Hàng khuyến mại (0đ) |
-| OTH-GEN-HIGH | 3,228.00 | 500k - 5M (Thiết bị mạng, SSD cao cấp) |
+| OTH-GEN-HIGH | 3,229.00 | 500k - 5M (Thiết bị mạng, SSD cao cấp) |
 | RAM-8G-D4 | 2,939.00 |  |
 | SD-CARD | 2,923.00 |  |
 | HDD-1TB | 2,139.00 |  |
