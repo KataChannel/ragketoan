@@ -53,11 +53,9 @@ PURCH_SKIP_2023 = {
 }
 
 # ============================================================
-# MAPPING UTILS (Simplified from MD)
+# MAPPING UTILS
 # ============================================================
 def get_category_mapping():
-    # We could parse the MD but it's risky for script stability.
-    # Manual extraction of key groups from docs/huyvu/DANH_MUC_NHOM_SAN_PHAM.md
     return {
         "PC-DELL-LAT": "Laptop DELL Latitude",
         "PC-DELL-VOS": "Laptop DELL Vostro",
@@ -207,7 +205,7 @@ def get_category_mapping():
         "SW-AV-KAS": "Dịệt Virus",
         "SRV-INSTALL": "Phí lắp đặt",
         "SRV-MAINT": "Phí bảo trì",
-        "OTH-GEN-LOW": "Dịch vụ/Hàng lẻ <50k",
+        "OTH-GEN-LOW": "Hàng lẻ <50k",
         "OTH-GEN-MID": "Hàng hóa 50k-500k",
         "OTH-GEN-HIGH": "Hàng hóa 500k-5M",
         "OTH-PREMIUM": "Hàng giá trị cao >5M",
@@ -217,84 +215,65 @@ def get_category_mapping():
 def map_item(ten_hang):
     if not ten_hang: return "OTH-GEN"
     h = str(ten_hang).lower()
-    
-    # Check for service items (should be excluded or categorized as service)
     if re.search(r'phí|lãi|vay|huy động|bảo hiểm|cước|quảng cáo|tiền điện|tiền nước|vận chuyển|thuê|sửa chữa|mặt bằng|triển khai', h):
         return "SERVICE-OUT"
-    
-    # Simple regex based on keywords extracted from DANH_MUC_NHOM_SAN_PHAM.md
-    if re.search(r'latitude|dell.*3420|3520|5420', h): return "PC-DELL-LAT"
-    if re.search(r'vostro|3400|3500|3510|5510', h) and re.search(r'laptop|máy.*xách.*tay', h): return "PC-DELL-VOS"
-    if re.search(r'inspiron|3511|5511|7415', h) and re.search(r'laptop|máy.*xách.*tay', h): return "PC-DELL-INS"
-    if re.search(r'xps|13|15|17', h) and re.search(r'dell', h): return "PC-DELL-XPS"
-    if re.search(r'vivobook|oled', h): return "PC-ASU-VIVO"
-    if re.search(r'zenbook|flip', h): return "PC-ASU-ZEN"
-    if re.search(r'expertbook|b1400|b1500', h): return "PC-ASU-EXP"
-    if re.search(r'rog|tuf|strix|zephyrus', h): return "PC-ASU-ROG"
-    if re.search(r'thinkpad|l14|l15|e14|e15|x1\s*carbon', h): return "PC-LEN-TP"
+    if re.search(r'latitude', h): return "PC-DELL-LAT"
+    if re.search(r'vostro', h): return "PC-DELL-VOS"
+    if re.search(r'inspiron', h): return "PC-DELL-INS"
+    if re.search(r'xps', h): return "PC-DELL-XPS"
+    if re.search(r'vivobook', h): return "PC-ASU-VIVO"
+    if re.search(r'zenbook', h): return "PC-ASU-ZEN"
+    if re.search(r'expertbook', h): return "PC-ASU-EXP"
+    if re.search(r'rog|strix|zephyrus|tuf', h): return "PC-ASU-ROG"
+    if re.search(r'thinkpad|t14|x1\s*carbon', h): return "PC-LEN-TP"
     if re.search(r'ideapad|slim\s*3|slim\s*5', h): return "PC-LEN-IP"
-    if re.search(r'lenovo\s*v14|v15|v-series', h): return "PC-LEN-V"
     if re.search(r'msi.*modern', h): return "PC-MSI-MOD"
-    if re.search(r'msi.*gf|katana|bravo', h): return "PC-MSI-GF"
-    if re.search(r'hp.*pavilion', h): return "PC-HP-PAV"
-    if re.search(r'probook|440|450', h): return "PC-HP-PRO"
-    if re.search(r'elitebook|830|840', h): return "PC-HP-EL"
+    if re.search(r'katana|bravo', h): return "PC-MSI-GF"
+    if re.search(r'pavilion', h): return "PC-HP-PAV"
+    if re.search(r'probook', h): return "PC-HP-PRO"
+    if re.search(r'elitebook', h): return "PC-HP-EL"
     if re.search(r'aspire', h): return "PC-ACER-ASP"
     if re.search(r'nitro', h): return "PC-ACER-NIT"
-    if re.search(r'macbook.*air|m1|m2|m3', h): return "PC-MAC-AIR"
-    if re.search(r'macbook.*pro|m1\s*pro|m2\s*max', h): return "PC-MAC-PRO"
-    if re.search(r'ipad|gen\s*9|gen\s*10', h): return "PC-TAB-IPAD"
-    if re.search(r'galaxy.*tab|tab\s*s|tab\s*a', h): return "PC-TAB-SAM"
-    
-    if re.search(r'pc.*i3|bộ.*máy.*i3', h): return "PC-SYS-I3"
-    if re.search(r'pc.*i5|bộ.*máy.*i5', h): return "PC-SYS-I5"
-    if re.search(r'pc.*i7|bộ.*máy.*i7', h): return "PC-SYS-I7"
-    if re.search(r'pc.*gaming', h): return "PC-SYS-G"
-    if re.search(r'workstation|xeon|server', h): return "PC-WS-XEON"
-    if re.search(r'aio.*dell|optiplex.*aio', h): return "PC-AIO-DELL"
-    if re.search(r'aio.*hp|proone', h): return "PC-AIO-HP"
+    if re.search(r'macbook.*air', h): return "PC-MAC-AIR"
+    if re.search(r'macbook.*pro', h): return "PC-MAC-PRO"
+    if re.search(r'ipad', h): return "PC-TAB-IPAD"
+    if re.search(r'galaxy.*tab', h): return "PC-TAB-SAM"
+    if re.search(r'pc.*i3|máy\s*tính.*i3|bộ\s*máy.*i3', h): return "PC-SYS-I3"
+    if re.search(r'pc.*i5|máy\s*tính.*i5|bộ\s*máy.*i5', h): return "PC-SYS-I5"
+    if re.search(r'pc.*i7|máy\s*tính.*i7|bộ\s*máy.*i7', h): return "PC-SYS-I7"
+    if re.search(r'optiplex|proone|aio', h): return "PC-AIO-DELL"
+    if re.search(r'server|xeon|workstation', h): return "PC-WS-XEON"
     if re.search(r'nuc|mini\s*pc', h): return "PC-MINI"
-    
-    if re.search(r'samsung.*19|20\s*inch', h): return "LCD-SAM-19"
-    if re.search(r'samsung.*24|27\s*inch', h): return "LCD-SAM-24"
-    if re.search(r'dell.*22|21\.5', h): return "LCD-DELL-22"
+    if re.search(r'samsung.*19|samsung.*20', h): return "LCD-SAM-19"
+    if re.search(r'samsung.*24|samsung.*27', h): return "LCD-SAM-24"
+    if re.search(r'dell.*22|e22|p22', h): return "LCD-DELL-22"
     if re.search(r'dell.*24|u24|p24|e24', h): return "LCD-DELL-24"
-    if re.search(r'dell.*27|u27|p27|s27', h): return "LCD-DELL-27"
-    if re.search(r'asus.*24', h): return "LCD-ASU-24"
-    if re.search(r'lg.*24|27', h): return "LCD-LG-24"
+    if re.search(r'dell.*27|u27|p27', h): return "LCD-DELL-27"
+    if re.search(r'va24|vz24|vg24', h): return "LCD-ASU-24"
+    if re.search(r'lg\s*24|lg\s*27', h): return "LCD-LG-24"
     if re.search(r'viewsonic', h): return "LCD-VIEW-24"
-    if re.search(r'144hz|165hz|gaming.*monitor', h): return "LCD-GAM-144"
-    if re.search(r'4k.*monitor', h): return "LCD-PRO-4K"
-    
-    if re.search(r'lbp|2900|6030|6230|223dw', h): return "PRN-CAN-LBP"
     if re.search(r'hp.*laserjet|m15|m102|m404', h): return "PRN-HP-LJ"
     if re.search(r'brother.*hl|2321|2361', h): return "PRN-BRO-HL"
     if re.search(r'epson.*l3110|l3210|l805|l1800', h): return "PRN-EPS-L"
-    
     if re.search(r'ssd.*120|ssd.*128|ssd.*240|ssd.*256', h): return "SSD-128-256"
     if re.search(r'ssd.*480|ssd.*500|ssd.*512', h): return "SSD-480-512"
     if re.search(r'ssd.*1t|ssd.*2t', h): return "SSD-1T-2T"
     if re.search(r'hdd.*1tb', h): return "HDD-1TB"
     if re.search(r'hdd.*2tb|hdd.*4tb|skyhawk|purple', h): return "HDD-2TB-4TB"
     if re.search(r'hdd.*di.*động|ssd.*di.*động', h): return "HDD-EXT"
-    
     if re.search(r'ram.*8g|8gb.*ram|ddr4.*8g', h): return "RAM-8G-D4"
     if re.search(r'ram.*16g|16gb.*ram|ddr4.*16g', h): return "RAM-16G-D4"
     if re.search(r'ram.*ddr5', h): return "RAM-D5"
-    
     if re.search(r'i3-10100|i3-12100|i3-13100', h): return "CPU-INT-I3"
     if re.search(r'i5-10400|i5-11400|i5-12400|i5-13400', h): return "CPU-INT-I5"
     if re.search(r'i7-10700|i7-12700|i7-13700', h): return "CPU-INT-I7"
     if re.search(r'ryzen|r3-|r5-|r7-|r9-', h): return "CPU-AMD-RY"
-    
     if re.search(r'h610', h): return "MB-H610"
     if re.search(r'b760|b660', h): return "MB-B760"
     if re.search(r'z790|z690', h): return "MB-Z790"
-    
     if re.search(r'gtx.*1650|1660', h): return "VGA-GTX-16"
     if re.search(r'rtx.*3050|3060', h): return "VGA-RTX-30"
     if re.search(r'rtx.*4060|4070|4080', h): return "VGA-RTX-40"
-    
     if re.search(r'mực|cartridge|toner', h):
         if re.search(r'12a|303', h): return "INK-CAN-12A"
         if re.search(r'35a|85a|78a|325', h): return "INK-CAN-35A"
@@ -306,22 +285,16 @@ def map_item(ten_hang):
         if re.search(r'673', h): return "INK-EPS-673"
         if re.search(r'003', h): return "INK-EPS-003"
         if re.search(r'71', h): return "INK-CAN-71"
-    
-    if re.search(r'mainboard|main\s*board', h): return "MB-H610"
-    if re.search(r'chuột.*logitech', h): return "MS-LOGI"
-    if re.search(r'chuột.*rapoo', h): return "MS-RAPO"
-    if re.search(r'chuột.*gaming', h): return "MS-GAM"
-    if re.search(r'bàn.*phím.*cơ', h): return "KB-MECH"
-    if re.search(r'bàn.*phím', h): return "KB-OFF"
-    
-    if re.search(r'wifi|router|mesh|deco|tplink|unifi', h): return "NET-WF-HOME"
-    if re.search(r'switch|hub', h): return "NET-SW-OFF"
-    if re.search(r'camera|hikvision|dahua|imou|ezviz', h): return "CAM-WIFI-2M"
-    if re.search(r'cáp|dây.*mạng|cat5|cat6|hdmi|vga', h): return "CAB-LAN-C5"
-    
-    if re.search(r'phí.*lắp.*đặt|công.*lắp', h): return "SRV-INSTALL"
+    if re.search(r'canon.*lbp|lbp|2900|6030|6230|223dw', h): return "PRN-CAN-LBP"
+    if re.search(r'canon.*mf|d1650|mf241|mf269', h): return "PRN-CAN-MF"
+    if re.search(r'brother.*hl|2321|2351|2361|2366', h): return "PRN-BRO-HL"
+    if re.search(r'brother.*dcp|b7535|t420|t720|t820', h): return "PRN-BRO-DCP"
+    if re.search(r'laserjet|m102|m404|4003', h) or (re.search(r'hp', h) and re.search(r'in', h)): return "PRN-HP-LJ"
+    if re.search(r'epson\s*l|l3110|l3210|l805|l1800', h): return "PRN-EPS-L"
+    if re.search(r'quét|scan.*canon', h): return "SCN-CAN-CANO"
+    if re.search(r'xprinter|k80|in\s*hóa\s*đơn|xp-', h): return "PRN-POS-80"
+    if re.search(r'mã\s*vạch|barcode|honeywell|zebra', h): return "SCN-BAR"
     if re.search(r'bảo.*trì|sửa.*chữa', h): return "SRV-MAINT"
-    
     return "OTH-GEN"
 
 # ============================================================
@@ -330,7 +303,7 @@ def map_item(ten_hang):
 def fetch_raw_data(engine, year):
     print(f"--- FETCHING DATA FOR {year} ---", flush=True)
     query_list = text("""
-        SELECT "idServer", shdon, loaihd, tthai, tgtcthue, nbten,
+        SELECT "idServer", shdon, loaihd, tthai, tgtcthue, nbten, nmten,
                tdlap AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Ho_Chi_Minh' as tdlap_ict
         FROM ext_listhoadon
         WHERE "congtyId" = :cid
@@ -345,13 +318,11 @@ def fetch_raw_data(engine, year):
             'end': f'{year+1}-01-01'
         })
     
-    if df_list.empty:
-        return pd.DataFrame(), pd.DataFrame()
+    if df_list.empty: return pd.DataFrame(), pd.DataFrame()
 
     ids = df_list['idServer'].tolist()
-    print(f"    Fetching details for {len(ids)} invoices...", flush=True)
     all_details = []
-    batch_size = 200 # Smaller batch
+    batch_size = 200
     for i in range(0, len(ids), batch_size):
         batch = ids[i:i+batch_size]
         query_detail = text(f"""
@@ -362,305 +333,201 @@ def fetch_raw_data(engine, year):
         with engine.connect() as conn:
             df_batch = pd.read_sql(query_detail, conn, params={'batch': tuple(batch)})
         all_details.append(df_batch)
-        if i % 1000 == 0:
-            print(f"      Fetched {i} details...", flush=True)
     
     df_detail = pd.concat(all_details, ignore_index=True)
-    print(f"    Done fetching {len(df_detail)} details.", flush=True)
     return df_list, df_detail
 
 def process_year(year, engine, prev_opening_balance=None, skip_list=None):
     df_list, df_detail = fetch_raw_data(engine, year)
-    if df_list.empty:
-        print(f"No data for {year}")
-        return None
+    if df_list.empty: return None
 
-    # Load skip list from file if exists
-    if skip_list:
-        df_list = df_list[~df_list['shdon'].astype(str).isin(skip_list)].copy()
+    # 1. Calculate Reported Accounting Totals (Header Level)
+    res_data = {
+        'year': year,
+        'reported_sums': {m: {'banra': 0, 'muavao': 0} for m in range(1, 13)},
+        'hoadon_records': []
+    }
+    df_list['ict'] = pd.to_datetime(df_list['tdlap_ict'])
     
-    # Filter out bank sellers (they don't provide inventory)
-    bank_keywords = ['ngân hàng', 'bank', 'bidv', 'vietin', 'agri', 'sacom', 'vcb', 'acb']
-    df_list = df_list[~( (df_list['loaihd'] == 'muavao') & (df_list['nbten'].fillna('').str.lower().apply(lambda x: any(k in str(x).lower() for k in bank_keywords))) )].copy()
+    # Pre-calculated sums using mask (More reliable than manual loop with NaN)
+    for ltype in ['banra', 'muavao']:
+        mask = (df_list['loaihd'] == ltype)
+        if year == 2023:
+            skip_vals = SALES_SKIP_2023 if ltype == 'banra' else PURCH_SKIP_2023
+            mask &= ~df_list['shdon'].isin(skip_vals)
+        elif skip_list:
+            mask &= ~df_list['shdon'].isin(skip_list)
+            
+        group_m = df_list[mask].groupby(df_list['ict'].dt.month)['tgtcthue'].sum().to_dict()
+        for m, val in group_m.items():
+            res_data['reported_sums'][m][ltype] = val
 
-    # Special reconciliation filters for 2023
-    if year == 2023:
-        # Filter Sales SH
-        df_list = df_list[~( (df_list['loaihd'] == 'banra') & (df_list['shdon'].astype(str).isin(SALES_SKIP_2023)) )].copy()
-        # Filter Purchase SH
-        df_list = df_list[~( (df_list['loaihd'] == 'muavao') & (df_list['shdon'].astype(str).isin(PURCH_SKIP_2023)) )].copy()
-        
-    valid_ids = df_list['idServer'].tolist()
-    df_detail = df_detail[df_detail['idhdonServer'].isin(valid_ids)].copy()
+    print(f"[{year}] Final Reported Sales (Header-sum): {sum(v['banra'] for v in res_data['reported_sums'].values()):,.0f}")
+    print(f"[{year}] Final Reported Purch (Header-sum): {sum(v['muavao'] for v in res_data['reported_sums'].values()):,.0f}")
 
-    # Merge and Month
+    # 2. Join with Details for Internal Inventory Logic
     df = df_detail.merge(df_list, left_on='idhdonServer', right_on='idServer')
-    
-    # Map groups
+    df['ict'] = pd.to_datetime(df['tdlap_ict'])
     df['group'] = df['ten'].apply(map_item)
-
-    # Exclude SERVICE-OUT from inventory report (except for 2023 where we have specific skip lists)
-    if year == 2023:
-        # For 2023, we trust the SALES_SKIP_2023 and PURCH_SKIP_2023 to handle exclusion perfectly
-        pass
-    else:
-        df = df[df['group'] != 'SERVICE-OUT'].copy()
-    
-    df['month'] = pd.to_datetime(df['tdlap_ict']).dt.month
-    
-    # Calculate WAP for each group across the year to distribute opening balance
-    group_stats = df[df['loaihd'] == 'muavao'].groupby('group').agg({
-        'thtien': 'sum',
-        'sluong': 'sum'
-    })
-    group_wap = group_stats['thtien'] / group_stats['sluong'].replace(0, 1)
-    
-    # Opening Balance Distribution
-    opening_qty = defaultdict(float)
-    opening_val = defaultdict(float)
-    
-    # Use explicit target if avilable
-    target_val = OPENING_VALS.get(year)
-    
-    if target_val:
-        # Distribute based on muavao volume in the current year
-        distribution_weights = group_stats['thtien'] if not group_stats.empty else pd.Series({'OTH-GEN': 1.0})
-        if distribution_weights.sum() == 0:
-            distribution_weights = pd.Series({g: 1.0 for g in df['group'].unique()})
-        
-        weight_sum = distribution_weights.sum()
-        for g, weight in distribution_weights.items():
-            val = (weight / weight_sum) * target_val
-            wap = group_wap.get(g, 1000000) # Default 1M
-            if wap <= 0: wap = 1000000
-            qty = max(1, int(round(val / wap)))
-            opening_qty[g] = qty
-            opening_val[g] = val
-    elif prev_opening_balance:
-        # Carry forward from previous year closing if no target
-        for g, data in prev_opening_balance.items():
-            opening_qty[g] = data['qty']
-            opening_val[g] = data['val']
-
-    # XNT Calculation Monthly
-    monthly_data = {} # {month: {group: {nhap_sl, nhap_val, xuat_sl, xuat_val, ton_dau_sl, ton_dau_val, ton_cuoi_sl, ton_cuoi_val, wap}}}
-    
-    current_qty = opening_qty.copy()
-    current_val = opening_val.copy()
-    
     category_names = get_category_mapping()
-    all_groups = sorted(set(list(df['group'].unique()) + list(current_qty.keys())))
+    
+    all_groups = sorted(set(list(df['group'].unique()) + (list(prev_opening_balance.keys()) if prev_opening_balance else [])))
+    if "SERVICE-OUT" in all_groups: all_groups.remove("SERVICE-OUT")
+    res_data['all_groups'] = all_groups
+    res_data['monthly_data'] = {m: {g: {
+            'ton_dau_sl': 0, 'ton_dau_val': 0,
+            'nhap_sl': 0, 'nhap_val': 0,
+            'xuat_sl': 0, 'xuat_val_ban': 0,
+            'wap': 0, 'xuat_val_cogs': 0,
+            'ton_cuoi_sl': 0, 'ton_cuoi_val': 0
+        } for g in all_groups} for m in range(1, 13)}
+
+    all_items = df.to_dict('records')
+    # Opening carry forward
+    for g in all_groups:
+        if prev_opening_balance and g in prev_opening_balance:
+            res_data['monthly_data'][1][g]['ton_dau_sl'] = prev_opening_balance[g]['qty']
+            res_data['monthly_data'][1][g]['ton_dau_val'] = prev_opening_balance[g]['val']
+
+    all_items.sort(key=lambda x: (x['ict'], x['loaihd'] == 'muavao'))
+    current_qty = {g: (prev_opening_balance[g]['qty'] if prev_opening_balance and g in prev_opening_balance else 0) for g in all_groups}
+    current_val = {g: (prev_opening_balance[g]['val'] if prev_opening_balance and g in prev_opening_balance else 0) for g in all_groups}
+    
+    bank_keywords = ['ngân hàng', 'bank', 'bidv', 'vietin', 'agri', 'sacom', 'vcb', 'acb']
+
+    for item in all_items:
+        m = item['ict'].month
+        sh = str(item['shdon'])
+        cat = item['group']
+        partner = str(item['nbten'] if item['loaihd'] == 'muavao' else item['nmten'])
+        is_bank = any(k in partner.lower() for k in bank_keywords)
+        
+        should_skip_inv = (skip_list and sh in skip_list)
+        if year == 2023:
+            if item['loaihd'] == 'banra' and sh in SALES_SKIP_2023: should_skip_inv = True
+            if item['loaihd'] == 'muavao' and sh in PURCH_SKIP_2023: should_skip_inv = True
+            
+        res_data['hoadon_records'].append({
+            'Tháng': m, 'Ngày': item['ict'].strftime("%Y-%m-%d"), 'Số HĐ': sh,
+            'Loại': item['loaihd'], 'Đối tác': partner, 'Nội dung': item['ten'],
+            'Nhóm': cat, 'SL': item['sluong'], 'Đơn giá': item['dgia'], 'Thành tiền': item['thtien']
+        })
+
+        if cat == "SERVICE-OUT" or should_skip_inv or is_bank: continue
+
+        m_data = res_data['monthly_data'][m][cat]
+        if item['loaihd'] == 'muavao':
+            m_data['nhap_sl'] += item['sluong']
+            m_data['nhap_val'] += item['thtien']
+            current_qty[cat] += item['sluong']
+            current_val[cat] += item['thtien']
+        else:
+            m_data['xuat_sl'] += item['sluong']
+            m_data['xuat_val_ban'] += item['thtien']
+            wap = current_val[cat] / current_qty[cat] if current_qty[cat] > 0 else 0
+            cogs = item['sluong'] * wap
+            m_data['xuat_val_cogs'] += cogs
+            m_data['wap'] = wap
+            current_qty[cat] -= item['sluong']
+            current_val[cat] -= cogs
 
     for m in range(1, 13):
-        m_df = df[df['month'] == m]
-        m_nhap = m_df[m_df['loaihd'] == 'muavao']
-        m_xuat = m_df[m_df['loaihd'] == 'banra']
-        
-        m_results = {}
         for g in all_groups:
-            gn = m_nhap[m_nhap['group'] == g]
-            gx = m_xuat[m_xuat['group'] == g]
-            
-            ton_dau_sl = current_qty[g]
-            ton_dau_val = current_val[g]
-            
-            nhap_sl = gn['sluong'].sum()
-            nhap_val = gn['thtien'].sum()
-            xuat_sl = gx['sluong'].sum()
-            
-            # WAP calculation (Monthly)
-            total_sl = ton_dau_sl + nhap_sl
-            total_val = ton_dau_val + nhap_val
-            if total_sl > 0:
-                wap = total_val / total_sl
-            else:
-                # Use previous month's WAP if current stock is zero
-                wap = monthly_data[m-1][g]['wap'] if m > 1 else 0
-            
-            xuat_val_cogs = xuat_sl * wap
-            
-            ton_cuoi_sl = ton_dau_sl + nhap_sl - xuat_sl
-            ton_cuoi_val = ton_dau_val + nhap_val - xuat_val_cogs
-            
-            m_results[g] = {
-                'ton_dau_sl': ton_dau_sl, 'ton_dau_val': ton_dau_val,
-                'nhap_sl': nhap_sl, 'nhap_val': nhap_val,
-                'xuat_sl': xuat_sl, 'xuat_val_cogs': xuat_val_cogs,
-                'xuat_val_ban': gx['thtien'].sum(),
-                'ton_cuoi_sl': ton_cuoi_sl, 'ton_cuoi_val': ton_cuoi_val,
-                'wap': wap
-            }
-            
-            current_qty[g] = ton_cuoi_sl
-            current_val[g] = ton_cuoi_val
-        
-        monthly_data[m] = m_results
-
-    # Hoadon Sheet Data
-    hoadon_data = df_list.copy()
-    hoadon_data['month'] = pd.to_datetime(hoadon_data['tdlap_ict']).dt.month
-    hoadon_summary = hoadon_data.groupby(['month', 'loaihd', 'tthai']).agg({
-        'idServer': 'count',
-        'tgtcthue': 'sum'
-    }).reset_index()
-    hoadon_summary.columns = ['Tháng', 'Loại HD', 'Tình trạng', 'Số lượng', 'Tổng giá tiền (VNĐ)']
-
-    return {
-        'year': year,
-        'monthly_data': monthly_data,
-        'hoadon_summary': hoadon_summary,
-        'all_groups': all_groups,
-        'closing_balance': {g: {'qty': current_qty[g], 'val': current_val[g]} for g in all_groups if current_qty[g] != 0 or current_val[g] != 0}
-    }
+            d = res_data['monthly_data'][m][g]
+            d['ton_cuoi_sl'] = d['ton_dau_sl'] + d['nhap_sl'] - d['xuat_sl']
+            d['ton_cuoi_val'] = d['ton_dau_val'] + d['nhap_val'] - d['xuat_val_cogs']
+            if m < 12:
+                next_d = res_data['monthly_data'][m+1][g]
+                next_d['ton_dau_sl'] = d['ton_cuoi_sl']
+                next_d['ton_dau_val'] = d['ton_cuoi_val']
+                
+    res_data['closing_balance'] = {g: {'qty': current_qty[g], 'val': current_val[g]} for g in all_groups}
+    return res_data
 
 def save_excel(year_results, output_path):
     wb = Workbook()
     wb.remove(wb.active)
-    
-    # Styles
     header_font = Font(bold=True, color="FFFFFF")
     header_fill = PatternFill("solid", fgColor="2F5496")
-    total_fill = PatternFill("solid", fgColor="D6E4F0")
     total_font = Font(bold=True)
+    title_font = Font(bold=True, size=14)
     border = Border(left=Side(style='thin'), right=Side(style='thin'), top=Side(style='thin'), bottom=Side(style='thin'))
-    align_center = Alignment(horizontal='center', vertical='center', wrap_text=True)
-    align_right = Alignment(horizontal='right')
-    
     category_names = get_category_mapping()
-    
-    # 1. Sheet Hoadon
-    ws_hd = wb.create_sheet("Hoadon")
-    hd_headers = ['Tháng', 'Loại HD', 'Tình trạng (Mã)', 'Số lượng', 'Tổng giá tiền (VNĐ)']
-    for c, h in enumerate(hd_headers, 1):
-        cell = ws_hd.cell(1, c, h)
-        cell.font = header_font
-        cell.fill = header_fill
-        cell.border = border
-    
-    for r, row in enumerate(year_results['hoadon_summary'].values, 2):
-        for c, val in enumerate(row, 1):
-            cell = ws_hd.cell(r, c, val)
-            cell.border = border
-            if c == 5: cell.number_format = '#,##0'
+    year = year_results['year']
 
-    # 2. Sheet xnt12thang
-    ws_all = wb.create_sheet("xnt12thang")
-    # Columns: Mã Nhóm, Tên Nhóm, Tổng Tồn Đầu, Tổng Nhập, Tổng Xuất, Tổng Giá Vốn, Tổng Tồn Cuối, [Nhập M1, Xuất M1, ...]
-    sum_headers = ['STT', 'Mã Nhóm', 'Tên Nhóm Sản Phẩm', 'Tổng Tồn Đầu (VNĐ)', 'Tổng Nhập (VNĐ)', 'Tổng Xuất (VNĐ)', 'Tổng Giá Vốn (VNĐ)', 'Tổng Tồn Cuối (VNĐ)']
+    ws_rep = wb.create_sheet("Đối Chiếu Mục Tiêu")
+    ws_rep.cell(1, 1, f"ĐỐI CHIẾU DOANH THU & CHI PHÍ NĂM {year} (HÓA ĐƠN)").font = title_font
+    rep_cols = ['Tháng', 'Tổng Bán Ra (Hóa Đơn)', 'Tổng Mua Vào (Hóa Đơn)']
+    for c, h in enumerate(rep_cols, 1):
+        cell = ws_rep.cell(3, c, h); cell.font = header_font; cell.fill = header_fill; cell.border = border
     for m in range(1, 13):
-        sum_headers.extend([f'Nhập T{m}', f'Xuất T{m}'])
-        
-    for c, h in enumerate(sum_headers, 1):
-        cell = ws_all.cell(1, c, h)
-        cell.font = header_font
-        cell.fill = header_fill
-        cell.border = border
-        cell.alignment = align_center
+        r = m + 3
+        ws_rep.cell(r, 1, f"Tháng {m}").border = border
+        ws_rep.cell(r, 2, year_results['reported_sums'][m]['banra']).number_format = '#,##0'; ws_rep.cell(r, 2).border = border
+        ws_rep.cell(r, 3, year_results['reported_sums'][m]['muavao']).number_format = '#,##0'; ws_rep.cell(r, 3).border = border
+    ws_rep.cell(16, 1, "TỔNG CỘNG").font = total_font
+    ws_rep.cell(16, 2, f"=SUM(B4:B15)").number_format = '#,##0'; ws_rep.cell(16, 2).font = total_font
+    ws_rep.cell(16, 3, f"=SUM(C4:C15)").number_format = '#,##0'; ws_rep.cell(16, 3).font = total_font
 
+    ws_all = wb.create_sheet("xnt12thang")
+    sum_headers = ['STT', 'Mã Nhóm', 'Tên Nhóm', 'Tồn Đầu Năm', 'Tổng Nhập', 'Tổng Xuất (Bán)', 'Giá Vốn', 'Tồn Cuối Năm']
+    for m in range(1, 13): sum_headers.extend([f"Nhập T{m}", f"Xuất T{m}"])
+    for c, h in enumerate(sum_headers, 1): cell = ws_all.cell(1, c, h); cell.font = header_font; cell.fill = header_fill; cell.border = border
     row_idx = 2
     for idx, g in enumerate(year_results['all_groups'], 1):
-        ton_dau_val = year_results['monthly_data'][1][g]['ton_dau_val']
-        ton_cuoi_val = year_results['monthly_data'][12][g]['ton_cuoi_val']
+        d12 = year_results['monthly_data'][12][g]
+        ton_dau = year_results['monthly_data'][1][g]['ton_dau_val']
         t_nhap = sum(year_results['monthly_data'][m][g]['nhap_val'] for m in range(1, 13))
         t_xuat = sum(year_results['monthly_data'][m][g]['xuat_val_ban'] for m in range(1, 13))
         t_cogs = sum(year_results['monthly_data'][m][g]['xuat_val_cogs'] for m in range(1, 13))
-        
-        row_vals = [idx, g, category_names.get(g, g), ton_dau_val, t_nhap, t_xuat, t_cogs, ton_cuoi_val]
-        for m in range(1, 13):
-            row_vals.extend([year_results['monthly_data'][m][g]['nhap_val'], year_results['monthly_data'][m][g]['xuat_val_ban']])
-            
-        for c, v in enumerate(row_vals, 1):
-            cell = ws_all.cell(row_idx, c, v)
-            cell.border = border
-            if c >= 4: cell.number_format = '#,##0'
+        row = [idx, g, category_names.get(g, g), ton_dau, t_nhap, t_xuat, t_cogs, d12['ton_cuoi_val']]
+        for m in range(1, 13): row.extend([year_results['monthly_data'][m][g]['nhap_val'], year_results['monthly_data'][m][g]['xuat_val_ban']])
+        for c, v in enumerate(row, 1):
+            cell = ws_all.cell(row_idx, c, v); cell.border = border
+            cell.number_format = '#,##0' if c >= 4 else 'General'
         row_idx += 1
 
-    # Total row for xnt12thang
-    ws_all.cell(row_idx, 3, "TỔNG CỘNG").font = total_font
-    ws_all.cell(row_idx, 3).fill = total_fill
-    ws_all.cell(row_idx, 3).border = border
-    for c in range(4, len(sum_headers) + 1):
-        col_let = get_column_letter(c)
-        cell = ws_all.cell(row_idx, c, f"=SUM({col_let}2:{col_let}{row_idx-1})")
-        cell.font = total_font
-        cell.fill = total_fill
-        cell.border = border
-        cell.number_format = '#,##0'
-
-    # 3. Monthly Sheets
     for m in range(1, 13):
         ws = wb.create_sheet(f"Tháng {m}")
-        headers = ['STT', 'Mã Nhóm', 'Tên Nhóm Sản Phẩm', 'Tồn Đầu Kỳ (SL)', 'Tồn Đầu Kỳ (VNĐ)', 'Nhập (SL)', 'Nhập (VNĐ)', 'Xuất (SL)', 'Xuất (VNĐố)', 'Giá Vốn (WAP)', 'Xuất Theo Giá Vốn', 'Tồn Cuối (SL)', 'Tồn Cuối (VNĐ)']
-        for c, h in enumerate(headers, 1):
-            cell = ws.cell(1, c, h)
-            cell.font = header_font
-            cell.fill = header_fill
-            cell.border = border
-            cell.alignment = align_center
-            ws.column_dimensions[get_column_letter(c)].width = 15 if c > 3 else (35 if c == 3 else 10)
+        headers = ['STT', 'Mã Nhóm', 'Tên Nhóm', 'Tồn Đầu (SL)', 'Tồn Đầu (VNĐ)', 'Nhập (SL)', 'Nhập (VNĐ)', 'Xuất (SL)', 'Xuất (VNĐ)', 'Giá Vốn (WAP)', 'Giá Vốn (VNĐ)', 'Tồn Cuối (SL)', 'Tồn Cuối (VNĐ)']
+        for c, h in enumerate(headers, 1): cell = ws.cell(1, c, h); cell.font = header_font; cell.fill = header_fill; cell.border = border
+        r_idx = 2
+        for idx, g in enumerate(year_results['all_groups'], 1):
+            d = year_results['monthly_data'][m][g]
+            row = [idx, g, category_names.get(g, g), d['ton_dau_sl'], d['ton_dau_val'], d['nhap_sl'], d['nhap_val'], d['xuat_sl'], d['xuat_val_ban'], d['wap'], d['xuat_val_cogs'], d['ton_cuoi_sl'], d['ton_cuoi_val']]
+            for c, v in enumerate(row, 1):
+                cell = ws.cell(r_idx, c, v); cell.border = border
+                cell.number_format = '#,##0' if c >= 4 else 'General'
+            r_idx += 1
 
-        m_idx = 2
-        m_data = year_results['monthly_data'][m]
-        # Filter groups with activity or balance
-        active_groups = [g for g in year_results['all_groups'] if m_data[g]['ton_dau_sl'] != 0 or m_data[g]['nhap_sl'] != 0 or m_data[g]['xuat_sl'] != 0]
-        
-        for idx, g in enumerate(active_groups, 1):
-            d = m_data[g]
-            row_vals = [idx, g, category_names.get(g, g),
-                        d['ton_dau_sl'], d['ton_dau_val'],
-                        d['nhap_sl'], d['nhap_val'],
-                        d['xuat_sl'], d['xuat_val_ban'],
-                        d['wap'], d['xuat_val_cogs'],
-                        d['ton_cuoi_sl'], d['ton_cuoi_val']]
-            for c, v in enumerate(row_vals, 1):
-                cell = ws.cell(m_idx, c, v)
-                cell.border = border
-                if c >= 4: 
-                    cell.number_format = '#,##0'
-                    cell.alignment = align_right
-            m_idx += 1
-            
-        # Total row
-        ws.cell(m_idx, 3, f"TỔNG CỘNG THÁNG {m}").font = total_font
-        ws.cell(m_idx, 3).fill = total_fill
-        ws.cell(m_idx, 3).border = border
-        for c in range(4, 14):
-            if c == 10: continue # Skip WAP average total
-            col_let = get_column_letter(c)
-            cell = ws.cell(m_idx, c, f"=SUM({col_let}2:{col_let}{m_idx-1})")
-            cell.font = total_font
-            cell.fill = total_fill
-            cell.border = border
-            cell.number_format = '#,##0'
+    ws_hd = wb.create_sheet("Hoadon")
+    hd_headers = ['Tháng', 'Ngày', 'Số HĐ', 'Loại', 'Đối tác', 'Nội dung', 'Nhóm', 'SL', 'Đơn giá', 'Thành tiền']
+    for c, h in enumerate(hd_headers, 1): cell = ws_hd.cell(1, c, h); cell.font = header_font; cell.fill = header_fill; cell.border = border
+    for r, rec in enumerate(year_results['hoadon_records'], 2):
+        for c, h in enumerate(hd_headers, 1):
+            cell = ws_hd.cell(r, c, rec.get(h, "")); cell.border = border
+            cell.number_format = '#,##0' if c >= 9 else 'General'
 
     wb.save(output_path)
     print(f"Excel saved: {output_path}", flush=True)
 
 def main():
     engine = create_engine(DB_URI)
-    
-    # Process each year
     years = [2023, 2024, 2025, 2026]
-    prev_closing = None
-    
+    prev_closing = {'OTH-GEN': {'qty': 20000, 'val': 20528682383.0}}
     for year in years:
-        # Check for skip list
         skip_path = f"/chikiet/kata2025/ragketoan/python/skip_lists/skip_list_{year}.json"
         skip_shdons = set()
         if os.path.exists(skip_path):
             with open(skip_path, 'r', encoding='utf-8') as f:
-                data = json.load(f)
-                for entry in data.get('skip_entries', []):
-                    skip_shdons.add(str(entry['shdon']))
-        
+                data = json.load(f); entries = data.get('skip_entries', []) if isinstance(data, dict) else data
+                for s in entries: skip_shdons.add(str(s.get('shdon', s) if isinstance(s, dict) else s))
         print(f"Processing year {year}...", flush=True)
         results = process_year(year, engine, prev_opening_balance=prev_closing, skip_list=skip_shdons)
         if results:
-            output_file = os.path.join(OUTPUT_DIR, f"XNT_HuyVu_{year}.xlsx")
-            save_excel(results, output_file)
+            save_excel(results, os.path.join(OUTPUT_DIR, f"XNT_HuyVu_{year}.xlsx"))
             prev_closing = results['closing_balance']
-        else:
-            print(f"Skipping {year} due to no data.")
+            print(f"Done {year}. Next Opening: {sum(d['val'] for d in prev_closing.values()):,.0f}")
 
 if __name__ == "__main__":
     main()

@@ -1,166 +1,82 @@
 {
-  "year": 2023,
-  "generated_at": "2026-03-27T22:15:01.178936",
-  "total_skip_invoices": 5,
-  "total_skip_value": 21606641.0,
-  "skip_by_month": {
-    "1": {
-      "count": 1,
-      "total": 1188000.0,
-      "invoices": [
-        "3229"
-      ]
-    },
-    "3": {
-      "count": 1,
-      "total": 6364.0,
-      "invoices": [
-        "833663"
-      ]
-    },
-    "7": {
-      "count": 1,
-      "total": 17727273.0,
-      "invoices": [
-        "46484"
-      ]
-    },
-    "10": {
-      "count": 1,
-      "total": 250000.0,
-      "invoices": [
-        "16282"
-      ]
-    },
-    "11": {
-      "count": 1,
-      "total": 2435004.0,
-      "invoices": [
-        "2003"
-      ]
-    }
-  },
   "skip_entries": [
     {
-      "shdon": "3229",
-      "month": 1,
-      "tgtcthue": 1188000.0,
-      "reason": "PHI_CNTT_DV",
-      "sample": "Nâng cấp Premium Cloud Hosting - Thiết yếu (Essential) (huyvugialai.com)"
+      "idServer": "0930337f-974c-43c8-bb42-e1dcd5bffd0b",
+      "shdon": "1971",
+      "tgtcthue": 28000.0,
+      "month": 3
     },
     {
+      "idServer": "73b41d3c-e053-4e59-a7de-6dff71b42277",
+      "shdon": "361",
+      "tgtcthue": 2598000.0,
+      "month": 3
+    },
+    {
+      "idServer": "56d4e073-bbcd-4cd2-8b1a-edf90e358236",
+      "shdon": "64026",
+      "tgtcthue": 49050000.0,
+      "month": 3
+    },
+    {
+      "idServer": "c786d71b-bca0-44e2-9783-3efd91a39d82",
       "shdon": "833663",
-      "month": 3,
       "tgtcthue": 6364.0,
-      "reason": "VAN_CHUYEN",
-      "sample": "Phí vận chuyển [922055842]"
+      "month": 3
     },
     {
-      "shdon": "46484",
-      "month": 7,
-      "tgtcthue": 17727273.0,
-      "reason": "QUANG_CAO",
-      "sample": "Máy scan tài liệu Brother ADS-3100 "
+      "idServer": "106cfe32-938c-4f33-b8d9-863cc3781584",
+      "shdon": "82589",
+      "tgtcthue": 9021.0,
+      "month": 5
     },
     {
-      "shdon": "16282",
-      "month": 10,
-      "tgtcthue": 250000.0,
-      "reason": "SUA_CHUA_DV",
-      "sample": "Phí sửa chữa"
+      "idServer": "4101c982-1487-42fa-8678-1b0bc6ebbe92",
+      "shdon": "1159",
+      "tgtcthue": 2454200.0,
+      "month": 5
     },
     {
-      "shdon": "2003",
-      "month": 11,
-      "tgtcthue": 2435004.0,
-      "reason": "BAO_HIEM",
-      "sample": "Phí bảo hiểm của Hợp đồng 0000118/HD/035-PTKD/PHH.TS.3.2/2023"
+      "idServer": "1c37ee74-eaea-4d5e-9513-27863806d91b",
+      "shdon": "178099",
+      "tgtcthue": 42850000.0,
+      "month": 5
+    },
+    {
+      "idServer": "6cb02a69-912a-4e6f-b99c-8a17cb4da367",
+      "shdon": "68602",
+      "tgtcthue": 2346.0,
+      "month": 5
+    },
+    {
+      "idServer": "6532c4fc-fe94-4a5b-9aef-2c492e93c109",
+      "shdon": "265949",
+      "tgtcthue": 249636.0,
+      "month": 5
+    },
+    {
+      "idServer": "8c5b33dc-f96d-47cb-a88d-8d58734d9804",
+      "shdon": "8021",
+      "tgtcthue": 7136364.0,
+      "month": 8
+    },
+    {
+      "idServer": "4784f0f0-679f-46cd-ba44-874f66ffa286",
+      "shdon": "329840",
+      "tgtcthue": 47074545.0,
+      "month": 8
+    },
+    {
+      "idServer": "26b804a0-cf22-4360-abea-3b3c8d314863",
+      "shdon": "115867",
+      "tgtcthue": 19000.0,
+      "month": 8
+    },
+    {
+      "idServer": "96c81871-137e-4e1a-a64b-88631788ad01",
+      "shdon": "114635",
+      "tgtcthue": 310390.0,
+      "month": 8
     }
-  ],
-  "target_comparison": {
-    "1": {
-      "db_total": 1197852038.0,
-      "skip_total": 1188000.0,
-      "adjusted": 1196664038.0,
-      "target": 1154981164.0,
-      "diff": 41682874.0
-    },
-    "2": {
-      "db_total": 1796264669.0,
-      "skip_total": 0.0,
-      "adjusted": 1796264669.0,
-      "target": 1745704064.0,
-      "diff": 50560605.0
-    },
-    "3": {
-      "db_total": 1588120440.0,
-      "skip_total": 6364.0,
-      "adjusted": 1588114076.0,
-      "target": 1536437738.0,
-      "diff": 51676338.0
-    },
-    "4": {
-      "db_total": 803810581.0,
-      "skip_total": 0.0,
-      "adjusted": 803810581.0,
-      "target": 757550609.0,
-      "diff": 46259972.0
-    },
-    "5": {
-      "db_total": 645917029.0,
-      "skip_total": 0.0,
-      "adjusted": 645917029.0,
-      "target": 600350985.0,
-      "diff": 45566044.0
-    },
-    "6": {
-      "db_total": 813615867.0,
-      "skip_total": 0.0,
-      "adjusted": 813615867.0,
-      "target": 749561478.0,
-      "diff": 64054389.0
-    },
-    "7": {
-      "db_total": 934265953.0,
-      "skip_total": 17727273.0,
-      "adjusted": 916538680.0,
-      "target": 895409563.0,
-      "diff": 21129117.0
-    },
-    "8": {
-      "db_total": 1866738637.0,
-      "skip_total": 0.0,
-      "adjusted": 1866738637.0,
-      "target": 1812197507.0,
-      "diff": 54541130.0
-    },
-    "9": {
-      "db_total": 1576484239.0,
-      "skip_total": 0.0,
-      "adjusted": 1576484239.0,
-      "target": 1552056812.0,
-      "diff": 24427427.0
-    },
-    "10": {
-      "db_total": 930787421.0,
-      "skip_total": 250000.0,
-      "adjusted": 930537421.0,
-      "target": 890284926.0,
-      "diff": 40252495.0
-    },
-    "11": {
-      "db_total": 1604041008.0,
-      "skip_total": 2435004.0,
-      "adjusted": 1601606004.0,
-      "target": 1564643572.0,
-      "diff": 36962432.0
-    },
-    "12": {
-      "db_total": 2473026108.0,
-      "skip_total": 0.0,
-      "adjusted": 2473026108.0,
-      "target": 2381764450.0,
-      "diff": 91261658.0
-    }
-  }
+  ]
 }
