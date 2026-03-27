@@ -2,3 +2,7 @@
 /backups/
 *.tar.gz
 *.dump
+*.sql
+*.zip
+# Keep specific small zips if needed, but for now block all to be safe
+# docs/nganhang/
