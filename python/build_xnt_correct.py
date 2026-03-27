@@ -13,6 +13,7 @@ Usage:
   python3 build_xnt_correct.py --year 2024
 """
 import argparse
+import json
 import re
 import os
 import sys
@@ -270,8 +271,29 @@ def fetch_data(engine, company_id, year):
     return df_list, df_detail
 
 
-def process_xnt(df_list, df_detail, year):
+def load_skip_list(skip_path):
+    """Load skip list JSON file"""
+    if not skip_path or not os.path.exists(skip_path):
+        return set()
+    with open(skip_path, 'r', encoding='utf-8') as f:
+        data = json.load(f)
+    skip_shdons = set()
+    for entry in data.get('skip_entries', []):
+        skip_shdons.add(str(entry['shdon']))
+    return skip_shdons
+
+
+def process_xnt(df_list, df_detail, year, skip_shdons=None):
     """Tính XNT theo tháng, nhóm sản phẩm"""
+    # Áp dụng skip list (loại HĐ dịch vụ theo shdon)
+    if skip_shdons:
+        before = len(df_list)
+        skip_ids = df_list[df_list['shdon'].astype(str).isin(skip_shdons)]['idServer'].tolist()
+        skip_value = df_list[df_list['shdon'].astype(str).isin(skip_shdons)]['tgtcthue'].sum()
+        df_list = df_list[~df_list['shdon'].astype(str).isin(skip_shdons)].copy()
+        df_detail = df_detail[~df_detail['idhdonServer'].isin(skip_ids)].copy()
+        print(f"  Skip list: loại {before - len(df_list)} HĐ (tổng = {skip_value:,.0f})")
+
     # Merge detail with list
     df = df_detail.merge(
         df_list[['idServer', 'tdlap_ict', 'loaihd', 'tgtcthue']],
@@ -279,10 +301,10 @@ def process_xnt(df_list, df_detail, year):
     )
     df['month'] = pd.to_datetime(df['tdlap_ict']).dt.month
 
-    # Lọc bỏ dịch vụ
+    # Lọc bỏ dịch vụ (regex tên SP)
     mask_service = df['ten'].apply(is_service_item)
     service_total = df.loc[mask_service, 'thtien'].sum()
-    print(f"  Loại bỏ {mask_service.sum()} dòng dịch vụ (tổng = {service_total:,.0f})")
+    print(f"  Auto-detect dịch vụ: loại {mask_service.sum()} dòng (tổng = {service_total:,.0f})")
     df = df[~mask_service].copy()
 
     # Map sản phẩm → nhóm
@@ -488,16 +510,31 @@ def main():
     parser.add_argument('--company', type=str, default=DEFAULT_MST, help='MST công ty')
     parser.add_argument('--output', type=str, default=None, help='Output file path')
     parser.add_argument('--db', type=str, default=None, help='Database URI')
+    parser.add_argument('--skip-list', type=str, default=None,
+                        help='Path to skip list JSON (from detect_skip_invoices.py)')
     args = parser.parse_args()
 
     db_uri = args.db or DB_URI
     company_id = COMPANY_MAP.get(args.company, args.company)
     output_path = args.output or os.path.join(OUTPUT_DIR, f"XNT_HuyVu_{args.year}.xlsx")
 
+    # Auto-detect skip list if not provided
+    skip_path = args.skip_list
+    if not skip_path:
+        auto_skip = os.path.join(os.path.dirname(__file__), 'skip_lists', f'skip_list_{args.year}.json')
+        if os.path.exists(auto_skip):
+            skip_path = auto_skip
+
+    skip_shdons = load_skip_list(skip_path)
+
     print(f"=" * 60)
     print(f"BUILD XNT REPORT - NĂM {args.year}")
     print(f"  MST: {args.company} → ID: {company_id}")
     print(f"  Output: {output_path}")
+    if skip_shdons:
+        print(f"  Skip list: {skip_path} ({len(skip_shdons)} HĐ)")
+    else:
+        print(f"  Skip list: (không có)")
     print(f"=" * 60)
 
     engine = create_engine(db_uri)
@@ -507,7 +544,9 @@ def main():
         print("  ❌ Không có dữ liệu!")
         sys.exit(1)
 
-    result, all_groups, total_nhap, total_xuat = process_xnt(df_list, df_detail, args.year)
+    result, all_groups, total_nhap, total_xuat = process_xnt(
+        df_list, df_detail, args.year, skip_shdons
+    )
     build_excel(result, all_groups, args.year, output_path)
 
     print(f"\n{'=' * 60}")

@@ -1,0 +1,166 @@
+{
+  "year": 2023,
+  "generated_at": "2026-03-27T22:15:01.178936",
+  "total_skip_invoices": 5,
+  "total_skip_value": 21606641.0,
+  "skip_by_month": {
+    "1": {
+      "count": 1,
+      "total": 1188000.0,
+      "invoices": [
+        "3229"
+      ]
+    },
+    "3": {
+      "count": 1,
+      "total": 6364.0,
+      "invoices": [
+        "833663"
+      ]
+    },
+    "7": {
+      "count": 1,
+      "total": 17727273.0,
+      "invoices": [
+        "46484"
+      ]
+    },
+    "10": {
+      "count": 1,
+      "total": 250000.0,
+      "invoices": [
+        "16282"
+      ]
+    },
+    "11": {
+      "count": 1,
+      "total": 2435004.0,
+      "invoices": [
+        "2003"
+      ]
+    }
+  },
+  "skip_entries": [
+    {
+      "shdon": "3229",
+      "month": 1,
+      "tgtcthue": 1188000.0,
+      "reason": "PHI_CNTT_DV",
+      "sample": "Nâng cấp Premium Cloud Hosting - Thiết yếu (Essential) (huyvugialai.com)"
+    },
+    {
+      "shdon": "833663",
+      "month": 3,
+      "tgtcthue": 6364.0,
+      "reason": "VAN_CHUYEN",
+      "sample": "Phí vận chuyển [922055842]"
+    },
+    {
+      "shdon": "46484",
+      "month": 7,
+      "tgtcthue": 17727273.0,
+      "reason": "QUANG_CAO",
+      "sample": "Máy scan tài liệu Brother ADS-3100 "
+    },
+    {
+      "shdon": "16282",
+      "month": 10,
+      "tgtcthue": 250000.0,
+      "reason": "SUA_CHUA_DV",
+      "sample": "Phí sửa chữa"
+    },
+    {
+      "shdon": "2003",
+      "month": 11,
+      "tgtcthue": 2435004.0,
+      "reason": "BAO_HIEM",
+      "sample": "Phí bảo hiểm của Hợp đồng 0000118/HD/035-PTKD/PHH.TS.3.2/2023"
+    }
+  ],
+  "target_comparison": {
+    "1": {
+      "db_total": 1197852038.0,
+      "skip_total": 1188000.0,
+      "adjusted": 1196664038.0,
+      "target": 1154981164.0,
+      "diff": 41682874.0
+    },
+    "2": {
+      "db_total": 1796264669.0,
+      "skip_total": 0.0,
+      "adjusted": 1796264669.0,
+      "target": 1745704064.0,
+      "diff": 50560605.0
+    },
+    "3": {
+      "db_total": 1588120440.0,
+      "skip_total": 6364.0,
+      "adjusted": 1588114076.0,
+      "target": 1536437738.0,
+      "diff": 51676338.0
+    },
+    "4": {
+      "db_total": 803810581.0,
+      "skip_total": 0.0,
+      "adjusted": 803810581.0,
+      "target": 757550609.0,
+      "diff": 46259972.0
+    },
+    "5": {
+      "db_total": 645917029.0,
+      "skip_total": 0.0,
+      "adjusted": 645917029.0,
+      "target": 600350985.0,
+      "diff": 45566044.0
+    },
+    "6": {
+      "db_total": 813615867.0,
+      "skip_total": 0.0,
+      "adjusted": 813615867.0,
+      "target": 749561478.0,
+      "diff": 64054389.0
+    },
+    "7": {
+      "db_total": 934265953.0,
+      "skip_total": 17727273.0,
+      "adjusted": 916538680.0,
+      "target": 895409563.0,
+      "diff": 21129117.0
+    },
+    "8": {
+      "db_total": 1866738637.0,
+      "skip_total": 0.0,
+      "adjusted": 1866738637.0,
+      "target": 1812197507.0,
+      "diff": 54541130.0
+    },
+    "9": {
+      "db_total": 1576484239.0,
+      "skip_total": 0.0,
+      "adjusted": 1576484239.0,
+      "target": 1552056812.0,
+      "diff": 24427427.0
+    },
+    "10": {
+      "db_total": 930787421.0,
+      "skip_total": 250000.0,
+      "adjusted": 930537421.0,
+      "target": 890284926.0,
+      "diff": 40252495.0
+    },
+    "11": {
+      "db_total": 1604041008.0,
+      "skip_total": 2435004.0,
+      "adjusted": 1601606004.0,
+      "target": 1564643572.0,
+      "diff": 36962432.0
+    },
+    "12": {
+      "db_total": 2473026108.0,
+      "skip_total": 0.0,
+      "adjusted": 2473026108.0,
+      "target": 2381764450.0,
+      "diff": 91261658.0
+    }
+  }
+}
