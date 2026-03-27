@@ -1,0 +1,202 @@
+:root {
+    --primary: #6366f1;
+    --secondary: #a855f7;
+    --accent: #f43f5e;
+    --bg: #0f172a;
+    --glass: rgba(255, 255, 255, 0.05);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --text: #f8fafc;
+    --text-muted: #94a3b8;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Outfit', sans-serif;
+}
+
+body {
+    background-color: var(--bg);
+    color: var(--text);
+    overflow-x: hidden;
+    min-height: 100vh;
+}
+
+/* Glassmorphism UI */
+.glass {
+    background: var(--glass);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+.background-blobs {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: -1;
+    overflow: hidden;
+}
+
+.blob {
+    position: absolute;
+    width: 600px;
+    height: 600px;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.15;
+    animation: move 20s infinite alternate;
+}
+
+.blob-1 { background: var(--primary); top: -10%; left: -10%; }
+.blob-2 { background: var(--secondary); bottom: -10%; right: -10%; animation-delay: -5s; }
+.blob-3 { background: var(--accent); top: 50%; left: 50%; transform: translate(-50%, -50%); animation-delay: -10s; }
+
+@keyframes move {
+    from { transform: translate(0, 0) scale(1.0); }
+    to { transform: translate(100px, 50px) scale(1.2); }
+}
+
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 100px 30px 50px;
+}
+
+.glass-nav {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    padding: 20px 40px;
+    z-index: 1000;
+    background: rgba(15, 23, 42, 0.8);
+    backdrop-filter: blur(10px);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--glass-border);
+}
+
+.logo {
+    font-size: 1.5rem;
+    font-weight: 800;
+    letter-spacing: 2px;
+}
+
+.logo span {
+    color: var(--secondary);
+}
+
+.nav-links a {
+    color: var(--text-muted);
+    text-decoration: none;
+    margin-left: 30px;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+.nav-links a:hover, .nav-links a.active {
+    color: var(--text);
+}
+
+.hero-section {
+    text-align: center;
+    margin-bottom: 60px;
+}
+
+.hero-section h1 {
+    font-size: 4rem;
+    font-weight: 800;
+    margin-bottom: 10px;
+}
+
+.hero-section h1 span {
+    background: linear-gradient(90deg, var(--primary), var(--secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.hero-section p {
+    color: var(--text-muted);
+    font-size: 1.2rem;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+    margin-bottom: 60px;
+}
+
+.stat-card {
+    padding: 40px;
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.stat-card:hover { transform: translateY(-10px); }
+
+.stat-card h3 {
+    color: var(--text-muted);
+    font-size: 1rem;
+    margin-bottom: 15px;
+}
+
+.stat-card .value {
+    font-size: 2.5rem;
+    font-weight: 800;
+    margin-bottom: 10px;
+}
+
+.stat-card .trend {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+.stat-card .trend.positive { color: #10b981; }
+
+.charts-section { margin-bottom: 60px; }
+
+.chart-container {
+    padding: 40px;
+    position: relative;
+    height: 60vh;
+}
+
+.chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+#year-select {
+    padding: 8px 20px;
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
+    border-radius: 30px;
+    color: #fff;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+/* Animations */
+.animate-up {
+    opacity: 0;
+    transform: translateY(30px);
+    animation: up 0.8s forwards ease-out;
+}
+
+@keyframes up {
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.delay-1 { animation-delay: 0.1s; }
+.delay-2 { animation-delay: 0.2s; }
+.delay-3 { animation-delay: 0.3s; }
+.delay-4 { animation-delay: 0.4s; }
+.delay-5 { animation-delay: 0.5s; }
