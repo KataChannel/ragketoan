@@ -9,7 +9,7 @@ Dưới đây là các thông số đầu vào và yêu cầu nghiệp vụ đ�
 - **Công ty:** CÔNG TY TNHH THƯƠNG MẠI DỊCH VỤ CÔNG NGHỆ HUY VŨ
 - **MST:** `5900363291`
 - **Năm báo cáo:** `2025`
-- **Tồn Đầu Kỳ Năm 2025 (Chuyển tiếp từ 2024):** `31,017,722,278` VNĐ
+- **Tồn Đầu Kỳ Năm 2025 (Chuyển tiếp từ 2024):** `19,905,995,673` VNĐ
 
 ---
 

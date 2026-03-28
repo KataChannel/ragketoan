@@ -446,7 +446,7 @@ def process_xnt(df_list, df_detail, year, skips, ton_dau_vnd=0):
 
 def ceil_int(x): return int(np.ceil(x))
 
-def build_excel(result, all_groups, year, output_path, ton_dau_groups, hoadon_data, target_cogs=None):
+def build_excel(result, all_groups, year, output_path, ton_dau_groups, hoadon_data, target_cogs=None, target_nhap=None):
     wb = Workbook()
     wb.remove(wb.active)
     
@@ -475,6 +475,17 @@ def build_excel(result, all_groups, year, output_path, ton_dau_groups, hoadon_da
     if target_cogs and natural_cogs > 0:
         cogs_factor = target_cogs / natural_cogs
         print(f"  Target COGS Scaling: {natural_cogs:,.0f} -> {target_cogs:,.0f} (Factor: {cogs_factor:.6f})")
+
+    # --- Step 0.5: Calculate NHAP Scaling Factor ---
+    natural_nhap = 0
+    for g in all_groups:
+        for m in range(1,13):
+            natural_nhap += result.get(m, {}).get(g, {}).get('nhap_vnd', 0)
+    
+    nhap_factor = 1.0
+    if target_nhap and natural_nhap > 0:
+        nhap_factor = target_nhap / natural_nhap
+        print(f"  Target Nhập Scaling: {natural_nhap:,.0f} -> {target_nhap:,.0f} (Factor: {nhap_factor:.6f})")
 
     # --- Sheet xnt12thang ---
     ws_master = wb.create_sheet("xnt12thang")
@@ -513,17 +524,18 @@ def build_excel(result, all_groups, year, output_path, ton_dau_groups, hoadon_da
                 avg_p_nat = 0
             
             gv_xuat_nat = avg_p_nat * d['xuat_sl']
-            # Scale it for the Actual output
+            
+            nhap_vnd_actual = d['nhap_vnd'] * nhap_factor
             gv_xuat_actual = gv_xuat_nat * cogs_factor
             
-            monthly_cells.extend([d['nhap_vnd'], d['xuat_vnd']])
+            monthly_cells.extend([nhap_vnd_actual, d['xuat_vnd']])
             
             # Update flows
             nat_v += d['nhap_vnd'] - gv_xuat_nat
-            curr_v += d['nhap_vnd'] - gv_xuat_actual
+            curr_v += nhap_vnd_actual - gv_xuat_actual
             curr_q += d['nhap_sl'] - d['xuat_sl']
             
-            sum_n += d['nhap_vnd']
+            sum_n += nhap_vnd_actual
             sum_x_hd += d['xuat_vnd']
             sum_gv += gv_xuat_actual
             
@@ -577,14 +589,15 @@ def build_excel(result, all_groups, year, output_path, ton_dau_groups, hoadon_da
             avg_nat = (t_v_nat + d['nhap_vnd']) / (t_q + d['nhap_sl']) if (t_q + d['nhap_sl']) > 0 else 0
             gv_x_nat = avg_nat * d['xuat_sl']
             gv_x_actual = gv_x_nat * cogs_factor
+            nhap_vnd_actual = d['nhap_vnd'] * nhap_factor
             
             c_q = t_q + d['nhap_sl'] - d['xuat_sl']
-            c_v = t_v + d['nhap_vnd'] - gv_x_actual
+            c_v = t_v + nhap_vnd_actual - gv_x_actual
             c_v_nat = t_v_nat + d['nhap_vnd'] - gv_x_nat
             
             m_running_q[g], m_running_v[g], m_running_v_nat[g] = c_q, c_v, c_v_nat
             
-            vals = [idx, g, CATEGORY_NAMES.get(g, g), t_q, t_v, d['nhap_sl'], d['nhap_vnd'], d['xuat_sl'], d['xuat_vnd'], avg_nat, gv_x_actual, c_q, c_v]
+            vals = [idx, g, CATEGORY_NAMES.get(g, g), t_q, t_v, d['nhap_sl'], nhap_vnd_actual, d['xuat_sl'], d['xuat_vnd'], avg_nat, gv_x_actual, c_q, c_v]
             for c, v in enumerate(vals, 1):
                 cell = ws.cell(m_row, c, v)
                 cell.border = border
@@ -630,6 +643,7 @@ def main():
     parser.add_argument('--year', type=int, default=2023)
     parser.add_argument('--ton-dau-vnd', type=float, default=20528682383)
     parser.add_argument('--target-cogs', type=float, default=None)
+    parser.add_argument('--target-nhap', type=float, default=None)
     parser.add_argument('--company', type=str, default=DEFAULT_MST)
     args = parser.parse_args()
 
@@ -645,7 +659,7 @@ def main():
     result, all_groups, ton_dau_groups, hoadon_data = process_xnt(df_list, df_detail, args.year, skips, args.ton_dau_vnd)
     
     out = os.path.join(OUTPUT_DIR, f"XNT_HuyVu_{args.year}.xlsx")
-    build_excel(result, all_groups, args.year, out, ton_dau_groups, hoadon_data, args.target_cogs)
+    build_excel(result, all_groups, args.year, out, ton_dau_groups, hoadon_data, args.target_cogs, args.target_nhap)
 
 if __name__ == "__main__":
     main()

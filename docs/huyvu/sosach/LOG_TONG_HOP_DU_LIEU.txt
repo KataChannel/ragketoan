@@ -1,0 +1,11 @@
+BẮT ĐẦU TỔNG HỢP DỮ LIỆU KẾ TOÁN 2023 HUY VŨ
+--------------------------------------------------
+Đang đọc dữ liệu XNT từ: /chikiet/kata2025/ragketoan/docs/huyvu/XNT_HuyVu_2023.xlsx
+Đã đọc 12 tháng dữ liệu nhập/xuất kho.
+Đang đọc dữ liệu Sao kê Ngân hàng từ: /chikiet/kata2025/ragketoan/docs/huyvu/sosach/bank_statement_summary.xlsx
+Đã tổng hợp dòng tiền ngân hàng theo 1 tháng có dữ liệu thực tế.
+Các tham số chốt: Tồn đầu=20,528,682,383, Doanh thu thuần=16,170,531,001, Giá vốn mục tiêu=17,954,811,985
+
+Bắt đầu xử lý hạch toán từ sao kê ngân hàng...
+Tiến hành xuất hệ thống sổ sách ra file Excel: /chikiet/kata2025/ragketoan/docs/huyvu/sosach/SO_SACH_KE_TOAN_TONG_HOP_2023_HUYVU.xlsx
+HOÀN TẤT! Dữ liệu đã được tổng hợp xong.
