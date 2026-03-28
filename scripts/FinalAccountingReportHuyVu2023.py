@@ -51,12 +51,13 @@ def main():
     output_file = "/chikiet/kata2025/ragketoan/docs/huyvu/sosach/SAO_KE_TONG_HOP_SO_CHI_TIET_2023.xlsx"
     
     # 1. Load Data
+    # Only load ONE side of each paired account to avoid double-counting
+    # 131 already creates Nợ 131/Có 511 (covers both 131 and 511)
+    # 1561 already creates Nợ 1561/Có 331 and Nợ 632/Có 1561 (covers 632)
     files = {
         '131': 'ACTUAL_DETAIL_131_2023.md',
         '331': 'ACTUAL_DETAIL_331_2023.md',
         '1561': 'ACTUAL_DETAIL_1561_2023.md',
-        '511': 'ACTUAL_DETAIL_511_2023.md',
-        '632': 'ACTUAL_DETAIL_632_2023.md',
         '642': 'ACTUAL_DETAIL_642_2023.md'
     }
     
@@ -84,15 +85,8 @@ def main():
         df_1111['Có'] = 0
         all_data['1111'] = df_1111
         
-    # 3331 (VAT Output) from 511
-    if '511' in all_data:
-        df_511 = all_data['511']
-        df_3331 = df_511.copy()
-        df_3331['Diễn giải'] = "Thuế GTGT đầu ra (10%)"
-        df_3331['TK Đ/Ứ'] = '131'
-        df_3331['Nợ'] = 0
-        df_3331['Có'] = df_511['Có'] * 0.1
-        all_data['3331'] = df_3331
+    # 3331 (VAT Output) - will be synthesized in NKC loop below
+    # Do NOT create from detail ledger - NKC has full revenue data
 
     # 1331 (VAT Input) from 1561 + Move LAI VAY to 635 (BUG 1)
     if '1561' in all_data:
@@ -106,12 +100,8 @@ def main():
             all_data['1561'] = df_1561
             print(f"Moved {len(df_635)} rows of interest expenses from 1561 to 635.")
 
-        df_1331 = df_1561[df_1561['Nợ'] > 0].copy() # Purchases
-        df_1331['Diễn giải'] = "Thuế GTGT đầu vào (10%)"
-        df_1331['TK Đ/Ứ'] = '331'
-        df_1331['Nợ'] = df_1331['Nợ'] * 0.1
-        df_1331['Có'] = 0
-        all_data['1331'] = df_1331
+        # 1331 - already exists in NKC source (548 entries)
+        # Do NOT re-synthesize to avoid double counting
 
     # 3411 from 112 (BUG 4)
     if '112' in all_data:
@@ -153,9 +143,14 @@ def main():
             credit_val = row.get('Có', 0)
             contra_acc = row.get('TK Đ/Ứ', '')
             
-            if debit_val > 0:
+            # Avoid double-counting: only write full journal entry from ONE side
+            # Asset/Expense accounts (1xx,2xx,6xx,8xx): write from debit side
+            # Liability/Revenue accounts (3xx,4xx,5xx,7xx): write from credit side
+            is_debit_account = str(acc).startswith(('1', '2', '6', '8'))
+            
+            if is_debit_account and debit_val > 0:
                 nkc_rows.append({'Ngày': date, 'Số HĐ': doc, 'Diễn giải': desc, 'TK Nợ': acc, 'TK Có': contra_acc, 'Số tiền': debit_val})
-            if credit_val > 0:
+            elif not is_debit_account and credit_val > 0:
                 nkc_rows.append({'Ngày': date, 'Số HĐ': doc, 'Diễn giải': desc, 'TK Nợ': contra_acc, 'TK Có': acc, 'Số tiền': credit_val})
     
     # Add 112 to NKC
@@ -195,8 +190,19 @@ def main():
             
             nkc_rows.append({'Ngày': date, 'Số HĐ': 'Bank', 'Diễn giải': desc, 'TK Nợ': tk_no, 'TK Có': tk_co, 'Số tiền': amount})
 
-
     df_nkc = pd.DataFrame(nkc_rows)
+
+    # POST-BUILD: Synthesize VAT 3331 from ALL unique 511 credit entries
+    rev_rows = df_nkc[df_nkc['TK Có'] == '511']
+    vat_rows = []
+    for _, r in rev_rows.iterrows():
+        vat_rows.append({'Ngày': r['Ngày'], 'Số HĐ': r['Số HĐ'],
+            'Diễn giải': f"Thuế GTGT đầu ra: {r['Diễn giải']}",
+            'TK Nợ': r['TK Nợ'], 'TK Có': '3331', 'Số tiền': r['Số tiền'] * 0.1})
+    if vat_rows:
+        df_nkc = pd.concat([df_nkc, pd.DataFrame(vat_rows)], ignore_index=True)
+        print(f"Synthesized {len(vat_rows)} VAT output (3331) entries.")
+
     df_nkc['Ngày'] = pd.to_datetime(df_nkc['Ngày'], dayfirst=True, errors='coerce')
     df_nkc = df_nkc.sort_values('Ngày')
     

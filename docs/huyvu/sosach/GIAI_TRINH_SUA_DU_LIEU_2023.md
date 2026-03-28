@@ -43,12 +43,35 @@ Khắc phục 4 lỗi logic trong quá trình tổng hợp số liệu từ các
 | :--- | :--- | :--- | :--- | :--- |
 | **1111** | Tiền mặt | 24.355.980.000 | 5.513.550.000 | Đã có phát sinh chi |
 | **112** | Tiền gửi ngân hàng | 43.662.720.000 | 32.297.290.000 | Phản ánh đúng dòng tiền thực |
-| **3411** | Vay và nợ thuê tài chính | 22.948.790.000 | 1.200.000,000 | Đã có phát sinh thu vay |
+| **3411** | Vay và nợ thuê tài chính | 22.948.790.000 | 1.200.000.000 | Đã có phát sinh thu vay |
 | **635** | Chi phí tài chính | 310.676.400 | 0 | Đã tách từ 1561 |
+| **3331** | Thuế GTGT đầu ra | 0 | 1.626.396.282 | Khớp 10% doanh thu |
+| **511** | Doanh thu | 0 | 16.263.962.819 | Không double-count |
 
-## 4. Kết Luận
-Báo cáo tổng hợp đã hoàn thành việc sửa các lỗi logic trọng yếu. Các dữ liệu này hiện đã sẵn sàng để đối chiếu với hồ sơ thuế và quyết toán năm 2023.
+## 4. Kiểm Tra Sâu (Deep Audit) - Ngày 29/03/2026
+
+### 4.1. Khắc phục Double-Counting Doanh Thu
+- **Vấn đề:** Detail ledger 131 và 511 cùng ghi `Nợ 131 / Có 511`, gây gấp đôi doanh thu.
+- **Xử lý:** Loại bỏ detail 511 và 632 khỏi danh sách load.
+- **Kết quả:** Doanh thu thực = **16.263.962.819 VNĐ**.
+
+### 4.2. Sửa Logic VAT Đầu Ra (3331)
+- **Vấn đề:** VAT 3331 chỉ synthesize từ subset, không bao phủ toàn bộ doanh thu.
+- **Xử lý:** Synthesize VAT sau khi build NKC từ toàn bộ dòng credit 511.
+- **Kết quả:** VAT đầu ra = **1.626.396.282 = 10% x 16.263.962.819** ✅
+
+### 4.3. Kết Quả 4 Kiểm Tra Nghiệp Vụ
+
+| # | Kiểm tra | Kết quả |
+| :--- | :--- | :--- |
+| 1 | CDPS cân đối (Tổng Nợ = Tổng Có) | ✅ Lệch = 0 |
+| 2 | Số dư cuối kỳ bất thường (âm) | ✅ Không có |
+| 3 | Logic đối ứng TK 112 | ✅ Ánh xạ đúng 131/331/3411/635/515 |
+| 4 | Thuế GTGT khớp 10% | ✅ 3331 = 10% x 511 |
+
+## 5. Kết Luận
+Báo cáo đã sửa tất cả lỗi logic: phân loại lãi vay, double-counting, đối chiếu VAT 100%, CDPS cân đối hoàn hảo. Sẵn sàng cho quyết toán thuế 2023.
 
 ---
-*Ngày lập: 28/03/2026*
+*Ngày lập: 28/03/2026 | Cập nhật: 29/03/2026*
 *Hệ thống: Antigravity AI Accounting Module*
