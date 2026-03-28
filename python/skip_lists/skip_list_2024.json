@@ -1,0 +1,74 @@
+{
+  "year": 2024,
+  "generated_at": "2026-03-28T10:51:28.531975",
+  "total_skip_invoices": 5,
+  "total_skip_value": 17432732.0,
+  "skip_by_month": {
+    "1": {
+      "count": 2,
+      "total": 13452273.0,
+      "invoices": [
+        "29",
+        "7157"
+      ]
+    },
+    "7": {
+      "count": 1,
+      "total": 636364.0,
+      "invoices": [
+        "217647"
+      ]
+    },
+    "10": {
+      "count": 1,
+      "total": 909091.0,
+      "invoices": [
+        "295390"
+      ]
+    },
+    "11": {
+      "count": 1,
+      "total": 2435004.0,
+      "invoices": [
+        "126"
+      ]
+    }
+  },
+  "skip_entries": [
+    {
+      "shdon": "29",
+      "month": 1,
+      "tgtcthue": 12264273.0,
+      "reason": "BAO_HIEM",
+      "sample": "Phí bảo hiểm của Hợp đồng 035OTBB+240000029; 81A - 002.83"
+    },
+    {
+      "shdon": "7157",
+      "month": 1,
+      "tgtcthue": 1188000.0,
+      "reason": "PHI_NGAN_HANG",
+      "sample": "Phí duy trì Premium Cloud Hosting - Thiết yếu (Essential) (huyvugialai.com)"
+    },
+    {
+      "shdon": "217647",
+      "month": 7,
+      "tgtcthue": 636364.0,
+      "reason": "XANG_DAU",
+      "sample": "Xăng RON95-III"
+    },
+    {
+      "shdon": "295390",
+      "month": 10,
+      "tgtcthue": 909091.0,
+      "reason": "XANG_DAU",
+      "sample": "Xăng RON95-III"
+    },
+    {
+      "shdon": "126",
+      "month": 11,
+      "tgtcthue": 2435004.0,
+      "reason": "BAO_HIEM",
+      "sample": "Phí bảo hiểm của Hợp đồng 0000091/HD/035-KD2/PHH.TS.3.2/2024"
+    }
+  ]
+}

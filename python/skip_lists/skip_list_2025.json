@@ -1,0 +1,74 @@
+{
+  "year": 2025,
+  "generated_at": "2026-03-28T10:51:34.177269",
+  "total_skip_invoices": 5,
+  "total_skip_value": 38935606.0,
+  "skip_by_month": {
+    "1": {
+      "count": 2,
+      "total": 18375552.0,
+      "invoices": [
+        "21",
+        "31"
+      ]
+    },
+    "2": {
+      "count": 1,
+      "total": 1188000.0,
+      "invoices": [
+        "9766"
+      ]
+    },
+    "3": {
+      "count": 1,
+      "total": 18909091.0,
+      "invoices": [
+        "18809"
+      ]
+    },
+    "8": {
+      "count": 1,
+      "total": 462963.0,
+      "invoices": [
+        "2095858"
+      ]
+    }
+  },
+  "skip_entries": [
+    {
+      "shdon": "21",
+      "month": 1,
+      "tgtcthue": 10505182.0,
+      "reason": "BAO_HIEM",
+      "sample": "Phí bảo hiểm của Hợp đồng 035OTTN+250000005; 81A - 002.83"
+    },
+    {
+      "shdon": "31",
+      "month": 1,
+      "tgtcthue": 7870370.0,
+      "reason": "QUANG_CAO",
+      "sample": "Lốp 8.25-16 20PR CA402F"
+    },
+    {
+      "shdon": "9766",
+      "month": 2,
+      "tgtcthue": 1188000.0,
+      "reason": "PHI_NGAN_HANG",
+      "sample": "Phí duy trì Premium Cloud Hosting - Thiết yếu (Essential) huyvugialai.com (1 năm"
+    },
+    {
+      "shdon": "18809",
+      "month": 3,
+      "tgtcthue": 18909091.0,
+      "reason": "QUANG_CAO",
+      "sample": "Máy tính để bàn Dell Inspiron Desktop 3030, Core i7-14700 (20 Core, 28 threads, "
+    },
+    {
+      "shdon": "2095858",
+      "month": 8,
+      "tgtcthue": 462963.0,
+      "reason": "QUANG_CAO",
+      "sample": "Dịch vụ quảng cáo Google Ads"
+    }
+  ]
+}
