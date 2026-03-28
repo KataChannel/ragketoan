@@ -375,35 +375,56 @@ def process_xnt(df_list, df_detail, year, skips, ton_dau_vnd=0):
     # --- TON DAU ALLOCATION (SMART) ---
     ton_dau_groups = {}
     if ton_dau_vnd > 0:
-        print(f"  Allocating {ton_dau_vnd:,.0f} VNĐ Initial Stock...")
-        # Lấy giá TB xuất trong năm để làm base
+        print(f"  Allocating {ton_dau_vnd:,.0f} VNĐ Initial Stock (Negative-Safe)...")
+        # Step 1: Lấy giá TB xuất trong năm để làm base cho tỷ trọng tiền
         cogs_base = {}
         for g in all_groups:
             tot_v = df[df['group']==g]['value'].sum()
             tot_q = df[df['group']==g]['qty'].sum()
             cogs_base[g] = tot_v / tot_q if tot_q > 0 else 500000
         
-        # Đảm bảo Ton Dau SL >= Total Xuat SL (Simplified approach for clean inventory)
-        # Thực tế: Ton Dau SL >= max negative dip.
+        # Step 2: Tìm "Max Negative Dip" cho từng mã hàng để tránh âm kho giữa năm
         base_v_map = {}
         for g in all_groups:
-            total_xuat_sl = df_xuat[df_xuat['group']==g]['qty'].sum()
-            total_nhap_sl = df_nhap[df_nhap['group']==g]['qty'].sum()
-            # Cần ít nhất bao nhiêu để không âm?
-            needed_sl = max(0, total_xuat_sl - total_nhap_sl)
-            # Thêm buffer 20%
-            ton_dau_groups[g] = {'qty': ceil_int(needed_sl * 1.2)}
+            running_bal = 0
+            max_neg_dip = 0
+            for m in range(1, 13):
+                md = result.get(m, {}).get(g, {'nhap_sl':0, 'xuat_sl':0})
+                running_bal += md['nhap_sl'] - md['xuat_sl']
+                if running_bal < 0:
+                    max_neg_dip = max(max_neg_dip, abs(running_bal))
+            
+            # Cần tồn đầu ít nhất bằng max_neg_dip để không bao giờ bị âm
+            # Cộng thêm buffer 1.1 để đảm bảo kho dư ra một chút
+            min_needed_sl = ceil_int(max_neg_dip * 1.1)
+            
+            # Nếu nhóm này có giao dịch giá trị lớn, ưu tiên phân bổ nhiều hơn
+            # Ở đây ta dùng base SL (min_needed) kết hợp với tỷ trọng giao dịch trong năm
+            total_activity_v = df[df['group']==g]['value'].sum()
+            # Ước lượng SL tồn tương ứng với tỷ trọng doanh số (nếu có dư tiền sau khi đã bù âm)
+            ton_dau_groups[g] = {'qty': max(1 if total_activity_v > 0 else 0, min_needed_sl)}
             base_v_map[g] = ton_dau_groups[g]['qty'] * cogs_base[g]
         
-        # Scale Values to match ton_dau_vnd
+        # Step 3: Scale Values to match tổng tiền tồn đầu yêu cầu
+        # Chênh lệch giữa ton_dau_vnd và total_base_v sẽ được bù vào các nhóm có value cao nhất
         total_base_v = sum(base_v_map.values())
         if total_base_v > 0:
             scale = ton_dau_vnd / total_base_v
             for g in all_groups:
-                ton_dau_groups[g]['val'] = round(base_v_map[g] * scale)
+                # Update SL dựa trên tỷ trọng tiền (Keep SL integer)
+                # Tính lại SL để khớp với tiền sau khi scale
+                raw_val = base_v_map[g] * scale
+                ton_dau_groups[g]['val'] = round(raw_val)
+                # Đơn giá vốn ước tính
+                p = cogs_base[g] if cogs_base[g] > 0 else 1
+                # Tính lại SL tương ứng với số tiền đã scale để giữ tính nhất quán
+                # Đảm bảo SL >= min_needed ban đầu
+                recomputed_qty = ceil_int(ton_dau_groups[g]['val'] / p)
+                ton_dau_groups[g]['qty'] = max(ton_dau_groups[g]['qty'], recomputed_qty)
         else:
             # Fallback
             for g in all_groups: ton_dau_groups[g]['val'] = 0
+
 
     # Print monthly totals for reconciliation
     print("\n  Monthly Totals Reconciliation:")
