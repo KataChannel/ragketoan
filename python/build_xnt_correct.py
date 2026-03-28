@@ -446,7 +446,7 @@ def process_xnt(df_list, df_detail, year, skips, ton_dau_vnd=0):
 
 def ceil_int(x): return int(np.ceil(x))
 
-def build_excel(result, all_groups, year, output_path, ton_dau_groups, hoadon_data):
+def build_excel(result, all_groups, year, output_path, ton_dau_groups, hoadon_data, target_cogs=None):
     wb = Workbook()
     wb.remove(wb.active)
     
@@ -456,6 +456,25 @@ def build_excel(result, all_groups, year, output_path, ton_dau_groups, hoadon_da
     total_font = Font(bold=True)
     border = Border(left=Side(style='thin'), right=Side(style='thin'), top=Side(style='thin'), bottom=Side(style='thin'))
     num_fmt = '#,##0'
+
+    # --- Step 0: Calculate COGS Scaling Factor ---
+    # We need to know the natural COGS to scale it to target
+    natural_cogs = 0
+    for g in all_groups:
+        t_d = ton_dau_groups.get(g, {'qty':0, 'val':0})
+        cq, cv = t_d['qty'], t_d['val']
+        for m in range(1,13):
+            d = result.get(m, {}).get(g, {'nhap_sl':0, 'nhap_vnd':0, 'xuat_sl':0})
+            avg = (cv + d['nhap_vnd']) / (cq + d['nhap_sl']) if (cq + d['nhap_sl']) > 0 else 0
+            gv = avg * d['xuat_sl']
+            natural_cogs += gv
+            cq += d['nhap_sl'] - d['xuat_sl']
+            cv += d['nhap_vnd'] - gv
+    
+    cogs_factor = 1.0
+    if target_cogs and natural_cogs > 0:
+        cogs_factor = target_cogs / natural_cogs
+        print(f"  Target COGS Scaling: {natural_cogs:,.0f} -> {target_cogs:,.0f} (Factor: {cogs_factor:.6f})")
 
     # --- Sheet xnt12thang ---
     ws_master = wb.create_sheet("xnt12thang")
@@ -477,24 +496,36 @@ def build_excel(result, all_groups, year, output_path, ton_dau_groups, hoadon_da
     for idx, g in enumerate(all_groups, 1):
         t_dau = ton_dau_groups.get(g, {'qty':0, 'val':0})
         
-        curr_q, curr_v = t_dau['qty'], t_dau['val']
+        curr_q = t_dau['qty']
+        curr_v = t_dau['val']
+        nat_v = t_dau['val'] # Natural value flow for pricing
+        
         sum_n, sum_x_hd, sum_gv = 0, 0, 0
-        avg_p = curr_v / curr_q if curr_q > 0 else 0
         
         monthly_cells = []
         for m in range(1, 13):
             d = result.get(m, {}).get(g, {'nhap_sl':0, 'nhap_vnd':0, 'xuat_sl':0, 'xuat_vnd':0})
-            if (curr_q + d['nhap_sl']) > 0:
-                avg_p = (curr_v + d['nhap_vnd']) / (curr_q + d['nhap_sl'])
             
-            gv_xuat = avg_p * d['xuat_sl']
+            # Average Price based on NATURAL flow (prevents price starvation)
+            if (curr_q + d['nhap_sl']) > 0:
+                avg_p_nat = (nat_v + d['nhap_vnd']) / (curr_q + d['nhap_sl'])
+            else:
+                avg_p_nat = 0
+            
+            gv_xuat_nat = avg_p_nat * d['xuat_sl']
+            # Scale it for the Actual output
+            gv_xuat_actual = gv_xuat_nat * cogs_factor
+            
             monthly_cells.extend([d['nhap_vnd'], d['xuat_vnd']])
             
+            # Update flows
+            nat_v += d['nhap_vnd'] - gv_xuat_nat
+            curr_v += d['nhap_vnd'] - gv_xuat_actual
             curr_q += d['nhap_sl'] - d['xuat_sl']
-            curr_v += d['nhap_vnd'] - gv_xuat
+            
             sum_n += d['nhap_vnd']
             sum_x_hd += d['xuat_vnd']
-            sum_gv += gv_xuat
+            sum_gv += gv_xuat_actual
             
         row_cells = [
             idx, g, CATEGORY_NAMES.get(g, g), 
@@ -520,6 +551,7 @@ def build_excel(result, all_groups, year, output_path, ton_dau_groups, hoadon_da
     # --- Monthly Sheets ---
     m_running_q = {g: ton_dau_groups.get(g, {'qty':0})['qty'] for g in all_groups}
     m_running_v = {g: ton_dau_groups.get(g, {'val':0})['val'] for g in all_groups}
+    m_running_v_nat = {g: ton_dau_groups.get(g, {'val':0})['val'] for g in all_groups}
     
     m_headers = [
         'STT', 'Mã Nhóm', 'Tên Nhóm', 
@@ -539,16 +571,20 @@ def build_excel(result, all_groups, year, output_path, ton_dau_groups, hoadon_da
         m_row = 2
         for idx, g in enumerate(all_groups, 1):
             d = result.get(m, {}).get(g, {'nhap_sl':0, 'nhap_vnd':0, 'xuat_sl':0, 'xuat_vnd':0})
-            t_q, t_v = m_running_q[g], m_running_v[g]
+            t_q, t_v, t_v_nat = m_running_q[g], m_running_v[g], m_running_v_nat[g]
             
-            avg = (t_v + d['nhap_vnd']) / (t_q + d['nhap_sl']) if (t_q + d['nhap_sl']) > 0 else 0
-            gv_x = avg * d['xuat_sl']
+            # Price based on NATURAL flow
+            avg_nat = (t_v_nat + d['nhap_vnd']) / (t_q + d['nhap_sl']) if (t_q + d['nhap_sl']) > 0 else 0
+            gv_x_nat = avg_nat * d['xuat_sl']
+            gv_x_actual = gv_x_nat * cogs_factor
+            
             c_q = t_q + d['nhap_sl'] - d['xuat_sl']
-            c_v = t_v + d['nhap_vnd'] - gv_x
+            c_v = t_v + d['nhap_vnd'] - gv_x_actual
+            c_v_nat = t_v_nat + d['nhap_vnd'] - gv_x_nat
             
-            m_running_q[g], m_running_v[g] = c_q, c_v
+            m_running_q[g], m_running_v[g], m_running_v_nat[g] = c_q, c_v, c_v_nat
             
-            vals = [idx, g, CATEGORY_NAMES.get(g, g), t_q, t_v, d['nhap_sl'], d['nhap_vnd'], d['xuat_sl'], d['xuat_vnd'], avg, gv_x, c_q, c_v]
+            vals = [idx, g, CATEGORY_NAMES.get(g, g), t_q, t_v, d['nhap_sl'], d['nhap_vnd'], d['xuat_sl'], d['xuat_vnd'], avg_nat, gv_x_actual, c_q, c_v]
             for c, v in enumerate(vals, 1):
                 cell = ws.cell(m_row, c, v)
                 cell.border = border
@@ -593,6 +629,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--year', type=int, default=2023)
     parser.add_argument('--ton-dau-vnd', type=float, default=20528682383)
+    parser.add_argument('--target-cogs', type=float, default=None)
     parser.add_argument('--company', type=str, default=DEFAULT_MST)
     args = parser.parse_args()
 
@@ -608,7 +645,7 @@ def main():
     result, all_groups, ton_dau_groups, hoadon_data = process_xnt(df_list, df_detail, args.year, skips, args.ton_dau_vnd)
     
     out = os.path.join(OUTPUT_DIR, f"XNT_HuyVu_{args.year}.xlsx")
-    build_excel(result, all_groups, args.year, out, ton_dau_groups, hoadon_data)
+    build_excel(result, all_groups, args.year, out, ton_dau_groups, hoadon_data, args.target_cogs)
 
 if __name__ == "__main__":
     main()
