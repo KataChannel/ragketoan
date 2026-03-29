@@ -18,11 +18,15 @@ Báo cáo này sử dụng hệ thống tài khoản đầy đủ để phản �
 | **1561** | Hàng hóa | Giá trị kho thiết bị điện tử, laptop. |
 | **331** | Phải trả người bán | Theo dõi nợ nhà cung cấp linh kiện. |
 | **3331** | Thuế GTGT đầu ra | Thuế phải nộp vào ngân sách nhà nước từ hóa đơn bán lẻ/dự án. |
+| **3411** | Vay và nợ thuê tài chính| Các khoản giải ngân và trả gốc vay ngân hàng. |
 | **411** | Vốn đầu tư của chủ sở hữu | Nguồn vốn hình thành doanh nghiệp. |
 | **421** | Lợi nhuận chưa phân phối | Lãi/lỗ lũy kế qua các kỳ. |
 | **511** | Doanh thu bán hàng | Thu nhập từ hoạt động bán thiết bị. |
+| **515** | Doanh thu tài chính | Lãi tiền gửi ngân hàng, lãi chênh lệch tỷ giá. |
 | **632** | Giá vốn hàng bán | Trị giá vốn hàng xuất bán trong năm. |
+| **635** | Chi phí tài chính | Lãi vay và các loại phí ngân hàng phát sinh. |
 | **641 / 642** | Chi phí bán hàng / QLDN | Chi phí nhân viên, văn phòng, điện nước... |
+| **711** | Thu nhập khác | Chiết khấu thanh toán, thu nhập khác. |
 | **911** | Xác định kết quả kinh doanh | Tài khoản trung gian kết chuyển cuối kỳ. |
 
 ---
@@ -86,13 +90,17 @@ Cuối năm tài chính, thực hiện đóng sổ và xác định kết quả:
 
 ---
 
-##| 511 | Doanh thu | 0 | 0 | 16,170,531,001 | 16,170,531,001 | 0 | 0 |
+## 📊 4. BẢNG TỔNG HỢP PHÁT SINH KẾT CHUYỂN TÀI KHOẢN LOẠI 5, 6, 9
+
+| TK | Tên tài khoản | Dư đầu Nợ | Dư đầu Có | PS Nợ | PS Có | Dư cuối Nợ | Dư cuối Có |
+|:---:|:---|:---|:---|:---|:---|:---|:---|
+| 511 | Doanh thu | 0 | 0 | 16,170,531,001 | 16,170,531,001 | 0 | 0 |
 | 632 | Giá vốn | 0 | 0 | 17,954,811,985 | 17,954,811,985 | 0 | 0 |
 | 911 | Xác định KQ | 0 | 0 | 17,954,811,985 | 17,954,811,985 | 0 | 0 |
 
 ---
 
-## 📁 6. DANH MỤC HỆ THỐNG SỔ SÁCH EXCEL TÍCH HỢP
+## 📁 5. DANH MỤC HỆ THỐNG SỔ SÁCH EXCEL TÍCH HỢP
 
 Hệ thống sổ sách chi tiết được lưu trữ tại file: `SAO_KE_TONG_HOP_SO_CHI_TIET_2023.xlsx`. Dữ liệu được tổng hợp trực tiếp từ hóa đơn XNT, sao kê ngân hàng và các định mức chi phí kế toán.
 
@@ -116,10 +124,13 @@ Bao gồm các sheet sau:
 | 14 | **CT_632** | Sổ chi tiết Giá vốn: Hạch toán định mức 80% doanh thu. |
 | 15 | **CT_641** | Sổ chi tiết Chi phí bán hàng: Vận chuyển, ship, quảng cáo. |
 | 16 | **CT_642** | Sổ chi tiết Chi phí Quản lý: Phí ngân hàng, phần mềm, quản lý. |
+| 17 | **CT_635** | Sổ chi tiết Chi phí Tài chính: Phí ngân hàng, lãi vay (điều chỉnh từ 3411, 1561, 642). |
+| 18 | **CT_711** | Sổ chi tiết Thu nhập khác: Các khoản chiết khấu, thu nhập ngoài hoạt động chính. |
+| 19 | **CT_515** | Sổ chi tiết Doanh thu Tài chính: Phản ánh lãi tiền gửi và các khoản doanh thu tài chính. |
 
 ---
 
-## 🤖 7. LỆNH PROMPT KẾT XUẤT BÁO CÁO KHAI THUẾ (DÀNH CHO AI / SYSTEM)
+## 🤖 6. LỆNH PROMPT KẾT XUẤT BÁO CÁO KHAI THUẾ (DÀNH CHO AI / SYSTEM)
 
 Sử dụng đoạn Prompt sau để yêu cầu hệ thống xử lý hồ sơ khai thuế:
 
@@ -130,4 +141,37 @@ Sử dụng đoạn Prompt sau để yêu cầu hệ thống xử lý hồ sơ k
 > *3. Dựa trên số liệu **CT_3411**, kiểm tra các khoản lãi vay và đối chiếu với **CT_642/641** để tối ưu chi phí tài chính khi quyết toán thuế TNDN.*
 > *4. Xác thực số liệu (Cross-check): Đảm bảo Tổng Dư Nợ 1561 cuối kỳ khớp với báo cáo XNT thực tế; Phát sinh Có 511 khớp với doanh thu trên tờ khai thuế.*
 > *5. Xuất File Báo cáo Quyết toán TNDN mẫu **03/TNDN** và tổng hợp thành `HO_SO_QUYET_TOAN_THUE_2023_FINAL.xlsx`.*"
-> *5. Xuất File Báo cáo Quyết toán TNDN mẫu **03/TNDN** và tổng hợp thành `HO_SO_QUYET_TOAN_THUE_2023_FINAL.xlsx`.*"
+
+---
+
+## 📘 7. HƯỚNG DẪN CHI TIẾT NGHIỆP VỤ THEO TÀI KHOẢN (FULL GUIDE)
+
+Dưới đây là nguyên tắc hạch toán và đối soát cho các tài khoản trọng yếu trong năm 2023:
+
+| STT | Tài khoản | Phát sinh Nợ | Phát sinh Có | Số dư cuối kỳ | Ghi chú & Logic đối soát |
+|:---:|:---|:---|:---|:---|:---|
+| 1 | **1111** (Tiền mặt) | Thu tiền bán hàng, rút tiền mặt nhập quỹ | Nộp tiền mặt vào TK 1121, trả tiền mua hàng | Dư Nợ | Theo dõi dòng tiền mặt tại quỹ thực tế. |
+| 2 | **1121** (Ngân hàng) | Nộp tiền mặt, vay (3411), thu tiền khách hàng (131) | Thanh toán tiền hàng, rút tiền mặt, trả nợ vay (3411), chi trả lãi (635) | Dư Nợ | Phải khớp tuyệt đối với Sao kê Ngân hàng. |
+| 3 | **1561** (Hàng hóa) | Giá trị hàng hóa mua vào nhập kho | Xuất giá vốn hàng hóa đã bán trong kỳ | Dư Nợ | Khớp với Báo cáo Tổng hợp Xuất Nhập Tồn. |
+| 4 | **3411** (Vay vốn) | Các khoản chi trả nợ gốc vay | Các khoản giải ngân vay mới phát sinh | Dư Có | Theo dõi dư nợ vay ngân hàng/tổ chức. |
+| 5 | **5111** (Doanh thu) | Kết chuyển doanh thu thuần sang 911 để xác định lãi lỗ | Ghi nhận tiền bán hàng hóa, nhân công lắp đặt | Không số dư | Tổng phát sinh Có khớp với Doanh thu trên Tờ khai thuế. |
+| 6 | **632** (Giá vốn) | Ghi nhận giá vốn hàng xuất bán, nhân công (Nợ 632 / Có 156) | Kết chuyển toàn bộ giá vốn sang 911 | Không số dư | Phản ánh giá trị gốc của hàng hóa bán ra. |
+| 7 | **635** (Chi phí TC) | Phát sinh trả lãi vay (Nợ 635 / Có 1121) | Kết chuyển chi phí lãi vay sang 911 | Không số dư | Toàn bộ lãi vay ngân hàng tính vào chi phí tài chính. |
+| 8 | **642** (Chi phí QL) | Toàn bộ hóa đơn mua vào (trừ hàng hóa 156) | Kết chuyển chi phí quản lý doanh nghiệp sang 911 | Không số dư | Bao gồm phí dịch vụ, hóa đơn điện nước, văn phòng... |
+
+---
+
+## 🚀 8. TỔNG HỢP CÁC YÊU CẦU ĐIỀU CHỈNH HẠCH TOÁN (THEO FILE 'YÊU CẦU ĐIỀU CHỈNH.XLSX')
+
+Dựa trên kết quả rà soát dữ liệu chi tiết tại file `Yêu Cầu Điều Chỉnh.xlsx`, hệ thống ghi nhận các nhóm nội dung cần điều chỉnh để đảm bảo tính chính xác và tuân thủ quy định kế toán:
+
+| Nhóm điều chỉnh | Tài khoản liên quan | Nội dung chi tiết cần thực hiện | Số lượng dòng |
+|:---|:---:|:---|:---:|
+| **Phí ngân hàng & Tài chính** | **635** | Chuyển toàn bộ phí ngân hàng đang hạch toán tại các tài khoản khác (như 1561, 6422) sang tài khoản 635. | ~400 dòng |
+| **Phân loại Chi phí QLDN** | **642** | Chuyển các khoản chi phí mua ngoài đang hạch toán nhầm vào 1561 sang tài khoản 642. | ~92 dòng |
+| **Đối soát Công nợ 131** | **131** | Ghi nhận thu tiền từ khách hàng cho các khoản doanh thu tài chính (515) thực chất là thu hồi công nợ. | 50 dòng |
+| **Điều chỉnh kho 156.1** | **1561** | Chỉnh lý các bút toán hạch toán nhầm giữa chi phí quản lý (642) và hàng hóa (1561). | 4 dòng |
+| **Thu nhập khác** | **711** | Chuyển các khoản chiết khấu, thu nhập khác đang nằm ở 1561 sang tài khoản 711. | 19 dòng |
+| **Vay và lãi vay** | **3411, 635** | Tách bạch giữa trả nợ gốc (3411) và trả lãi vay (635). Đảm bảo lãi vay hạch toán đúng vào chi phí tài chính. | 13 dòng |
+
+**Lưu ý:** Các điều chỉnh này cần được thực hiện trực tiếp trên Nhật ký chung (NKC) trước khi thực hiện các bút toán kết chuyển cuối kỳ (911).
