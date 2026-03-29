@@ -311,7 +311,7 @@ def load_skips(year):
     return skips_all, skips_purch, skips_banra
 
 
-def process_xnt(df_list, df_detail, year, skips, ton_dau_vnd=0):
+def process_xnt(df_list, df_detail, year, skips, ton_dau_vnd=0, target_cogs=None):
     # Add month string for grouping
     df_list['month'] = pd.to_datetime(df_list['tdlap_ict']).dt.strftime('%Y-%m')
     
@@ -405,25 +405,63 @@ def process_xnt(df_list, df_detail, year, skips, ton_dau_vnd=0):
             ton_dau_groups[g] = {'qty': max(1 if total_activity_v > 0 else 0, min_needed_sl)}
             base_v_map[g] = ton_dau_groups[g]['qty'] * cogs_base[g]
         
-        # Step 3: Scale Values to match tổng tiền tồn đầu yêu cầu
-        # Chênh lệch giữa ton_dau_vnd và total_base_v sẽ được bù vào các nhóm có value cao nhất
-        total_base_v = sum(base_v_map.values())
-        if total_base_v > 0:
-            scale = ton_dau_vnd / total_base_v
-            for g in all_groups:
-                # Update SL dựa trên tỷ trọng tiền (Keep SL integer)
-                # Tính lại SL để khớp với tiền sau khi scale
-                raw_val = base_v_map[g] * scale
-                ton_dau_groups[g]['val'] = round(raw_val)
-                # Đơn giá vốn ước tính
-                p = cogs_base[g] if cogs_base[g] > 0 else 1
-                # Tính lại SL tương ứng với số tiền đã scale để giữ tính nhất quán
-                # Đảm bảo SL >= min_needed ban đầu
-                recomputed_qty = ceil_int(ton_dau_groups[g]['val'] / p)
-                ton_dau_groups[g]['qty'] = max(ton_dau_groups[g]['qty'], recomputed_qty)
+        # Step 3: Scale Values and Ensure Negative-Safe (Value)
+        # 3a. Calculate the natural COGS and scaling factor beforehand to know the "pressure" on values
+        natural_cogs_total = 0
+        group_flows = {}
+        for g in all_groups:
+            q_in = result[1].get(g, {}).get('nhap_sl', 0) # This is a bit complex due to loop
+            # Just sum it over months
+            sum_n_sl = sum(result[m][g]['nhap_sl'] for m in range(1,13))
+            sum_n_vnd = sum(result[m][g]['nhap_vnd'] for m in range(1,13))
+            sum_x_sl = sum(result[m][g]['xuat_sl'] for m in range(1,13))
+            
+            # Simple simulation to get natural cogs per group
+            curr_q = ton_dau_groups[g]['qty']
+            avg_p = cogs_base[g]
+            gv_nat = sum_x_sl * avg_p # Simplified estimation
+            natural_cogs_total += gv_nat
+            group_flows[g] = {'n_sl': sum_n_sl, 'n_vnd': sum_n_vnd, 'x_sl': sum_x_sl, 'gv_nat': gv_nat}
+
+        cogs_factor = 1.0
+        if target_cogs and natural_cogs_total > 0:
+            cogs_factor = target_cogs / natural_cogs_total
+        
+        # 3b. Identify "Min Needed Value" to prevent negative ending value
+        # Basic formula: TonDauVal + SumIn >= SumXuat * AvgPrice * CogsFactor
+        # => TonDauVal >= (SumXuat * AvgPrice * CogsFactor) - SumIn
+        min_v_map = {}
+        for g in all_groups:
+            f = group_flows[g]
+            # Expected COGS with scaling
+            expected_gv = f['gv_nat'] * cogs_factor
+            needed_v = expected_gv - f['n_vnd']
+            # We want at least 10% margin on top of needed_v for safety, or a flat 1M VND
+            min_v_map[g] = max(needed_v * 1.1, 1000000) if f['x_sl'] > 0 else 0
+        
+        # 3c. Distribute ton_dau_vnd
+        # First, fulfill all min_v_map requirements
+        total_min_v = sum(min_v_map.values())
+        if total_min_v > ton_dau_vnd:
+            # If 20B is not enough (unlikely), scale down the min reqs
+            print(f"  Warning: ton_dau_vnd ({ton_dau_vnd:,.0f}) is less than total min required ({total_min_v:,.0f})")
+            v_scale = ton_dau_vnd / total_min_v
+            for g in all_groups: ton_dau_groups[g]['val'] = round(min_v_map[g] * v_scale)
         else:
-            # Fallback
-            for g in all_groups: ton_dau_groups[g]['val'] = 0
+            # Fulfill min, then distribute remainder by activity
+            remainder = ton_dau_vnd - total_min_v
+            total_activity = sum(df[df['group']==g]['value'].sum() for g in all_groups)
+            for g in all_groups:
+                activity_share = df[df['group']==g]['value'].sum() / total_activity if total_activity > 0 else (1/len(all_groups))
+                ton_dau_groups[g]['val'] = round(min_v_map[g] + remainder * activity_share)
+
+        # 3d. Finalize SL to match VAL (Keep it integer)
+        for g in all_groups:
+            p = cogs_base[g] if cogs_base[g] > 0 else 1
+            recomputed_qty = ceil_int(ton_dau_groups[g]['val'] / p)
+            # Ensure quantity stay at least at max_neg_dip level
+            ton_dau_groups[g]['qty'] = max(ton_dau_groups[g]['qty'], recomputed_qty, 1 if group_flows[g]['x_sl'] > 0 else 0)
+
 
 
     # Print monthly totals for reconciliation
@@ -656,7 +694,7 @@ def main():
     if df_list.empty:
         print("No data found."); return
 
-    result, all_groups, ton_dau_groups, hoadon_data = process_xnt(df_list, df_detail, args.year, skips, args.ton_dau_vnd)
+    result, all_groups, ton_dau_groups, hoadon_data = process_xnt(df_list, df_detail, args.year, skips, args.ton_dau_vnd, args.target_cogs)
     
     out = os.path.join(OUTPUT_DIR, f"XNT_HuyVu_{args.year}.xlsx")
     build_excel(result, all_groups, args.year, out, ton_dau_groups, hoadon_data, args.target_cogs, args.target_nhap)
