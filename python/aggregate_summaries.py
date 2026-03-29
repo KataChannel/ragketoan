@@ -11,7 +11,7 @@ def parse_date(date_str):
         return None
 
 def aggregate():
-    json_files = glob.glob('docs/nganhang/quetnganhang2/text-data/*.json')
+    json_files = glob.glob('docs/nganhang/quetnganhang2/text-data/transactions_batch_manual_*.json')
     all_transactions = []
     
     for f in json_files:
