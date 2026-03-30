@@ -15,7 +15,7 @@ Dưới đây là thống kê số lượng và tổng giá trị giao dịch ph
 | 3 | BIDV | 6200299852 | 16 | 1,102,539,568 | - |
 | 3 | Sacombank | 040021224301 | 127 | 2,980,136,859 | Giao dịch tháng 3 |
 | 4 | BIDV | 6200299852 | 1 | 530,000,000 | - |
-| 4 | Sacombank | 040021224301 | 104 | 3,137,845,907 | Giao dịch tháng 4 |
+| 4 | Sacombank | 040021224301 | 104 | 2,779,841,678 | Giao dịch tháng 4 |
 | 5 | BIDV | 6200299852 | 2 | 662,752,900 | - |
 | 5 | Sacombank | 040021224301 | 110 | 3,261,351,114 | Giao dịch tháng 5 |
 | 6 | BIDV | 6200299852 | 8 | 666,075,900 | - |
@@ -30,7 +30,7 @@ Dưới đây là thống kê số lượng và tổng giá trị giao dịch ph
 | 11 | Sacombank | 040021224301 | 135 | 2,868,614,933 | Giao dịch tháng 11 |
 | 12 | BIDV | 6200299852 | 6 | 179,852,441 | - |
 | 12 | Sacombank | 040021224301 | 137 | 10,106,705,733 | Giao dịch tháng 12 |
-| **TỔNG** | **CẢ NĂM** | **ALL ACCOUNTS** | **1,580+** | **41,271,130,171** | **Cập nhật audited 2023** |
+| **TỔNG** | **CẢ NĂM** | **ALL ACCOUNTS** | **1,580+** | **40,913,125,942** | **Cập nhật audited 2023** |
 
 ## 2. BẢNG TỔNG HỢP PHÁT SINH 15 TÀI KHOẢN CHI TIẾT
 
