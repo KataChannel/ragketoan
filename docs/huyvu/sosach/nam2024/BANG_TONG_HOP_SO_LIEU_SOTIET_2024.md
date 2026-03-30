@@ -2,30 +2,33 @@
 
 ## 1. TỔNG HỢP THỐNG KÊ GIAO DỊCH NGÂN HÀNG THEO THÁNG
 
-Dưới đây là thống kê số lượng và tổng giá trị giao dịch phát sinh qua tài khoản ngân hàng chính (Sacombank 1911) trong năm 2024.
+Dưới đây là thống kê số lượng và tổng giá trị giao dịch phát sinh qua các tài khoản ngân hàng (Sacombank 1911 và BIDV 9852) trong năm 2024.
 
 | Tháng | Ngân hàng | Số tài khoản | Số lượng GD | Tổng giao dịch (VNĐ) | Ghi chú |
 | :---: | :--- | :--- | :---: | :---: | :--- |
-| 1 | Sacombank | 040019911911 | - | - | Chưa cập nhật sao kê |
-| 2 | Sacombank | 040019911911 | - | - | Khớp cân đối 112 |
-| 3 | Sacombank | 040019911911 | - | - | - |
-| 4 | Sacombank | 040019911911 | - | - | - |
-| 5 | Sacombank | 040019911911 | - | - | - |
-| 6 | Sacombank | 040019911911 | - | - | - |
-| 7 | Sacombank | 040019911911 | - | - | - |
-| 8 | Sacombank | 040019911911 | - | - | - |
-| 9 | Sacombank | 040019911911 | - | - | - |
-| 10 | Sacombank | 040019911911 | - | - | - |
-| 11 | Sacombank | 040019911911 | - | - | - |
-| 12 | Sacombank | 040019911911 | - | - | - |
-| **TỔNG** | **CẢ NĂM** | **040019911911** | **-** | **21,500,000,000** | **Dữ liệu TK 112 (Receipts)** |
+| 1 | Sacombank | 040019911911 | 96 | 1,433,924,994 | Đã cập nhật |
+| 2 | Sacombank | 040019911911 | 93 | 1,305,145,054 | Đã cập nhật |
+| 2 | BIDV | 6200299852 | 1 | 13,950,000 | Đã cập nhật |
+| 3 | Sacombank | 040019911911 | 96 | 1,283,369,084 | Đã cập nhật |
+| 4 | Sacombank | 040019911911 | 52 | 696,948,542 | Đã cập nhật |
+| 5 | Sacombank | 040019911911 | 48 | 625,485,642 | Đã cập nhật |
+| 6 | Sacombank | 040019911911 | 50 | 682,790,542 | Đã cập nhật |
+| 7 | Sacombank | 040019911911 | 50 | 682,790,542 | Đã cập nhật |
+| 8 | Sacombank | 040019911911 | 54 | 668,163,542 | Đã cập nhật |
+| 9 | Sacombank | 040019911911 | 54 | 668,164,542 | Đã cập nhật |
+| 10 | Sacombank | 040019911911 | 54 | 668,164,542 | Đã cập nhật |
+| 11 | Sacombank | 040019911911 | 54 | 668,164,542 | Đã cập nhật |
+| 12 | Sacombank | 040019911911 | 54 | 705,636,542 | Đã cập nhật |
+| **TỔNG** | **CẢ NĂM** | **040019911911** | **755** | **10,088,748,110** | **TK 112 Sacombank** |
+| **TỔNG** | **CẢ NĂM** | **6200299852** | **1** | **13,950,000** | **TK 112 BIDV** |
+| **TỔNG CỘNG** | **CẢ NĂM** | **2 NGÂN HÀNG** | **756** | **10,102,698,110** | **Tổng TK 112 (Receipts)** |
 
 ## 2. BẢNG TỔNG HỢP PHÁT SINH 15 TÀI KHOẢN CHI TIẾT
 
 | Tài khoản | Tên Sổ Chi Tiết | Phát sinh Nợ (VNĐ) | Phát sinh Có (VNĐ) | Ghi chú Trọng yếu |
 | :--- | :--- | :---: | :---: | :--- |
 | **1111** | CT_1111 (Tiền mặt) | 5,214,000,000 | 4,890,000,000 | Thu doanh thu bán lẻ trực tiếp. |
-| **112** | CT_112 (Tiền gửi NH) | 21,500,000,000 | 22,857,382,984 | Theo dõi qua Sacombank 1911. |
+| **112** | CT_112 (Tiền gửi NH) | 10,102,698,110 | 10,088,349,780 | Theo dõi qua Sacombank 1911 và BIDV 9852 (Đã cập nhật). |
 | **131** | CT_131 (Phải thu KH) | 20,373,802,797 | 19,850,000,000 | Đã khớp doanh thu bán ra. |
 | **1561** | CT_1561 (Hàng hóa) | 22,853,822,544 | 18,682,620,375 | Khớp 100% với file XNT Huy Vũ 2024. |
 | **331** | CT_331 (Phải trả NB) | 21,500,000,000 | 22,853,822,544 | Công nợ nhà cung cấp hàng hóa. |
