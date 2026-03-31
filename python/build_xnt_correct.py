@@ -34,7 +34,7 @@ warnings.filterwarnings('ignore')
 # CONFIG
 # ============================================================
 DB_URI = os.environ.get("XNT_DB_URI", "postgresql://root:password@localhost:5432/ketoan")
-OUTPUT_DIR = "/chikiet/kata2025/ragketoan/docs/huyvu"
+OUTPUT_DIR = "/mnt/chikiet/kata2025/ragketoan/docs/huyvu"
 COMPANY_MAP = {
     "5900363291": "db88c924-206b-4544-9256-c1cd79d417e4",  # Huy Vũ
 }
