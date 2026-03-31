@@ -57,7 +57,7 @@ sleep 4
 
 # Kiểm tra server
 if pgrep -f "bun --bun next dev" > /dev/null; then
-    echo "✅ Next.js server đang chạy tại http://localhost:3000"
+    echo "✅ Next.js server đang chạy tại http://localhost:3100"
     echo "⚡ Runtime: Bun.js"
     echo "🎨 UI: Tailwind CSS v4 + shadcn Dashboard"
     echo ""
@@ -72,8 +72,8 @@ echo ""
 echo "✨ Môi trường development đã sẵn sàng!"
 echo ""
 echo "📌 Thông tin:"
-echo "   - Ứng dụng: http://localhost:3000"
-echo "   - Trang quản lý hóa đơn: http://localhost:3000/hoadon"
-echo "   - API: http://localhost:3000/api/invoices"
+echo "   - Ứng dụng: http://localhost:3100"
+echo "   - Trang quản lý hóa đơn: http://localhost:3100/hoadon"
+echo "   - API: http://localhost:3100/api/invoices"
 echo "   - PostgreSQL: localhost:5432"
 echo ""

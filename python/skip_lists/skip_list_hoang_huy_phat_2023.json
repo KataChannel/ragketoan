@@ -1,0 +1,592 @@
+{
+  "year": 2023,
+  "generated_at": "2026-04-01T01:44:59.762191",
+  "total_skip_invoices": 53,
+  "total_skip_value": 55250789.0,
+  "skip_by_month": {
+    "1": {
+      "count": 7,
+      "total": 9727272.0,
+      "invoices": [
+        "1203",
+        "23419",
+        "24885",
+        "24512",
+        "26638",
+        "28686",
+        "29669"
+      ]
+    },
+    "2": {
+      "count": 10,
+      "total": 11090908.0,
+      "invoices": [
+        "37234",
+        "37994",
+        "39158",
+        "44456",
+        "45460",
+        "48625",
+        "49114",
+        "53235",
+        "60551",
+        "62966"
+      ]
+    },
+    "3": {
+      "count": 1,
+      "total": 863636.0,
+      "invoices": [
+        "68745"
+      ]
+    },
+    "4": {
+      "count": 2,
+      "total": 3533000.0,
+      "invoices": [
+        "2806",
+        "855"
+      ]
+    },
+    "5": {
+      "count": 4,
+      "total": 4974546.0,
+      "invoices": [
+        "145690",
+        "149795",
+        "916",
+        "3722"
+      ]
+    },
+    "6": {
+      "count": 2,
+      "total": 1866887.0,
+      "invoices": [
+        "4452",
+        "220290"
+      ]
+    },
+    "7": {
+      "count": 10,
+      "total": 10403112.0,
+      "invoices": [
+        "223731",
+        "234028",
+        "35876",
+        "240416",
+        "241054",
+        "243782",
+        "247632",
+        "248292",
+        "248090",
+        "251395"
+      ]
+    },
+    "8": {
+      "count": 7,
+      "total": 4709867.0,
+      "invoices": [
+        "261020",
+        "261600",
+        "265210",
+        "269025",
+        "271470",
+        "272343",
+        "287588"
+      ]
+    },
+    "9": {
+      "count": 4,
+      "total": 2818589.0,
+      "invoices": [
+        "295236",
+        "302144",
+        "308753",
+        "325641"
+      ]
+    },
+    "10": {
+      "count": 3,
+      "total": 2862818.0,
+      "invoices": [
+        "333383",
+        "339601",
+        "468"
+      ]
+    },
+    "11": {
+      "count": 2,
+      "total": 1818182.0,
+      "invoices": [
+        "376693",
+        "381085"
+      ]
+    },
+    "12": {
+      "count": 1,
+      "total": 581972.0,
+      "invoices": [
+        "405703"
+      ]
+    }
+  },
+  "skip_entries": [
+    {
+      "shdon": "1203",
+      "month": 1,
+      "tgtcthue": 1818182.0,
+      "reason": "XANG_DAU",
+      "sample": "Xăng RON95-III"
+    },
+    {
+      "shdon": "23419",
+      "month": 1,
+      "tgtcthue": 1363636.0,
+      "reason": "XANG_DAU",
+      "sample": "Xăng RON95-III"
+    },
+    {
+      "shdon": "24885",
+      "month": 1,
+      "tgtcthue": 1636364.0,
+      "reason": "XANG_DAU",
+      "sample": "Xăng RON95-III"
+    },
+    {
+      "shdon": "24512",
+      "month": 1,
+      "tgtcthue": 1363636.0,
+      "reason": "XANG_DAU",
+      "sample": "Xăng RON95-III"
+    },
+    {
+      "shdon": "26638",
+      "month": 1,
+      "tgtcthue": 1363636.0,
+      "reason": "XANG_DAU",
+      "sample": "Xăng RON95-III"
+    },
+    {
+      "shdon": "28686",
+      "month": 1,
+      "tgtcthue": 1090909.0,
+      "reason": "XANG_DAU",
+      "sample": "Xăng E5 RON 92-II"
+    },
+    {
+      "shdon": "29669",
+      "month": 1,
+      "tgtcthue": 1090909.0,
+      "reason": "XANG_DAU",
+      "sample": "Xăng RON95-III"
+    },
+    {
+      "shdon": "37234",
+      "month": 2,
+      "tgtcthue": 1090909.0,
+      "reason": "XANG_DAU",
+      "sample": "Xăng RON95-III"
+    },
+    {
+      "shdon": "37994",
+      "month": 2,
+      "tgtcthue": 1090909.0,
+      "reason": "XANG_DAU",
+      "sample": "Xăng RON95-III"
+    },
+    {
+      "shdon": "39158",
+      "month": 2,
+      "tgtcthue": 1090909.0,
+      "reason": "XANG_DAU",
+      "sample": "Xăng RON95-III"
+    },
+    {
+      "shdon": "44456",
+      "month": 2,
+      "tgtcthue": 909091.0,
+      "reason": "XANG_DAU",
+      "sample": "Xăng RON95-III"
+    },
+    {
+      "shdon": "45460",
+      "month": 2,
+      "tgtcthue": 1181818.0,
+      "reason": "XANG_DAU",
+      "sample": "Xăng RON95-III"
+    },
+    {
+      "shdon": "48625",
+      "month": 2,
+      "tgtcthue": 1090909.0,
+      "reason": "XANG_DAU",
+      "sample": "Xăng RON95-III"
+    },
+    {
+      "shdon": "49114",
+      "month": 2,
+      "tgtcthue": 1181818.0,
+      "reason": "XANG_DAU",
+      "sample": "Xăng RON95-III"
+    },
+    {
+      "shdon": "53235",
+      "month": 2,
+      "tgtcthue": 1090909.0,
+      "reason": "XANG_DAU",
+      "sample": "Xăng RON95-III"
+    },
+    {
+      "shdon": "60551",
+      "month": 2,
+      "tgtcthue": 1272727.0,
+      "reason": "XANG_DAU",
+      "sample": "Xăng RON95-III"
+    },
+    {
+      "shdon": "62966",
+      "month": 2,
+      "tgtcthue": 1090909.0,
+      "reason": "XANG_DAU",
+      "sample": "Xăng RON95-III"
+    },
+    {
+      "shdon": "68745",
+      "month": 3,
+      "tgtcthue": 863636.0,
+      "reason": "XANG_DAU",
+      "sample": "Xăng RON95-III"
+    },
+    {
+      "shdon": "2806",
+      "month": 4,
+      "tgtcthue": 900000.0,
+      "reason": "PHI_NGAN_HANG",
+      "sample": "Phí duy trì thiết bị TMS 12 tháng xe 81C20280"
+    },
+    {
+      "shdon": "855",
+      "month": 4,
+      "tgtcthue": 2633000.0,
+      "reason": "BAO_HIEM",
+      "sample": "Phí bảo hiểm của Hợp đồng 035OTBB+230000423"
+    },
+    {
+      "shdon": "145690",
+      "month": 5,
+      "tgtcthue": 727273.0,
+      "reason": "XANG_DAU",
+      "sample": "Xăng RON95-III"
+    },
+    {
+      "shdon": "149795",
+      "month": 5,
+      "tgtcthue": 727273.0,
+      "reason": "XANG_DAU",
+      "sample": "Xăng RON95-III"
+    },
+    {
+      "shdon": "916",
+      "month": 5,
+      "tgtcthue": 1720000.0,
+      "reason": "BAO_HIEM",
+      "sample": "Phí bảo hiểm của Hợp đồng 035OTBB+230000452"
+    },
+    {
+      "shdon": "3722",
+      "month": 5,
+      "tgtcthue": 1800000.0,
+      "reason": "PHI_NGAN_HANG",
+      "sample": "Phí duy trì thiết bị TMS 12 tháng xe 81C18927, 81M2345"
+    },
+    {
+      "shdon": "4452",
+      "month": 6,
+      "tgtcthue": 1185000.0,
+      "reason": "XANG_DAU,SUA_CHUA_DV",
+      "sample": "Bầu lọc nhiên liệu"
+    },
+    {
+      "shdon": "220290",
+      "month": 6,
+      "tgtcthue": 681887.0,
+      "reason": "XANG_DAU",
+      "sample": "Xăng RON95-III"
+    },
+    {
+      "shdon": "223731",
+      "month": 7,
+      "tgtcthue": 909091.0,
+      "reason": "XANG_DAU",
+      "sample": "Xăng RON95-III"
+    },
+    {
+      "shdon": "234028",
+      "month": 7,
+      "tgtcthue": 454545.0,
+      "reason": "XANG_DAU",
+      "sample": "Xăng RON95-III"
+    },
+    {
+      "shdon": "35876",
+      "month": 7,
+      "tgtcthue": 3939000.0,
+      "reason": "DIEN_NUOC",
+      "sample": "Dịch vụ hóa đơn điện tử,gói HD10.100"
+    },
+    {
+      "shdon": "240416",
+      "month": 7,
+      "tgtcthue": 909165.0,
+      "reason": "XANG_DAU",
+      "sample": "Xăng RON95-III"
+    },
+    {
+      "shdon": "241054",
+      "month": 7,
+      "tgtcthue": 590945.0,
+      "reason": "XANG_DAU",
+      "sample": "Xăng E5 RON 92-II"
+    },
+    {
+      "shdon": "243782",
+      "month": 7,
+      "tgtcthue": 554545.0,
+      "reason": "XANG_DAU",
+      "sample": "Xăng RON95-III"
+    },
+    {
+      "shdon": "247632",
+      "month": 7,
+      "tgtcthue": 454912.0,
+      "reason": "XANG_DAU",
+      "sample": "Xăng RON95-III"
+    },
+    {
+      "shdon": "248292",
+      "month": 7,
+      "tgtcthue": 909091.0,
+      "reason": "XANG_DAU",
+      "sample": "Xăng RON95-III"
+    },
+    {
+      "shdon": "248090",
+      "month": 7,
+      "tgtcthue": 909091.0,
+      "reason": "XANG_DAU",
+      "sample": "Xăng RON95-III"
+    },
+    {
+      "shdon": "251395",
+      "month": 7,
+      "tgtcthue": 772727.0,
+      "reason": "XANG_DAU",
+      "sample": "Xăng RON95-III"
+    },
+    {
+      "shdon": "261020",
+      "month": 8,
+      "tgtcthue": 545477.0,
+      "reason": "XANG_DAU",
+      "sample": "Xăng RON95-III"
+    },
+    {
+      "shdon": "261600",
+      "month": 8,
+      "tgtcthue": 545455.0,
+      "reason": "XANG_DAU",
+      "sample": "Xăng RON95-III"
+    },
+    {
+      "shdon": "265210",
+      "month": 8,
+      "tgtcthue": 909091.0,
+      "reason": "XANG_DAU",
+      "sample": "Xăng RON95-III"
+    },
+    {
+      "shdon": "269025",
+      "month": 8,
+      "tgtcthue": 636845.0,
+      "reason": "XANG_DAU",
+      "sample": "Xăng RON95-III"
+    },
+    {
+      "shdon": "271470",
+      "month": 8,
+      "tgtcthue": 636364.0,
+      "reason": "XANG_DAU",
+      "sample": "Xăng RON95-III"
+    },
+    {
+      "shdon": "272343",
+      "month": 8,
+      "tgtcthue": 709362.0,
+      "reason": "XANG_DAU",
+      "sample": "Xăng RON95-III"
+    },
+    {
+      "shdon": "287588",
+      "month": 8,
+      "tgtcthue": 727273.0,
+      "reason": "XANG_DAU",
+      "sample": "Xăng RON95-III"
+    },
+    {
+      "shdon": "295236",
+      "month": 9,
+      "tgtcthue": 909091.0,
+      "reason": "XANG_DAU",
+      "sample": "Xăng RON95-III"
+    },
+    {
+      "shdon": "302144",
+      "month": 9,
+      "tgtcthue": 545862.0,
+      "reason": "XANG_DAU",
+      "sample": "Xăng RON95-III"
+    },
+    {
+      "shdon": "308753",
+      "month": 9,
+      "tgtcthue": 909091.0,
+      "reason": "XANG_DAU",
+      "sample": "Xăng RON95-III"
+    },
+    {
+      "shdon": "325641",
+      "month": 9,
+      "tgtcthue": 454545.0,
+      "reason": "XANG_DAU",
+      "sample": "Xăng RON95-III"
+    },
+    {
+      "shdon": "333383",
+      "month": 10,
+      "tgtcthue": 454545.0,
+      "reason": "XANG_DAU",
+      "sample": "Xăng RON95-III"
+    },
+    {
+      "shdon": "339601",
+      "month": 10,
+      "tgtcthue": 727273.0,
+      "reason": "XANG_DAU",
+      "sample": "Xăng RON95-III"
+    },
+    {
+      "shdon": "468",
+      "month": 10,
+      "tgtcthue": 1681000.0,
+      "reason": "BAO_HIEM",
+      "sample": "Phí Bảo hiểm sức khỏe  033.KD02.HD.CN.23.332139\n"
+    },
+    {
+      "shdon": "376693",
+      "month": 11,
+      "tgtcthue": 909091.0,
+      "reason": "XANG_DAU",
+      "sample": "Xăng RON95-III"
+    },
+    {
+      "shdon": "381085",
+      "month": 11,
+      "tgtcthue": 909091.0,
+      "reason": "XANG_DAU",
+      "sample": "Xăng RON95-III"
+    },
+    {
+      "shdon": "405703",
+      "month": 12,
+      "tgtcthue": 581972.0,
+      "reason": "XANG_DAU",
+      "sample": "Xăng RON95-III"
+    }
+  ],
+  "target_comparison": {
+    "1": {
+      "db_total": 14305865176.0,
+      "skip_total": 9727272.0,
+      "adjusted": 14296137904.0,
+      "target": 1154981164.0,
+      "diff": 13141156740.0
+    },
+    "2": {
+      "db_total": 10131163146.0,
+      "skip_total": 11090908.0,
+      "adjusted": 10120072238.0,
+      "target": 1745704064.0,
+      "diff": 8374368174.0
+    },
+    "3": {
+      "db_total": 7816272582.0,
+      "skip_total": 863636.0,
+      "adjusted": 7815408946.0,
+      "target": 1536437738.0,
+      "diff": 6278971208.0
+    },
+    "4": {
+      "db_total": 10436030722.0,
+      "skip_total": 3533000.0,
+      "adjusted": 10432497722.0,
+      "target": 757550609.0,
+      "diff": 9674947113.0
+    },
+    "5": {
+      "db_total": 9572132278.0,
+      "skip_total": 4974546.0,
+      "adjusted": 9567157732.0,
+      "target": 600350985.0,
+      "diff": 8966806747.0
+    },
+    "6": {
+      "db_total": 9532000343.0,
+      "skip_total": 1866887.0,
+      "adjusted": 9530133456.0,
+      "target": 749561478.0,
+      "diff": 8780571978.0
+    },
+    "7": {
+      "db_total": 6910803217.0,
+      "skip_total": 10403112.0,
+      "adjusted": 6900400105.0,
+      "target": 895409563.0,
+      "diff": 6004990542.0
+    },
+    "8": {
+      "db_total": 8284943839.0,
+      "skip_total": 4709867.0,
+      "adjusted": 8280233972.0,
+      "target": 1812197507.0,
+      "diff": 6468036465.0
+    },
+    "9": {
+      "db_total": 8801332243.0,
+      "skip_total": 2818589.0,
+      "adjusted": 8798513654.0,
+      "target": 1552056812.0,
+      "diff": 7246456842.0
+    },
+    "10": {
+      "db_total": 7072551982.0,
+      "skip_total": 2862818.0,
+      "adjusted": 7069689164.0,
+      "target": 890284926.0,
+      "diff": 6179404238.0
+    },
+    "11": {
+      "db_total": 10093995254.0,
+      "skip_total": 1818182.0,
+      "adjusted": 10092177072.0,
+      "target": 1564643572.0,
+      "diff": 8527533500.0
+    },
+    "12": {
+      "db_total": 12048359207.0,
+      "skip_total": 581972.0,
+      "adjusted": 12047777235.0,
+      "target": 2381764450.0,
+      "diff": 9666012785.0
+    }
+  }
+}

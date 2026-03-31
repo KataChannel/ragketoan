@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "bun --bun next dev",
+    "dev": "bun --bun next dev -p 3100",
     "build": "bun --bun next build",
-    "start": "bun --bun next start",
+    "start": "bun --bun next start -p 3100",
     "lint": "eslint",
     "prisma:push": "bunx prisma db push",
     "prisma:studio": "bunx prisma studio"

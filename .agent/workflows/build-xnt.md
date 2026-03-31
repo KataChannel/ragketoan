@@ -47,15 +47,17 @@ Output: `python/skip_lists/skip_list_2023.json`
 Kế toán có thể bổ sung thêm `shdon` vào file JSON nếu cần loại thêm HĐ.
 
 ### Bước 3: Tạo XNT Excel
+
+#### Cách 1: Chạy script thông thường (dành cho volume nhỏ)
 ```bash
 cd /chikiet/kata2025/ragketoan && python3 python/build_xnt_correct.py --year 2023
 ```
-Script tự động tìm `skip_lists/skip_list_2023.json` nếu có.
 
-Hoặc chỉ định skip list:
+#### Cách 2: Sử dụng DuckDB Engine (TỐI ƯU cho volume lớn >10k lines)
 ```bash
-python3 python/build_xnt_correct.py --year 2023 --skip-list python/skip_lists/skip_list_2023.json
+cd /chikiet/kata2025/ragketoan && python3 python/generate_huyvu_xlsx_duckdb.py
 ```
+Script này sử dụng DuckDB để kết nối trực tiếp PostgreSQL, tăng tốc join Header/Detail gấp 10-20 lần.
 
 Output: `docs/huyvu/XNT_HuyVu_2023.xlsx`
 

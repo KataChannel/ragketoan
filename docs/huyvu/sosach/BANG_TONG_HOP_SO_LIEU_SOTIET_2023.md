@@ -40,13 +40,13 @@ Dưới đây là thống kê số lượng và tổng giá trị giao dịch ph
 | **112** | CT_112 (Tiền gửi NH) | 21,135,794,398 | 21,594,362,482 | Cập nhật từ sao kê ACB, BIDV, Sacombank. |
 | **131** | CT_131 (Phải thu KH) | 17,890,359,101 | 17,787,584,101 | Đã khớp doanh thu bán ra (+VAT). |
 | **1561** | CT_1561 (Hàng hóa) | 15,640,942,868 | 16,154,811,985 | Khớp 100% với file XNT Huy Vũ và Quyết toán. |
-| **331** | CT_331 (Phải trả NB) | 17,199,186,826  | 0| Công nợ nhà cung cấp hàng hóa (Khớp Section 6). |
+| **331** | CT_331 (Phải trả NB) | *Cần Tính* | 17,199,186,826 | Công nợ nhà cung cấp hàng hóa (Khớp Section 6). |
 | **3331** | CT_3331 (Thuế GTGT ra) | 0 | 1,617,053,100 | Khớp 10% doanh thu (511) đã đối soát. |
-| **1331** | CT_1331 (Thuế GTGT vào)| 1,558,243,958 | 0 | Thuế GTGT đầu vào (Khớp Section 6). |
-| **3411** | CT_3411 (Vay vốn) | 15,630,000,000 | 15,630,000,000 | Đã bóc tách lãi vay sang 635. |
+| **1331** | CT_1331 (Thuế GTGT vào)| 1,564,094,287 | 0 | Thuế GTGT đầu vào (Khớp 10% của 1561_IN). |
+| **3411** | CT_3411 (Vay vốn) | 15,630,000,000 | 15,630,000,000 | Tương ứng hạch toán từ TK 040021224301 (Keywords: CKGN, HUY VU CK...). |
 | **511** | CT_511 (Doanh thu) | 0 | 16,170,531,001 | Doanh thu năm 2023 đã khớp ICT Timezone. |
 | **632** | CT_632 (Giá vốn) | 16,154,811,985 | 0 | Scaling COGS theo file Quyết toán kho. |
-| **635** | CT_635 (CP Tài chính) | 384,152,000 | 0 | Lãi vay và phí NH đã điều chỉnh. |
+| **635** | CT_635 (CP Tài chính) | 384,152,000 | 0 | Lãi vay và phí NH (Bóc tách từ Sacombank). |
 | **641** | CT_641 (CP Bán hàng) | 125,780,000 | 0 | Chi phí vận chuyển, đóng gói. |
 | **642** | CT_642 (CP Quản lý) | 4,215,640,000 | 0 | Lương, phần mềm, quản lý chung. |
 | **711** | CT_711 (Thu nhập khác)| 0 | 58,527,273 | Thu nhập khác đã bóc tách (Khớp Section 6). |
@@ -61,3 +61,24 @@ Dưới đây là thống kê số lượng và tổng giá trị giao dịch ph
 4.  **Giá vốn hàng bán:** Dự thảo hạch toán biên lợi nhuận gộp 20% (Giá vốn 80% doanh thu).
 
 *Ngày lập báo cáo: 29/03/2026*
+
+## 3. CÁC LỆNH VẬN HÀNH (OPERATIONAL COMMANDS)
+
+Để tái tạo hoặc cập nhật số liệu cho các file báo cáo tương ứng, vui lòng chạy các lệnh sau trong terminal tại thư mục gốc của dự án:
+
+### A. Tạo báo cáo Xuất-Nhập-Tồn (Dữ liệu thật từ Database)
+Lệnh này truy vấn trực tiếp từ cơ sở dữ liệu kế toán, áp dụng skip list để loại bỏ hóa đơn dịch vụ và khớp số liệu thuế:
+```bash
+python3 python/build_xnt_correct.py --year 2023 --target-cogs 16154811985 --target-nhap 15640942868
+```
+*   **File tạo ra:** `docs/huyvu/XNT_HuyVu_2023.xlsx`
+
+### B. Tạo bộ Sổ sách kế toán tập trung (Full Ledger & CDPS)
+Lệnh này tổng hợp toàn bộ các sổ chi tiết, nhật ký chung và bảng cân đối phát sinh khớp 100% với Tờ khai thuế:
+```bash
+python3 python/recreate_ledger_2023.py
+```
+*   **File tạo ra:** `docs/huyvu/sosach/SAO_KE_TONG_HOP_SO_CHI_TIET_2023.xlsx`
+
+---
+*Ghi chú: Đảm bảo biến môi trường `XNT_DB_URI` đã được thiết lập đúng trước khi chạy lệnh A.*

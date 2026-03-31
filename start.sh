@@ -324,10 +324,10 @@ start_ketoan() {
     pkill -9 -f "bun dev" 2>/dev/null || true
     pkill -9 -f "bun run dev" 2>/dev/null || true
     
-    # Kill port 3000 if in use
-    local port_pids=$(lsof -t -i:3000 2>/dev/null)
+    # Kill port 3100 if in use
+    local port_pids=$(lsof -t -i:3100 2>/dev/null)
     if [ -n "$port_pids" ]; then
-        echo -e "${YELLOW}[INFO] Đang giải phóng port 3000...${NC}"
+        echo -e "${YELLOW}[INFO] Đang giải phóng port 3100...${NC}"
         for pid in $port_pids; do
             kill -9 $pid 2>/dev/null || true
         done
@@ -382,7 +382,7 @@ start_ketoan() {
     echo ""
     echo -e "${GREEN}✅ Ketoan Frontend đã khởi động!${NC}"
     echo ""
-    echo -e "  📊 Ketoan:     ${BLUE}http://localhost:3000${NC}"
+    echo -e "  📊 Ketoan:     ${BLUE}http://localhost:3100${NC}"
 }
 
 # Function to sync images from container

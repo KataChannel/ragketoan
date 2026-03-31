@@ -214,7 +214,7 @@ services:
     networks: [ 'demo' ]
     restart: unless-stopped
     ports:
-      - "9999:3000"
+      - "3100:3100"
     volumes:
       - ./images:/images
     environment:

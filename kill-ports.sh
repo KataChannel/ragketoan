@@ -13,7 +13,7 @@ CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
 # Default ports used by the project
-DEFAULT_PORTS=(3000 5678 6333 11434 5432)
+DEFAULT_PORTS=(3100 5678 6333 11434 5432)
 
 echo -e "${BLUE}╔═══════════════════════════════════════════════════════════╗${NC}"
 echo -e "${BLUE}║${NC}         🔫 RAG Ketoan - Kill Ports 🔫                     ${BLUE}║${NC}"
@@ -68,7 +68,7 @@ if [ $# -eq 0 ]; then
     # Interactive mode
     echo -e "${CYAN}Chọn tùy chọn:${NC}"
     echo ""
-    echo -e "  ${GREEN}1)${NC} Kill tất cả ports mặc định (3000, 5678, 6333, 11434, 5432)"
+    echo -e "  ${GREEN}1)${NC} Kill tất cả ports mặc định (3100, 5678, 6333, 11434, 5432)"
     echo -e "  ${GREEN}2)${NC} Kill port cụ thể"
     echo -e "  ${GREEN}3)${NC} Xem trạng thái tất cả ports"
     echo -e "  ${GREEN}4)${NC} Thoát"
@@ -85,7 +85,7 @@ if [ $# -eq 0 ]; then
             done
             ;;
         2)
-            read -p "Nhập port cần kill (vd: 3000 hoặc 3000,5678,8080): " ports_input
+            read -p "Nhập port cần kill (vd: 3100 hoặc 3100,5678,8080): " ports_input
             IFS=',' read -ra PORTS <<< "$ports_input"
             echo ""
             for port in "${PORTS[@]}"; do
