@@ -26,7 +26,7 @@ tdlap AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Ho_Chi_Minh'
 
 ### 5. KHÔNG dùng `ext_tonghop` cho 2023 (thiếu dữ liệu muavao)
 
-Chi tiết logic → xem SKILL `accounting_xnt_logic`
+Chi tiết logic → xem SKILL `accounting_xnt_logic` và `accounting-principles`
 
 ## Pipeline đầy đủ (3 bước)
 

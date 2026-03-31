@@ -38,18 +38,18 @@ Dưới đây là thống kê số lượng và tổng giá trị giao dịch ph
 | :--- | :--- | :---: | :---: | :--- |
 | **1111** | CT_1111 (Tiền mặt) | 16,582,341,000 | 15,924,560,000 | Thu doanh thu bán lẻ trực tiếp. |
 | **112** | CT_112 (Tiền gửi NH) | 21,135,794,398 | 21,594,362,482 | Cập nhật từ sao kê ACB, BIDV, Sacombank. |
-| **131** | CT_131 (Phải thu KH) | 17,890,359,101 | 16,263,962,819 | Đã khớp doanh thu bán ra. |
-| **1561** | CT_1561 (Hàng hóa) | 13,011,170,255 | 13,011,170,255 | Khớp 100% với file XNT Huy Vũ. |
-| **331** | CT_331 (Phải trả NB) | 12,855,000,000 | 13,011,170,255 | Công nợ nhà cung cấp hàng hóa. |
-| **3331** | CT_3331 (Thuế GTGT ra) | 0 | 1,626,396,282 | Khớp 10% doanh thu (511). |
-| **1331** | CT_1331 (Thuế GTGT vào)| 1,301,117,100 | 0 | Thuế GTGT đầu vào từ mua hàng. |
+| **131** | CT_131 (Phải thu KH) | 17,890,359,101 | 17,787,584,101 | Đã khớp doanh thu bán ra (+VAT). |
+| **1561** | CT_1561 (Hàng hóa) | 15,640,942,868 | 16,154,811,985 | Khớp 100% với file XNT Huy Vũ và Quyết toán. |
+| **331** | CT_331 (Phải trả NB) | 17,199,186,826  | 0| Công nợ nhà cung cấp hàng hóa (Khớp Section 6). |
+| **3331** | CT_3331 (Thuế GTGT ra) | 0 | 1,617,053,100 | Khớp 10% doanh thu (511) đã đối soát. |
+| **1331** | CT_1331 (Thuế GTGT vào)| 1,558,243,958 | 0 | Thuế GTGT đầu vào (Khớp Section 6). |
 | **3411** | CT_3411 (Vay vốn) | 15,630,000,000 | 15,630,000,000 | Đã bóc tách lãi vay sang 635. |
-| **511** | CT_511 (Doanh thu) | 0 | 16,263,962,819 | Mục tiêu doanh thu năm 2023. |
-| **632** | CT_632 (Giá vốn) | 13,011,170,255 | 0 | Chốt tỷ lệ 80% trên doanh thu. |
+| **511** | CT_511 (Doanh thu) | 0 | 16,170,531,001 | Doanh thu năm 2023 đã khớp ICT Timezone. |
+| **632** | CT_632 (Giá vốn) | 16,154,811,985 | 0 | Scaling COGS theo file Quyết toán kho. |
 | **635** | CT_635 (CP Tài chính) | 384,152,000 | 0 | Lãi vay và phí NH đã điều chỉnh. |
 | **641** | CT_641 (CP Bán hàng) | 125,780,000 | 0 | Chi phí vận chuyển, đóng gói. |
 | **642** | CT_642 (CP Quản lý) | 4,215,640,000 | 0 | Lương, phần mềm, quản lý chung. |
-| **711** | CT_711 (Thu nhập khác)| 0 | 125,000,000 | Thu nhập từ chiết khấu thanh toán. |
+| **711** | CT_711 (Thu nhập khác)| 0 | 58,527,273 | Thu nhập khác đã bóc tách (Khớp Section 6). |
 | **515** | CT_515 (DT Tài chính) | 0 | 12,450,000 | Lãi tiền gửi ngân hàng phát sinh. |
 
 ---
