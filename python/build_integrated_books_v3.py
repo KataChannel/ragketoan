@@ -21,20 +21,25 @@ def build_v3():
     # 1. Khởi tạo DuckDB
     con = duckdb.connect(':memory:')
     
-    # 2. Load Dữ liệu chính (NKC)
+    # Load Dữ liệu chính (NKC)
     nkc_csv = os.path.join(SOURCE_DIR, "NKC_HEALED_2023.csv")
     if not os.path.exists(nkc_csv):
         print(f"❌ Không tìm thấy file nguồn: {nkc_csv}")
         return
 
-    # Sử dụng Pandas để load CSV thay vì DuckDB trực tiếp để xử lý header/type tốt hơn
+    # Load NKC
     df_nkc = pd.read_csv(nkc_csv)
+    # Loại bỏ dòng header bị lặp (Nếu có)
+    df_nkc = df_nkc[df_nkc['TK Nợ'] != 'TK Nợ']
     df_nkc['Số tiền'] = pd.to_numeric(df_nkc['Số tiền'], errors='coerce')
     con.execute("CREATE TABLE nkc AS SELECT * FROM df_nkc")
     
     # Clean up dữ liệu
     con.execute('DELETE FROM nkc WHERE "TK Nợ" IS NULL OR "TK Có" IS NULL')
     con.execute('DELETE FROM nkc WHERE "Số tiền" <= 0 OR "Số tiền" IS NULL')
+
+    # ... (Skipping some unchanged part of the function for brevity in the description)
+    # Note: I'll actually replace the whole block correctly as per StartLine/EndLine.
 
     # 3. Đồng bộ hóa Sổ 1561 từ XNT_HuyVu_2023.xlsx (Giả định là nguồn đúng nhất)
     # Vì User xác nhận XNT_HuyVu_2023.xlsx là chuẩn cho 1561, 
@@ -119,19 +124,15 @@ def build_v3():
         
         # Sheet 5: Bảng Tổng Hợp Phát Sinh (Đảm bảo đủ 15 TK trọng yếu)
         major_accs = ['1111', '112', '131', '1561', '331', '3331', '1331', '3411', '511', '632', '641', '642', '635', '711', '515']
-        acc_list_sql = ",".join([f"('{a}')" for a in major_accs])
-        con.execute(f"""
-            WITH target_accs(acc_num) AS (
-                VALUES {acc_list_sql}
-            )
-            SELECT 
-                t.acc_num as "Tài khoản", 
-                COALESCE(c."Phát sinh Nợ", 0) as "Phát sinh Nợ", 
-                COALESCE(c."Phát sinh Có", 0) as "Phát sinh Có"
-            FROM target_accs t
-            LEFT JOIN cdps_calc c ON t.acc_num = c."Tài khoản"
-            ORDER BY 1
-        """).df().to_excel(writer, sheet_name="TH_Phat_Sinh", index=False)
+        
+        # Tạo bảng kết quả bằng cách lặp và sum LIKE
+        results = []
+        for acc in major_accs:
+            ps_no = con.execute(f"SELECT SUM(\"Số tiền\") FROM nkc WHERE \"TK Nợ\" LIKE '{acc}%'").fetchone()[0] or 0.0
+            ps_co = con.execute(f"SELECT SUM(\"Số tiền\") FROM nkc WHERE \"TK Có\" LIKE '{acc}%'").fetchone()[0] or 0.0
+            results.append({"Tài khoản": acc, "Phát sinh Nợ": ps_no, "Phát sinh Có": ps_co})
+        
+        pd.DataFrame(results).to_excel(writer, sheet_name="TH_Phat_Sinh", index=False)
 
         # Sheet 6+: Các sổ chi tiết tài khoản trọng yếu (Khớp chính xác với 15 sheet CT_ trong MD)
         major_accs = ['1111', '112', '131', '1561', '331', '3331', '1331', '3411', '511', '632', '641', '642', '635', '711', '515']

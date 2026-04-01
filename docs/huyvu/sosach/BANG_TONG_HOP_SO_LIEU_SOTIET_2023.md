@@ -32,6 +32,21 @@ Dưới đây là thống kê số lượng và tổng giá trị giao dịch ph
 | 12 | Sacombank | 040021224301 | 137 | 10,106,705,733 | Giao dịch tháng 12 |
 | **TỔNG** | **CẢ NĂM** | **ALL ACCOUNTS** | **1,580+** | **41,271,130,171** | **Cập nhật audited 2023** |
 
+## 1.1. CHI TIẾT TỔNG HỢP TỪ DỮ LIỆU QUÉT HÌNH ẢNH (2023)
+
+Bảng tổng hợp từ toàn bộ dữ liệu ngân hàng đã được quét qua hình ảnh (OCR), được nhóm theo Ngân hàng và Số tài khoản để phục vụ đối soát tổng thể:
+
+| Ngân hàng | Số tài khoản | Số lượng GD | Tổng giao dịch (VNĐ) | Ghi chú |
+| :--- | :--- | :--- | :---: | :--- |
+| **BIDV** | 6200299852 | 72 | 3,810,207,701 | Khớp sổ chi tiết |
+| **Sacombank** | 040019911911 | 1,172 | 54,915,288,544 | Sổ phụ OCR |
+| **Vietcombank** | Vốn/Thu Doanh Thu | 304 | 12,643,651,064 | Sao kê OCR |
+| **TỔNG CỘNG** | | **1,548** | **71,369,147,309** | **Dữ liệu quét bổ sung** |
+
+
+
+
+
 ## 2. BẢNG TỔNG HỢP PHÁT SINH 15 TÀI KHOẢN CHI TIẾT
 
 | Tài khoản | Tên Sổ Chi Tiết | Phát sinh Nợ (VNĐ) | Phát sinh Có (VNĐ) | Ghi chú Trọng yếu |
@@ -138,6 +153,24 @@ Bao gồm các sheet sau:
 | 18 | **CT_635** | Sổ chi tiết Chi phí Tài chính: Phí ngân hàng, lãi vay (Đã tách từ 1121). |
 | 19 | **CT_711** | Sổ chi tiết Thu nhập khác: Các khoản chiết khấu, thu nhập khác. |
 | 20 | **CT_515** | Sổ chi tiết Doanh thu Tài chính: Phản ánh lãi tiền gửi ngân hàng. |
+
+## 6. BẢNG RÀ SOÁT ĐỘ ĐẦY ĐỦ DỮ LIỆU NGUỒN (AUDIT LOG 2023)
+
+Bảng dưới đây đánh giá trạng thái dữ liệu hiện có trong hệ thống Nhật ký chung (NKC) so với các bảng sao kê và báo cáo gốc để xác định các hạng mục cần bổ sung:
+
+| Tài khoản | Tên tài khoản | Trạng thái NKC | Đánh giá & Nguồn bổ sung |
+| :--- | :--- | :--- | :--- |
+| **511** | Doanh thu | **Đầy đủ** | Đã khớp 16.2 tỷ VNĐ từ hệ thống hóa đơn bán ra. |
+| **1111** | Tiền mặt | **Đầy đủ** | Đã hạch toán thu bán lẻ và chi phí tiền mặt. |
+| **131** | Phải thu KH | **Gần đủ** | Thiếu phần thu tiền qua ngân hàng (đối ứng 112). |
+| **112** | Tiền gửi NH | **Đầy đủ (Scans)**| Đã bổ sung ~60 tỷ VNĐ giao dịch từ quét hình ảnh (Section 1.1). |
+| **331** | Phải trả NB | **Chưa có** | Đang trống. Nguồn: Sheet `Hoadon` trong `XNT_HuyVu_2023.xlsx`. |
+| **1561** | Hàng hóa | **Thiếu** | Mới có ~12.7 tỷ (Thiếu ~3 tỷ). Nguồn: Trích xuất từ Nhập kho XNT. |
+| **3411** | Vay vốn | **Chưa có** | Thiếu nghiệp vụ giải ngân/trả nợ. Nguồn: Sao kê Sacombank. |
+| **632** | Giá vốn | **Thiếu** | Hiện có 12.8 tỷ (Thiếu ~3.3 tỷ). Nguồn: File Quyết toán kho. |
+| **642** | CP Quản lý | **Sai phí** | Hiện bị dồn quá nhiều (17 tỷ) do bóc tách nhầm mã hàng. |
+| **635** | CP Tài chính | **Chưa có** | Thiếu lãi vay/phí NH. Nguồn: Bóc tách từ sao kê Sacom/VCB. |
+| **1331** | Thuế GTGT vào | **Thiếu** | Mới có ~4.6tr. Nguồn: Trích xuất 10% từ Hóa đơn mua vào. |
 
 ---
 *Ghi chú: Đảm bảo biến môi trường `XNT_DB_URI` đã được thiết lập đúng trước khi chạy lệnh A.*
