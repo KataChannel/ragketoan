@@ -6,7 +6,7 @@ import time
 # ============================================================
 # CONFIG & SOURCES
 # ============================================================
-SOURCE_DIR = "/chikiet/kata2025/ragketoan/docs/huyvu/sosach/ALL_LEDGERS_2023_CSV"
+SOURCE_DIR = "/chikiet/kata2025/ragketoan/docs/huyvu/archive/ALL_LEDGERS_2023_CSV"
 XNT_EXCEL = "/chikiet/kata2025/ragketoan/docs/huyvu/XNT_HuyVu_2023.xlsx"
 OUTPUT_XLSX = "/chikiet/kata2025/ragketoan/docs/huyvu/sosach/SAO_KE_TONG_HOP_SO_CHI_TIET_2023.xlsx"
 
@@ -16,25 +16,25 @@ OUTPUT_XLSX = "/chikiet/kata2025/ragketoan/docs/huyvu/sosach/SAO_KE_TONG_HOP_SO_
 
 def build_v3():
     start_time = time.time()
-    print("🚀 Khởi chạy hệ thống xây dựng sổ sách tích hợp Huy Vũ 2023 (v3 - DuckDB Optimized)...")
+    print("🚀 Khởi chạy hệ thống xây dựng sổ sách tích hợp Huy Vũ 2023 (v3 - FIXED)...")
 
     # 1. Khởi tạo DuckDB
     con = duckdb.connect(':memory:')
     
     # 2. Load Dữ liệu chính (NKC)
-    nkc_csv = os.path.join(SOURCE_DIR, "NKC_CORRECTED_2023.csv")
+    nkc_csv = os.path.join(SOURCE_DIR, "NKC_HEALED_2023.csv")
     if not os.path.exists(nkc_csv):
         print(f"❌ Không tìm thấy file nguồn: {nkc_csv}")
         return
 
-    # Sử dụng DuckDB để load CSV cực nhanh
-    con.execute(f"CREATE TABLE nkc AS SELECT * FROM read_csv_auto('{nkc_csv}')")
+    # Sử dụng Pandas để load CSV thay vì DuckDB trực tiếp để xử lý header/type tốt hơn
+    df_nkc = pd.read_csv(nkc_csv)
+    df_nkc['Số tiền'] = pd.to_numeric(df_nkc['Số tiền'], errors='coerce')
+    con.execute("CREATE TABLE nkc AS SELECT * FROM df_nkc")
     
-    # Clean up dữ liệu (Xử lý các dòng rác nếu có)
-    con.execute("""
-        DELETE FROM nkc WHERE "TK Nợ" IS NULL OR "TK Có" IS NULL;
-        DELETE FROM nkc WHERE "Số tiền" <= 0;
-    """)
+    # Clean up dữ liệu
+    con.execute('DELETE FROM nkc WHERE "TK Nợ" IS NULL OR "TK Có" IS NULL')
+    con.execute('DELETE FROM nkc WHERE "Số tiền" <= 0 OR "Số tiền" IS NULL')
 
     # 3. Đồng bộ hóa Sổ 1561 từ XNT_HuyVu_2023.xlsx (Giả định là nguồn đúng nhất)
     # Vì User xác nhận XNT_HuyVu_2023.xlsx là chuẩn cho 1561, 
@@ -111,17 +111,33 @@ def build_v3():
         
         # Sheet 4: Sổ cái chung
         con.execute("""
-            SELECT "Ngày", "Số HĐ", "Diễn giải", "TK Nợ" as "Tài khoản", "Số tiền" as "Nợ", 0.0 as "Có" FROM nkc
+            SELECT "Ngày", "Số CT", "Diễn giải", "TK Nợ" as "Tài khoản", "Số tiền" as "Nợ", 0.0 as "Có" FROM nkc
             UNION ALL
-            SELECT "Ngày", "Số HĐ", "Diễn giải", "TK Có" as "Tài khoản", 0.0 as "Nợ", "Số tiền" as "Có" FROM nkc
+            SELECT "Ngày", "Số CT", "Diễn giải", "TK Có" as "Tài khoản", 0.0 as "Nợ", "Số tiền" as "Có" FROM nkc
             ORDER BY "Tài khoản", "Ngày"
         """).df().to_excel(writer, sheet_name="So_Cai_Chung", index=False)
+        
+        # Sheet 5: Bảng Tổng Hợp Phát Sinh (Đảm bảo đủ 15 TK trọng yếu)
+        major_accs = ['1111', '112', '131', '1561', '331', '3331', '1331', '3411', '511', '632', '641', '642', '635', '711', '515']
+        acc_list_sql = ",".join([f"('{a}')" for a in major_accs])
+        con.execute(f"""
+            WITH target_accs(acc_num) AS (
+                VALUES {acc_list_sql}
+            )
+            SELECT 
+                t.acc_num as "Tài khoản", 
+                COALESCE(c."Phát sinh Nợ", 0) as "Phát sinh Nợ", 
+                COALESCE(c."Phát sinh Có", 0) as "Phát sinh Có"
+            FROM target_accs t
+            LEFT JOIN cdps_calc c ON t.acc_num = c."Tài khoản"
+            ORDER BY 1
+        """).df().to_excel(writer, sheet_name="TH_Phat_Sinh", index=False)
 
-        # Sheet 5+: Các sổ chi tiết tài khoản trọng yếu (Khớp chính xác với 15 sheet CT_ trong MD)
+        # Sheet 6+: Các sổ chi tiết tài khoản trọng yếu (Khớp chính xác với 15 sheet CT_ trong MD)
         major_accs = ['1111', '112', '131', '1561', '331', '3331', '1331', '3411', '511', '632', '641', '642', '635', '711', '515']
         for acc in major_accs:
             df_ct = con.execute(f"""
-                SELECT "Ngày", "Số HĐ", "Diễn giải", 
+                SELECT "Ngày", "Số CT", "Diễn giải", 
                        CASE WHEN "TK Nợ" LIKE '{acc}%' THEN "TK Có" ELSE "TK Nợ" END as "TK Đối ứng",
                        CASE WHEN "TK Nợ" LIKE '{acc}%' THEN "Số tiền" ELSE 0 END as "Nợ",
                        CASE WHEN "TK Có" LIKE '{acc}%' THEN "Số tiền" ELSE 0 END as "Có"
@@ -132,7 +148,7 @@ def build_v3():
             
             # Luôn tạo sheet (nếu empty thì tạo sheet trắng với tiêu đề)
             if df_ct.empty:
-                df_ct = pd.DataFrame(columns=["Ngày", "Số HĐ", "Diễn giải", "TK Đối ứng", "Nợ", "Có"])
+                df_ct = pd.DataFrame(columns=["Ngày", "Số CT", "Diễn giải", "TK Đối ứng", "Nợ", "Có"])
             
             df_ct.to_excel(writer, sheet_name=f"CT_{acc}", index=False)
 

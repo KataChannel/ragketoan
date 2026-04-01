@@ -2,29 +2,40 @@ import pandas as pd
 import duckdb
 import os
 import time
+from datetime import datetime
 
 # ============================================================
 # CONFIG & SOURCES
 # ============================================================
-COMPANY_ID = "03b043e9-b7cd-42bc-a4ea-db710552af82"
+COMPANY_ID = "03b043e9-b7cd-42bc-a4ea-db710552af82" # Hoàng Huy Phát
+YEAR = 2023
 XNT_EXCEL = "/chikiet/kata2025/ragketoan/docs/hoang-huy-phat/tonghop/XNT_HoangHuyPhat_2023.xlsx"
 OUTPUT_XLSX = "/chikiet/kata2025/ragketoan/docs/hoang-huy-phat/tonghop/SO_SACH_KE_TOAN_HHP_2023.xlsx"
 DB_URL = "postgresql://root:password@localhost:5432/ketoan"
+
+# Opening Balance from 1.yeucauhhp.md
+TON_DAU_1561 = 15447634554
 
 def build_ledger():
     print("🚀 Building Integrated Ledger for Hoàng Huy Phát 2023...")
     start_time = time.time()
 
-    # 1. Load XNT and prepare NKC from it
-    xnt = pd.read_excel(XNT_EXCEL, sheet_name="XNT_2023")
-    
-    # 2. Extract transactions from DB directly to NKC (more accurate)
+    if not os.path.exists(XNT_EXCEL):
+        print(f"❌ XNT file not found: {XNT_EXCEL}")
+        return
+
+    # 1. Load XNT to get total COGS
+    print("  - Reading XNT for COGS...")
+    xnt_df = pd.read_excel(XNT_EXCEL, sheet_name="xnt12thang")
+    # Get total COGS (excluding "TỔNG CỘNG" row if it exists)
+    cogs_total = xnt_df[xnt_df['TenHang'] != 'TỔNG CỘNG']['X_COGS'].sum()
+
+    # 2. Extract transactions from DB
     con = duckdb.connect()
     con.execute("INSTALL postgres; LOAD postgres;")
     con.execute(f"ATTACH '{DB_URL}' AS db (TYPE POSTGRES);")
 
     print("  - Fetching invoice transactions from database...")
-    # Fetch Invoices with totals
     query_nkc = f"""
         SELECT 
             (hdon_list.tdlap AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Ho_Chi_Minh')::DATE as "Ngày",
@@ -37,78 +48,79 @@ def build_ledger():
         JOIN db.ext_detailhoadon details ON details."idhdonServer" = hdon_list."idServer"
         WHERE hdon_list."congtyId" = '{COMPANY_ID}'
         AND hdon_list.tthai IN ('1','2','4','5')
-        AND EXTRACT(YEAR FROM (hdon_list.tdlap AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Ho_Chi_Minh')) = 2023
+        AND EXTRACT(YEAR FROM (hdon_list.tdlap AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Ho_Chi_Minh')) = {YEAR}
     """
     df_raw = con.execute(query_nkc).df()
 
-    # Expand into accounting entries (Journal entries)
-    journal_entries = []
+    # 3. Create Journal Entries (NKC)
+    entries = []
     
-    for idx, row in df_raw.iterrows():
-        # Sales (banra)
+    # 3.1 Initial Balance (Dummy entry for visualization in some reports, though usually in CDPS)
+    # 3.2 Main Transactions
+    for _, row in df_raw.iterrows():
+        desc = row['Diễn giải']
+        amt = row['Số tiền']
+        tax = row['Thuế']
+        date = row['Ngày']
+        shdon = row['Số HĐ']
+        
         if row['loaihd'] == 'banra':
-            # Nợ 131 / Có 511
-            journal_entries.append({
-                "Ngày": row['Ngày'], "Số HĐ": row['Số HĐ'], "Diễn giải": f"Doanh thu: {row['Diễn giải']}", 
-                "TK Nợ": "131", "TK Có": "5111", "Số tiền": row['Số tiền']
-            })
-            # Nợ 131 / Có 3331
-            if row['Thuế'] > 0:
-                journal_entries.append({
-                    "Ngày": row['Ngày'], "Số HĐ": row['Số HĐ'], "Diễn giải": f"Thuế VAT bán ra HĐ {row['Số HĐ']}", 
-                    "TK Nợ": "131", "TK Có": "3331", "Số tiền": row['Thuế']
-                })
-        # Purchases (muavao)
-        elif row['loaihd'] == 'muavao':
-            # Skip non-product purchases (like skip list logic, but simpler here: only if 156 exists)
-            if any(p in row['Diễn giải'].upper() for p in ["PHÍ", "QUẢNG CÁO", "DỊCH VỤ"]): 
-                acc_no = "642" # Expense
-            else:
-                acc_no = "1561" # Inventory
-                
-            # Nợ 1561/642 / Có 331
-            journal_entries.append({
-                "Ngày": row['Ngày'], "Số HĐ": row['Số HĐ'], "Diễn giải": f"Mua vào: {row['Diễn giải']}", 
-                "TK Nợ": acc_no, "TK Có": "331", "Số tiền": row['Số tiền']
-            })
-            # Nợ 1331 / Có 331
-            if row['Thuế'] > 0:
-                journal_entries.append({
-                    "Ngày": row['Ngày'], "Số HĐ": row['Số HĐ'], "Diễn giải": f"Thuế VAT mua vào HĐ {row['Số HĐ']}", 
-                    "TK Nợ": "1331", "TK Có": "331", "Số tiền": row['Thuế']
-                })
+            # Doanh thu: Nợ 131 / Có 5111
+            entries.append({"Ngày": date, "Số CT": f"HĐ {shdon}", "Diễn giải": f"Doanh thu: {desc}", "TK Nợ": "131", "TK Có": "5111", "Số tiền": amt})
+            # Thuế GTGT: Nợ 131 / Có 3331
+            if tax > 0:
+                entries.append({"Ngày": date, "Số CT": f"HĐ {shdon}", "Diễn giải": f"Thuế GTGT đầu ra HĐ {shdon}", "TK Nợ": "131", "TK Có": "33311", "Số tiền": tax})
+        else: # muavao
+            # Determine account: 1561 or expense
+            # Simple heuristic
+            acc_no = "1561"
+            if any(x in str(desc).upper() for x in ["PHÍ", "QUẢNG CÁO", "DỊCH VỤ", "VẬN CHUYỂN", "TIỀN ĐIỆN", "TIỀN NƯỚC"]):
+                acc_no = "642"
+            
+            # Mua hàng: Nợ 1561/642 / Có 331
+            entries.append({"Ngày": date, "Số CT": f"HĐ {shdon}", "Diễn giải": f"Mua vào: {desc}", "TK Nợ": acc_no, "TK Có": "331", "Số tiền": amt})
+            # Thuế GTGT: Nợ 1331 / Có 331
+            if tax > 0:
+                entries.append({"Ngày": date, "Số CT": f"HĐ {shdon}", "Diễn giải": f"Thuế GTGT đầu vào HĐ {shdon}", "TK Nợ": "1331", "TK Có": "331", "Số tiền": tax})
 
-    # Add COGS from XNT - Monthly aggregated for simplicity
-    cogs_total = xnt['X_COGS'].sum()
-    journal_entries.append({
-        "Ngày": "2023-12-31", "Số HĐ": "PX-TONG", "Diễn giải": "Giá vốn hàng bán năm 2023", 
-        "TK Nợ": "632", "TK Có": "1561", "Số tiền": cogs_total
+    # 3.3 Add COGS Adjustment
+    entries.append({
+        "Ngày": datetime(YEAR, 12, 31).date(),
+        "Số CT": "PX-TONG",
+        "Diễn giải": "Kết chuyển giá vốn hàng bán năm 2023",
+        "TK Nợ": "632",
+        "TK Có": "1561",
+        "Số tiền": round(cogs_total, 2)
     })
 
-    df_nkc = pd.DataFrame(journal_entries)
+    # 3.4 Closing Revenue and Expense to 911 (Simplified)
+    # (Optional, but let's keep it to basic entries as requested)
+    
+    df_nkc = pd.DataFrame(entries)
     df_nkc['Ngày'] = pd.to_datetime(df_nkc['Ngày'])
     
-    # 3. Create CDPS (Trial Balance) and Other Sheets
-    # We use DuckDB for grouping
+    # 4. CDPS (Trial Balance) Calculation
     con_mem = duckdb.connect(':memory:')
     con_mem.execute("CREATE TABLE nkc AS SELECT * FROM df_nkc")
     
-    # Opening Balances
-    # Ton dau 113.7B
-    TON_DAU_1561 = 113_746_247_959
+    # Extract unique accounts
+    con_mem.execute("""
+        CREATE TABLE acc_list AS
+        SELECT DISTINCT "TK Nợ" as acc FROM nkc
+        UNION
+        SELECT DISTINCT "TK Có" as acc FROM nkc
+    """)
     
-    # Calculate CDPS
-    con_mem.execute(f"""
-        CREATE TABLE cdps AS
-        WITH all_trans AS (
+    # CDPS Query
+    cdps_query = f"""
+        WITH trans AS (
             SELECT "TK Nợ" as acc, "Số tiền" as no, 0.0 as co FROM nkc
             UNION ALL
             SELECT "TK Có" as acc, 0.0 as no, "Số tiền" as co FROM nkc
         ),
-        acc_summary AS (
+        ps AS (
             SELECT acc, SUM(no) as ps_no, SUM(co) as ps_co
-            FROM all_trans
-            GROUP BY 1
+            FROM trans GROUP BY acc
         )
         SELECT 
             acc as "Tài khoản",
@@ -116,39 +128,52 @@ def build_ledger():
             CAST(CASE WHEN acc = '4111' THEN {TON_DAU_1561} ELSE 0 END AS DOUBLE) as "Dư Đầu Có",
             CAST(ps_no AS DOUBLE) as "Phát sinh Nợ",
             CAST(ps_co AS DOUBLE) as "Phát sinh Có",
-            CASE WHEN (CAST(CASE WHEN acc = '1561' THEN {TON_DAU_1561} ELSE 0 END AS DOUBLE) + ps_no - CAST(CASE WHEN acc = '4111' THEN {TON_DAU_1561} ELSE 0 END AS DOUBLE) - ps_co) > 0 
-                 THEN (CAST(CASE WHEN acc = '1561' THEN {TON_DAU_1561} ELSE 0 END AS DOUBLE) + ps_no - CAST(CASE WHEN acc = '4111' THEN {TON_DAU_1561} ELSE 0 END AS DOUBLE) - ps_co) ELSE 0 END as "Dư Cuối Nợ",
-            CASE WHEN (CAST(CASE WHEN acc = '1561' THEN {TON_DAU_1561} ELSE 0 END AS DOUBLE) + ps_no - CAST(CASE WHEN acc = '4111' THEN {TON_DAU_1561} ELSE 0 END AS DOUBLE) - ps_co) < 0 
-                 THEN ABS(CAST(CASE WHEN acc = '1561' THEN {TON_DAU_1561} ELSE 0 END AS DOUBLE) + ps_no - CAST(CASE WHEN acc = '4111' THEN {TON_DAU_1561} ELSE 0 END AS DOUBLE) - ps_co) ELSE 0 END as "Dư Cuối Có"
-        FROM acc_summary
-        ORDER BY acc
-    """)
+            0.0 as "Dư Cuối Nợ",
+            0.0 as "Dư Cuối Có"
+        FROM ps
+    """
+    df_cdps = con_mem.execute(cdps_query).df()
+    
+    # Calculate Final Balances in Python for clarity
+    df_cdps['Dư Cuối Nợ'] = (df_cdps['Dư Đầu Nợ'] + df_cdps['Phát sinh Nợ'] - df_cdps['Dư Đầu Có'] - df_cdps['Phát sinh Có']).apply(lambda x: x if x > 0 else 0)
+    df_cdps['Dư Cuối Có'] = (df_cdps['Dư Đầu Có'] + df_cdps['Phát sinh Có'] - df_cdps['Dư Đầu Nợ'] - df_cdps['Phát sinh Nợ']).apply(lambda x: x if x > 0 else 0)
 
-    # 4. Writing Output
+    # 5. Writing to Excel
     print(f"  - Writing to {OUTPUT_XLSX}...")
     with pd.ExcelWriter(OUTPUT_XLSX, engine='openpyxl') as writer:
-        # NKC
-        con_mem.execute("SELECT * FROM nkc ORDER BY Ngày").df().to_excel(writer, sheet_name="NKC", index=False)
+        df_nkc.to_excel(writer, sheet_name="NKC", index=False)
+        df_cdps.to_excel(writer, sheet_name="CDPS", index=False)
         
-        # CDPS
-        con_mem.execute("SELECT * FROM cdps").df().to_excel(writer, sheet_name="CDPS", index=False)
-        
-        # Major Acc Details
-        major_accs = ['1111', '131', '1561', '331', '3331', '1331', '5111', '632', '642']
+        # Detail Ledgers (Sổ Cái)
+        major_accs = sorted(df_cdps['Tài khoản'].unique())
         for acc in major_accs:
             df_ct = con_mem.execute(f"""
-                SELECT "Ngày", "Số HĐ", "Diễn giải", 
-                       CASE WHEN "TK Nợ" LIKE '{acc}%' THEN "TK Có" ELSE "TK Nợ" END as "TK Đối ứng",
-                       CASE WHEN "TK Nợ" LIKE '{acc}%' THEN "Số tiền" ELSE 0 END as "Nợ",
-                       CASE WHEN "TK Có" LIKE '{acc}%' THEN "Số tiền" ELSE 0 END as "Có"
+                SELECT "Ngày", "Số CT", "Diễn giải", 
+                       CASE WHEN "TK Nợ" = '{acc}' THEN "TK Có" ELSE "TK Nợ" END as "TK Đối ứng",
+                       CASE WHEN "TK Nợ" = '{acc}' THEN "Số tiền" ELSE 0 END as "Nợ",
+                       CASE WHEN "TK Có" = '{acc}' THEN "Số tiền" ELSE 0 END as "Có"
                 FROM nkc
-                WHERE "TK Nợ" LIKE '{acc}%' OR "TK Có" LIKE '{acc}%'
+                WHERE "TK Nợ" = '{acc}' OR "TK Có" = '{acc}'
                 ORDER BY "Ngày"
             """).df()
-            df_ct.to_excel(writer, sheet_name=f"CT_{acc}", index=False)
+            if not df_ct.empty:
+                # Add Opening row
+                opening_no = df_cdps.loc[df_cdps['Tài khoản'] == acc, 'Dư Đầu Nợ'].values[0]
+                opening_co = df_cdps.loc[df_cdps['Tài khoản'] == acc, 'Dư Đầu Có'].values[0]
+                if opening_no > 0 or opening_co > 0:
+                    op_row = pd.DataFrame([{"Ngày": datetime(YEAR, 1, 1), "Diễn giải": "Số dư đầu kỳ", "Nợ": opening_no, "Có": opening_co}])
+                    df_ct = pd.concat([op_row, df_ct], ignore_index=True)
+                
+                # Add Total row
+                tot_r = df_ct.sum(numeric_only=True)
+                tot_r['Diễn giải'] = 'TỔNG CỘNG'
+                df_ct = pd.concat([df_ct, pd.DataFrame([tot_r])], ignore_index=True)
+                
+                sheet_name = f"Sổ Cái {acc}"
+                if len(sheet_name) > 31: sheet_name = sheet_name[:31]
+                df_ct.to_excel(writer, sheet_name=sheet_name, index=False)
 
-    end_time = time.time()
-    print(f"✅ Full Ledger for HHP complete! Time: {end_time - start_time:.2f}s.")
+    print(f"✅ Full Ledger for HHP complete! Path: {OUTPUT_XLSX}")
 
 if __name__ == "__main__":
     build_ledger()

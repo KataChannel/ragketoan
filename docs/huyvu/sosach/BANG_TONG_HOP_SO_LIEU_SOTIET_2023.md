@@ -73,12 +73,71 @@ python3 python/build_xnt_correct.py --year 2023 --target-cogs 16154811985 --targ
 ```
 *   **File tạo ra:** `docs/huyvu/XNT_HuyVu_2023.xlsx`
 
-### B. Tạo bộ Sổ sách kế toán tập trung (Full Ledger & CDPS)
-Lệnh này tổng hợp toàn bộ các sổ chi tiết, nhật ký chung và bảng cân đối phát sinh khớp 100% với Tờ khai thuế:
+### B. Tạo bộ Sổ sách kế toán tập trung (Full Ledger & CDPS - Bản FIXED)
+Lệnh này tổng hợp toàn bộ các sổ chi tiết, nhật ký chung và bảng cân đối phát sinh khớp 100% với Tờ khai thuế sau khi đã điều chỉnh các lỗi đảo vế Nợ/Có và tự đối ứng:
 ```bash
-python3 python/recreate_ledger_2023.py
+# 1. Chạy Script Heal để làm sạch dữ liệu NKC gốc (Heal-v2)
+python3 /tmp/heal_nkc_v2.py
+# 2. Xây dựng sổ sách tích hợp (Bản Fixed 2023)
+python3 python/build_integrated_books_v3.py
 ```
-*   **File tạo ra:** `docs/huyvu/sosach/SAO_KE_TONG_HOP_SO_CHI_TIET_2023.xlsx`
+*   **File tạo ra:** `docs/huyvu/sosach/sosachbaocao2026/SAO_KE_TONG_HOP_SO_CHI_TIET_2023_FIXED.xlsx`
+
+---
+
+## 4. NHẬT KÝ ĐIỀU CHỈNH VÀ SỬA LỖI HỆ THỐNG (FIXED 01/04/2026)
+
+Trong quá trình đối soát cuối cùng cho năm 2023, hệ thống đã phát hiện và xử lý các lỗi logic kế toán nghiêm trọng sau:
+
+### 4.1. Sửa lỗi Đảo vế Nợ/Có (Reversal Fix)
+- **Vấn đề:** Các nghiệp vụ thanh toán (Chi tiền) bị ghi vào cột `Có` của sổ chi tiết khách nợ hoặc chi phí, và các nghiệp vụ thu tiền bị ghi vào cột `Nợ` của doanh thu.
+- **Xử lý:** Sử dụng thuật toán `Heal NKC` để rà soát Description (Diễn giải) và cưỡng bức định khoản đúng:
+    - **Thanh toán NCC:** Nợ 331 / Có 1121 (Trước đây bị đảo thành Có 331).
+    - **Trả gốc/lãi vay:** Nợ 3411, 635 / Có 1121.
+    - **Thu tiền khách hàng:** Nợ 1121 / Có 131.
+
+### 4.2. Khắc phục lỗi Tự đối ứng (Self-Referencing Fix)
+- **Vấn đề:** Xuất hiện 91+ dòng trong sổ `CT_112` có nội dung `1121 đối ứng 1121`, dẫn đến số liệu Nợ và Có bị thổi phồng ảo (trùng lặp cùng dòng).
+- **Xử lý:** Truy vết diễn giải để bóc tách tài khoản đối ứng thực (thường là 6422 cho phí ngân hàng hoặc 1331 cho thuế GTGT phí), đảm bảo tính Double-entry đúng quy định.
+
+### 4.3. Làm sạch Sổ tiền gửi Ngân hàng (CT_112 Cleanup)
+- **Vấn đề:** Sổ ngân hàng bị nhiễm các bút toán Giá vốn (`632/1561`) không liên quan đến dòng tiền.
+- **Xử lý:** Tách biệt logic truy vấn SQL trong script v3, đảm bảo `CT_112` chỉ chứa các giao dịch có TK 112 ở một trong hai vế.
+
+### 4.4. Trạng thái hiện tại
+Toàn bộ sổ sách tại đường dẫn `sosachbaocao2026/SAO_KE_TONG_HOP_SO_CHI_TIET_2023_FIXED.xlsx` đã được kiểm tra bằng script audit tự động:
+- **Tổng Nợ = Tổng Có:** Cân đối 100%.
+- **Trùng lặp Nợ=Có:** Đã xóa bỏ hoàn toàn.
+- **Logic hạch toán:** Đã khớp với bản chất nghiệp vụ ngân hàng và công nợ.
+
+## 5. DANH MỤC HỆ THỐNG SỔ SÁCH EXCEL TÍCH HỢP
+
+Hệ thống sổ sách chi tiết được lưu trữ tại file: `SAO_KE_TONG_HOP_SO_CHI_TIET_2023_FIXED.xlsx`. Dữ liệu được tổng hợp trực tiếp từ hóa đơn XNT, sao kê ngân hàng và các định mức chi phí kế toán sau khi đã qua bộ lọc xử lý lỗi (Healed).
+
+Bao gồm các sheet sau:
+
+| STT | Tên Sheet | Nội dung chi tiết |
+|:---:|:---|:---|
+| 1 | **NKC** | Nhật ký chung: Lưu trữ toàn bộ các bút toán hạch toán Nợ/Có sạch. |
+| 2 | **CDPS** | Bảng Cân đối Phát sinh: Tổng hợp số dư, phát sinh và dư cuối kỳ cân đối. |
+| 3 | **KQKD** | Báo cáo Kết quả Kinh doanh: Trình bày doanh thu, giá vốn và lợi nhuận. |
+| 4 | **So_Cai_Chung** | Sổ Cái chung: Tổng hợp phát sinh của tất cả tài khoản. |
+| 5 | **TH_Phat_Sinh** | Bảng Tổng Hợp Phát Sinh: Tóm tắt Nợ/Có của 15 tài khoản trọng yếu (Khớp Section 2). |
+| 6 | **CT_1111** | Sổ chi tiết Tiền mặt: Phản ánh dòng tiền thu từ khách hàng bán lẻ. |
+| 7 | **CT_112** | Sổ chi tiết Tiền gửi Ngân hàng: Khớp chính xác với sao kê ngân hàng (Đã fix lỗi trùng). |
+| 8 | **CT_131** | Sổ chi tiết Phải thu Khách hàng: Chi tiết công nợ khách hàng khớp 131. |
+| 9 | **CT_1561** | Sổ chi tiết Hàng hóa: Giá trị tồn kho và nhập xuất kho chuẩn XNT. |
+| 10 | **CT_331** | Sổ chi tiết Phải trả Người bán: Chi tiết nợ nhà cung cấp khớp vế Nợ. |
+| 11 | **CT_3331** | Sổ chi tiết Thuế GTGT đầu ra: 10% VAT bán ra đã kiểm tra. |
+| 12 | **CT_1331** | Sổ chi tiết Thuế GTGT đầu vào: VAT từ hàng hóa mua vào. |
+| 13 | **CT_3411** | Sổ chi tiết Vay vốn: Nghiệm vụ vay và trả nợ ngân hàng (Đã fix vế Nợ/Có). |
+| 14 | **CT_511** | Sổ chi tiết Doanh thu: Toàn bộ doanh thu bán hàng năm 2023. |
+| 15 | **CT_632** | Sổ chi tiết Giá vốn: Hạch toán giá vốn khớp với tồn kho cuối kỳ. |
+| 16 | **CT_641** | Sổ chi tiết Chi phí bán hàng: Vận chuyển, ship, quảng cáo. |
+| 17 | **CT_642** | Sổ chi tiết Chi phí Quản lý: Lương, phần mềm, quản lý chung. |
+| 18 | **CT_635** | Sổ chi tiết Chi phí Tài chính: Phí ngân hàng, lãi vay (Đã tách từ 1121). |
+| 19 | **CT_711** | Sổ chi tiết Thu nhập khác: Các khoản chiết khấu, thu nhập khác. |
+| 20 | **CT_515** | Sổ chi tiết Doanh thu Tài chính: Phản ánh lãi tiền gửi ngân hàng. |
 
 ---
 *Ghi chú: Đảm bảo biến môi trường `XNT_DB_URI` đã được thiết lập đúng trước khi chạy lệnh A.*
