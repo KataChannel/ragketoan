@@ -11,8 +11,9 @@ def generate_professional_subsidiary_ledger_final_v4():
         '112': 69358830.0,
         '131': 6387173464.0,
         '1561': 20528673683.0,
+        '331': 6387173469.0,
         '341': 33692035200.0, '3411': 33692035200.0,
-        '331': 0, '1312': 0, '1331': 0, '3331': 0, '411': 0
+        '1312': 0, '1331': 0, '3331': 0, '411': 0
     }
 
     print(f"Generating Professional Subsidiary Ledger V4 with Correct Opening Balances from {src}...")
@@ -36,7 +37,14 @@ def generate_professional_subsidiary_ledger_final_v4():
             mask = (df['TK Nợ'] == acc) | (df['TK Có'] == acc)
             acc_df = df[mask].copy()
             acc_df['dt_sort'] = pd.to_datetime(acc_df['Ngày hạch toán'], dayfirst=True, errors='coerce')
-            acc_df = acc_df.sort_values('dt_sort').drop(columns=['dt_sort'])
+            def get_prio(row):
+                sc = str(row['Số chứng từ']).upper()
+                if 'ADJ_NEG' in sc: return 0
+                if row['TK Nợ'] == acc: return 1
+                if row['TK Có'] == acc: return 2
+                return 9
+            acc_df['prio_sort'] = acc_df.apply(get_prio, axis=1)
+            acc_df = acc_df.sort_values(['dt_sort', 'prio_sort']).drop(columns=['dt_sort', 'prio_sort'])
             
             # Subsidiary Ledger Structure
             ledger_rows = []
