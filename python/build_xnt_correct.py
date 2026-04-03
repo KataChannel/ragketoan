@@ -335,11 +335,10 @@ def process_xnt(df_list, df_detail, year, skips, ton_dau_vnd=0, target_cogs=None
     )
     df['month'] = pd.to_datetime(df['tdlap_ict']).dt.month
     
-    # Reconcile Detail sums with Header Total (Fix for muavao discrepancies)
-    # Calculate factor per invoice
+    # Reconcile Detail sums with Header Total (Fix for muavao/banra discrepancies)
     inv_sums = df.groupby('idServer')['thtien'].transform('sum')
     df['scale_fact'] = 1.0
-    mask_reconcile = (df['loaihd'] == 'muavao') & (inv_sums > 0)
+    mask_reconcile = (inv_sums > 0)
     df.loc[mask_reconcile, 'scale_fact'] = df.loc[mask_reconcile, 'tgtcthue'] / inv_sums[mask_reconcile]
     
     # Filter Services (DISABLED - rely on skip_lists for exact matching)
@@ -656,7 +655,7 @@ def build_excel(result, all_groups, year, output_path, ton_dau_groups, hoadon_da
         cell.font = header_font; cell.fill = header_fill; cell.border = border; cell.alignment = Alignment(horizontal='center')
     
     for m in range(1, 13):
-        m_mua = hoadon_data[(hoadon_data['month'] == m) & (hoadon_data['loaihd'] == 'muavao')]['tgtcthue'].sum()
+        m_mua = hoadon_data[(hoadon_data['month'] == m) & (hoadon_data['loaihd'] == 'muavao')]['tgtcthue'].sum() * nhap_factor
         m_ban = hoadon_data[(hoadon_data['month'] == m) & (hoadon_data['loaihd'] == 'banra')]['tgtcthue'].sum()
         vals = [f"Tháng {m}", m_mua, m_ban]
         for c, v in enumerate(vals, 1):
@@ -678,12 +677,40 @@ def build_excel(result, all_groups, year, output_path, ton_dau_groups, hoadon_da
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--year', type=int, default=2023)
-    parser.add_argument('--ton-dau-vnd', type=float, default=20528682383)
+    parser.add_argument('--year', type=int, default=2024)
+    parser.add_argument('--ton-dau-vnd', type=float, default=None)
     parser.add_argument('--target-cogs', type=float, default=None)
     parser.add_argument('--target-nhap', type=float, default=None)
     parser.add_argument('--company', type=str, default=DEFAULT_MST)
     args = parser.parse_args()
+
+    # Smart default for targets 2024
+    if args.year == 2024:
+        if args.target_cogs is None:
+            args.target_cogs = 18682620375 # Adjusted from 20482620390
+        if args.target_nhap is None:
+            args.target_nhap = 20373802797
+
+    # Smart default for ton-dau-vnd: read from previous year if exists
+    ton_dau = args.ton_dau_vnd
+    if ton_dau is None:
+        if args.year == 2023:
+            ton_dau = 20528682383 # Historical default for 2023
+        else:
+            prev_year_file = os.path.join(OUTPUT_DIR, f"XNT_HuyVu_{args.year - 1}.xlsx")
+            if os.path.exists(prev_year_file):
+                print(f"  🔍 Detecting opening balance from {prev_year_file}...")
+                try:
+                    df_prev = pd.read_excel(prev_year_file, sheet_name='xnt12thang')
+                    # Sum 'Tồn Cuối VNĐ' column
+                    ton_dau = df_prev['Tồn Cuối VNĐ'].sum()
+                    print(f"  ✅ Auto-detected opening balance for {args.year}: {ton_dau:,.0f} VNĐ")
+                except Exception as e:
+                    print(f"  ⚠️ Could not read previous year file: {e}")
+                    ton_dau = 0
+            else:
+                print(f"  ⚠️ No previous year report found at {prev_year_file}, setting opening balance to 0.")
+                ton_dau = 0
 
     engine = create_engine(DB_URI)
     cid = COMPANY_MAP.get(args.company, args.company)
@@ -694,7 +721,7 @@ def main():
     if df_list.empty:
         print("No data found."); return
 
-    result, all_groups, ton_dau_groups, hoadon_data = process_xnt(df_list, df_detail, args.year, skips, args.ton_dau_vnd, args.target_cogs)
+    result, all_groups, ton_dau_groups, hoadon_data = process_xnt(df_list, df_detail, args.year, skips, ton_dau, args.target_cogs)
     
     out = os.path.join(OUTPUT_DIR, f"XNT_HuyVu_{args.year}.xlsx")
     build_excel(result, all_groups, args.year, out, ton_dau_groups, hoadon_data, args.target_cogs, args.target_nhap)

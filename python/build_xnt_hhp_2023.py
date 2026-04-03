@@ -11,7 +11,7 @@ from datetime import datetime
 # ================================
 COMPANY_ID = "03b043e9-b7cd-42bc-a4ea-db710552af82"
 YEAR = 2023
-OUTPUT_DIR = "/chikiet/kata2025/ragketoan/docs/hoang-huy-phat/tonghop"
+OUTPUT_DIR = "/chikiet/kata2025/ragketoan/docs/hoang-huy-phat/sosach2023"
 OUTPUT_FILE = os.path.join(OUTPUT_DIR, "XNT_HoangHuyPhat_2023.xlsx")
 MAPPING_FILE = "/chikiet/kata2025/ragketoan/docs/hoang-huy-phat/2.mapping_341_items.md"
 TON_2024_FILE = "/chikiet/kata2025/ragketoan/docs/hoang-huy-phat/ton_kho_T1_2024.md"

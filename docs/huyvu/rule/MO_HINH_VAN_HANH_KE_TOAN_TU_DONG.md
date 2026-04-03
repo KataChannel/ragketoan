@@ -78,6 +78,30 @@ Bạn có thể copy và điều chỉnh câu lệnh sau khi bắt đầu xử l
 > Hãy viết script Python để thực thi và xuất bộ hồ sơ Final (NKC, Sổ chi tiết, Báo cáo công nợ) theo đúng mô hình chuẩn của Huy Vũ 2023."**
 
 ---
+
+## 6. DANH MỤC SỔ CHI TIẾT CẦN LẬP (SUBSIDIARY LEDGERS LIST)
+
+Bộ file **Sổ Chi Tiết (SCT)** xuất bản từ script phải chứa tối thiểu các bảng (sheet) sau để đảm bảo tính đầy đủ cho quyết toán và đối soát:
+
+| STT | Mã Sổ | Tên Sổ Chi Tiết | Mục đích & Nguồn dữ liệu |
+|:---:|:---|:---|:---|
+| 1 | **CT_1111** | Sổ chi tiết Tiền mặt | Phản ánh dòng tiền mặt thu từ bán lẻ và chi phí quỹ. |
+| 2 | **CT_112** | Sổ chi tiết Tiền gửi NH | Khớp chính xác với sao kê (ACB, BIDV, Sacombank...), đã khử trùng lặp. |
+| 3 | **CT_131** | Phải thu Khách hàng | Chi tiết nợ theo từng đối tượng khách hàng (Sales/Retail). |
+| 4 | **CT_1561** | Sổ chi tiết Hàng hóa | Theo dõi giá trị tồn kho nhập/xuất, khớp 100% với báo cáo XNT. |
+| 5 | **CT_331** | Phải trả Người bán | Chi tiết công nợ nhà cung cấp dựa trên hóa đơn mua vào. |
+| 6 | **CT_1331** | Thuế GTGT đầu vào | Khấu trừ thuế từ hàng hóa, dịch vụ mua vào (10%). |
+| 7 | **CT_3331** | Thuế GTGT đầu ra | Thuế GTGT phải nộp từ doanh thu bán ra. |
+| 8 | **CT_3411** | Sổ chi tiết Vay vốn | Theo dõi các khoản giải ngân và trả nợ gốc ngân hàng. |
+| 9 | **CT_511** | Sổ chi tiết Doanh thu | Tổng hợp doanh thu bán hàng và cung cấp dịch vụ. |
+| 10 | **CT_515** | Doanh thu Tài chính | Lãi tiền gửi ngân hàng và các khoản lãi tài chính khác. |
+| 11 | **CT_632** | Sổ chi tiết Giá vốn | Chi phí giá vốn hàng bán tương ứng với doanh thu (COGS). |
+| 12 | **CT_635** | Chi phí Tài chính | Lãi vay và phí dịch vụ ngân hàng (Bóc tách từ dòng tiền 112). |
+| 13 | **CT_641** | Chi phí Bán hàng | Các chi phí vận chuyển, đóng gói, marketing. |
+| 14 | **CT_642** | Chi phí Quản lý | Lương nhân viên, văn phòng phẩm, chi phí quản lý chung. |
+| 15 | **CT_711** | Thu nhập khác | Các khoản chiết khấu thương mại, thanh lý tài sản. |
+
+---
 *Tài liệu này được tạo ra để chuẩn hóa quy trình kế toán thông minh.*
 *Ngày cập nhật: 03/04/2026*
 *Tác giả: Antigravity AI*
