@@ -565,7 +565,7 @@ def build_excel(result, all_groups, year, output_path, ton_dau_groups, hoadon_da
             nhap_vnd_actual = d['nhap_vnd'] * nhap_factor
             gv_xuat_actual = gv_xuat_nat * cogs_factor
             
-            monthly_cells.extend([nhap_vnd_actual, d['xuat_vnd']])
+            monthly_cells.extend([nhap_vnd_actual, gv_xuat_actual])
             
             # Update flows
             nat_v += d['nhap_vnd'] - gv_xuat_nat

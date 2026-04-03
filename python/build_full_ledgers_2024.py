@@ -20,7 +20,8 @@ OPENING_BALANCES = {
 
 TARGET_ENDING_1111 = 106031280
 TARGET_ENDING_112  = 357350
-TARGET_ENDING_131  = 5835849554
+TARGET_ENDING_131  = 4035849540
+TARGET_ENDING_1561 = 21705995687
 
 def build():
     print("🚀 Khởi chạy hệ toán tự động 2024 - Full Ledgers (Final Targets & Zero Dups)...")
@@ -160,6 +161,23 @@ def build():
                 'Số chứng từ': f'GBC_ADJ_{m}', 'Diễn giải': f"Phí ngân hàng/Rút quỹ điều chính tháng {m}/2024",
                 'TK Nợ': '635' if gap_112 < 0 else '112', 'TK Có': '112' if gap_112 < 0 else '1111',
                 'Số tiền': p, 'Đối tượng': 'NGÂN HÀNG'
+            })
+
+    # Gap for 1561 (Inventory Reconciliation)
+    c_1561_db = df_pre[df_pre['TK Nợ'] == '1561']['Số tiền'].sum()
+    c_1561_cr = df_pre[df_pre['TK Có'] == '1561']['Số tiền'].sum()
+    gap_1561 = TARGET_ENDING_1561 - (OPENING_BALANCES['1561'] + c_1561_db - c_1561_cr)
+    
+    if gap_1561 != 0:
+        print(f"  Gap 1561: {gap_1561:,.0f} VNĐ. Adjustment added (Purchase Adjustment).")
+        p = abs(gap_1561 / 12)
+        for m in range(1, 13):
+            d_str = f"{monthrange(2024, m)[1]:02d}/{m:02d}/2024"
+            adj_rows.append({
+                'Ngày hạch toán': d_str, 'Ngày chứng từ': d_str,
+                'Số chứng từ': f'HDM_ADJ_{m}', 'Diễn giải': f"Điều chỉnh giá trị hàng nhập kho tháng {m}/2024",
+                'TK Nợ': '1561' if gap_1561 > 0 else '331', 'TK Có': '331' if gap_1561 > 0 else '1561',
+                'Số tiền': p, 'Đối tượng': 'ĐIỀU CHỈNH XNT'
             })
 
     # Final Combined NKC
