@@ -97,14 +97,19 @@ def load_bank_statements():
             desc_cols = []
             
             # Look for columns
-            for i in range(raw_df.shape[1]):
-                for r in range(min(raw_df.shape[0], 25)):
+            for r in range(min(20, len(raw_df))):
+                for i in range(len(raw_df.columns)):
                     val = str(raw_df.iloc[r, i]).strip().lower()
                     if "ngày" in val and date_col == -1: date_col = i
                     if ("nội dung" in val or "diễn giải" in val) and i not in desc_cols: desc_cols.append(i)
-                    # Check if column name resembles money and column content has numbers
-                    if val in ["thu", "ghi nợ", "ps tăng", "tăng"] and thu_col == -1: thu_col = i
-                    if val in ["chi", "ghi có", "ps giảm", "giảm"] and chi_col == -1: chi_col = i
+                    if ("số tiền nhận" in val or "ghi có" in val or "thu" in val) and thu_col == -1: thu_col = i
+                    if ("số tiền chuyển" in val or "ghi nợ" in val or "chi" in val or "rút tiền" in val) and chi_col == -1: chi_col = i
+            
+            # Specific for HHP 2023 Excel formats
+            date_col = 3
+            if 7 not in desc_cols: desc_cols.append(7)
+            if thu_col == -1: thu_col = 16
+            if chi_col == -1: chi_col = 17
             
             # Additional logic to find THU/CHI based on common positions if not found by keywords
             if thu_col == -1 or chi_col == -1:
@@ -156,12 +161,85 @@ def load_bank_statements():
 
 # ============================================================
 # ACCOUNT MAPPING
-# ============================================================
-def get_account_for_item(ten):
-    t = str(ten).lower()
-    if any(k in t for k in ["cước", "dịch vụ", "điện lực", "nước", "internet", "văn phòng", "photo"]):
+# Danh sách các nhà cung cấp chỉ bán hàng hóa (Sữa, Thực phẩm, Bánh kẹo...)
+INVENTORY_SUPPLIERS = {
+    'CÔNG TY TNHH BEL VIỆT NAM', 
+    'CÔNG TY CỔ PHẦN THỰC PHẨM CHOLIMEX', 
+    'CÔNG TY CỔ PHẦN VIỆT NAM KỸ NGHỆ SÚC SẢN', 
+    'CÔNG TY TNHH NABATI VIỆT NAM', 
+    'CÔNG TY CỔ PHẦN NƯỚC GIẢI KHÁT SANEST KHÁNH HÒA',
+    'CÔNG TY CỔ PHẦN SÁCH VÀ THIẾT BỊ TRƯỜNG HỌC GIA LAI'
+}
+
+def get_debit_account_for_purchase(supplier_name, item_names):
+    """
+    Ưu tiên 1: Kiểm tra từ khóa trong tên hàng để hạch toán vào 642 (Xăng dầu, phụ tùng, văn phòng phẩm...)
+    Ưu tiên 2: Kiểm tra nhà cung cấp hàng hóa để hạch toán vào 156
+    """
+    s = str(supplier_name).strip()
+    
+    # Kết hợp tất cả tên hàng trong hóa đơn để kiểm tra từ khóa
+    full_items_text = " ".join([str(t) for t in item_names]).lower()
+    
+    # Các từ khóa hạch toán vào chi phí (642) cho dù là nhà cung cấp nào
+    expense_keywords = [
+        "xăng", "dầu", "do ", "giấy", "bảo trì", "sửa chữa", "phụ tùng", 
+        "lốp", "vỏ xe", "nhớt", "cước", "dịch vụ", "văn phòng", "photo", "vận chuyển"
+    ]
+    
+    if any(k in full_items_text for k in expense_keywords):
         return '6422'
-    return '1561'
+        
+    if s in INVENTORY_SUPPLIERS:
+        return '1561'
+        
+    return '6422' # Mặc định còn lại là chi phí
+
+def map_bank_account(desc, is_credit, amount):
+    """
+    is_credit=True means Money In (Credit bank statement column, but Debit 112 in accounting)
+    is_credit=False means Money Out (Debit bank statement column, but Credit 112 in accounting)
+    """
+    d = str(desc).lower()
+    
+    if is_credit: # Money In (Nợ 112)
+        if any(k in d for k in ["nộp vào", "nộp tiền", "nop tien", "nt vao tk", "nop tk", "bidv cty nộp vào vcb cty", "rút bidv", "nộp-", "nt-", "luân chuyển"]):
+            return '1111'
+        if any(k in d for k in ["quỹ từ tkd", "quỹ từ ctv"]):
+            return '3368'
+        if any(k in d for k in ["vay vcb tt", "vay thanh toán", "giải ngân"]):
+            return '3411'
+        if any(k in d for k in ["lãi", "tra lai"]):
+            return '515'
+        return '131' # Default for inflow is customer payment
+    else: # Money Out (Có 112)
+        # Ngân hàng hạch toán Nợ 635, Có 112 theo yêu cầu
+        if any(k in d for k in ["thanh toán lương", "unc lương", "tiền lương", "thanh toán lương cty", "tt tiền lương", "thanh toán tiền ứng", "tạm ứng", "tiền ứng"]):
+            return '3341'
+        if any(k in d for k in ["bảo hiểm", "bhxh", "bhyt"]):
+            return '3383'
+        # Tất cả các nghiệp vụ ngân hàng khác mặc định vào 635 (bao gồm cả phí và trả 331 nếu không tách)
+        return '635'
+
+def add_cogs_entries(nkc_rows, year):
+    path_xnt = f"/chikiet/kata2025/ragketoan/docs/hoang-huy-phat/XNT_HHP_{year}.xlsx"
+    if not os.path.exists(path_xnt):
+        return nkc_rows
+    try:
+        df_xnt = pd.read_excel(path_xnt, sheet_name='xnt12thang')
+        for m in range(1, 13):
+            col_name = f'Xuất T{m} VNĐ'
+            if col_name in df_xnt.columns:
+                monthly_gv = df_xnt.iloc[:-1][col_name].sum()
+                if monthly_gv > 0:
+                    last_day = (pd.to_datetime(f"{year}-{m:02d}-01") + pd.offsets.MonthEnd(0)).strftime('%d/%m/%Y')
+                    nkc_rows.append({
+                        'Ngày hạch toán': last_day, 'Ngày chứng từ': last_day, 'Số chứng từ': f'GV{m:02d}', 
+                        'Diễn giải': f"Giá vốn hàng bán - Tháng {m}/{year}", 
+                        'TK Nợ': '632', 'TK Có': '1561', 'Số tiền': float(monthly_gv), 'Đối tượng': 'CTY HHP'
+                    })
+    except: pass
+    return nkc_rows
 
 def generate_nkc(df_inv, df_det, df_bank):
     nkc_rows = []
@@ -176,7 +254,8 @@ def generate_nkc(df_inv, df_det, df_bank):
     for _, inv in df_inv[df_inv['loaihd'] == 'muavao'].iterrows():
         supp, date_s = inv['nbten'], inv['tdlap'].strftime('%d/%m/%Y')
         det = df_det[df_det['idhdonServer'] == inv['idServer']]
-        acc_debit = get_account_for_item(det.iloc[0]['ten']) if not det.empty else '1561'
+        item_names = det['ten'].tolist() if not det.empty else []
+        acc_debit = get_debit_account_for_purchase(supp, item_names)
         nkc_rows.append({'Ngày hạch toán': date_s, 'Ngày chứng từ': date_s, 'Số chứng từ': f"HĐ{inv['shdon']}", 'Diễn giải': f"Mua hàng từ {supp}", 'TK Nợ': acc_debit, 'TK Có': '331', 'Số tiền': float(inv['tgtcthue']), 'Đối tượng': supp})
         if inv['tgtthue'] > 0:
             nkc_rows.append({'Ngày hạch toán': date_s, 'Ngày chứng từ': date_s, 'Số chứng từ': f"HĐ{inv['shdon']}", 'Diễn giải': f"Thuế GTGT đầu vào", 'TK Nợ': '1331', 'TK Có': '331', 'Số tiền': float(inv['tgtthue']), 'Đối tượng': supp})
@@ -184,20 +263,47 @@ def generate_nkc(df_inv, df_det, df_bank):
     # Bank
     for _, bank in df_bank.iterrows():
         date_s, desc = bank['Date'].strftime('%d/%m/%Y'), bank['Description']
-        party = desc.split('-')[-1].strip()
+        party = desc.split('-')[-1].strip() if '-' in desc else desc[:50]
+        
+        # Credit to Bank = Cash In (Nợ 112)
         if bank['Credit'] > 0:
-            tk_co = '112' if "luân chuyển" in desc.lower() else ('515' if "lãi" in desc.lower() else '131')
-            nkc_rows.append({'Ngày hạch toán': date_s, 'Ngày chứng từ': date_s, 'Số chứng từ': bank['Bank'][:3], 'Diễn giải': desc, 'TK Nợ': '112', 'TK Có': tk_co, 'Số tiền': bank['Credit'], 'Đối tượng': party})
+            desc = str(bank['Description'])
+            if "luân chuyển" in desc.lower():
+                desc = "Nộp tiền mặt vào tài khoản"
+            tk_co = map_bank_account(bank['Description'], True, bank['Credit'])
+            nkc_rows.append({
+                'Ngày hạch toán': date_s, 'Ngày chứng từ': date_s, 'Số chứng từ': bank['Bank'][:3], 
+                'Diễn giải': desc, 'TK Nợ': '112', 'TK Có': tk_co, 'Số tiền': bank['Credit'], 'Đối tượng': party
+            })
+            
+        # Debit from Bank = Cash Out (Có 112)
         if bank['Debit'] > 0:
-            tk_no = '112' if "luân chuyển" in desc.lower() else ('642' if "phí" in desc.lower() else ('635' if "lãi vay" in desc.lower() else ('341' if "vay" in desc.lower() else '331')))
-            nkc_rows.append({'Ngày hạch toán': date_s, 'Ngày chứng từ': date_s, 'Số chứng từ': bank['Bank'][:3], 'Diễn giải': desc, 'TK Nợ': tk_no, 'TK Có': '112', 'Số tiền': bank['Debit'], 'Đối tượng': party})
+            # Special case for loan payment "song song"
+            if any(k in desc.lower() for k in ["vay vcb tt tiền hàng", "vay thanh toán"]):
+                # 1. Displacement (Nợ 112 / Có 3411)
+                nkc_rows.append({
+                    'Ngày hạch toán': date_s, 'Ngày chứng từ': date_s, 'Số chứng từ': 'VAY', 
+                    'Diễn giải': f"Giải ngân vay thanh toán tiền hàng - {desc}", 'TK Nợ': '112', 'TK Có': '3411', 'Số tiền': bank['Debit'], 'Đối tượng': party
+                })
+                # 2. Payment (Nợ 331 / Có 112)
+                tk_no = '331'
+            else:
+                tk_no = map_bank_account(desc, False, bank['Debit'])
+                
+            nkc_rows.append({
+                'Ngày hạch toán': date_s, 'Ngày chứng từ': date_s, 'Số chứng từ': bank['Bank'][:3], 
+                'Diễn giải': desc, 'TK Nợ': tk_no, 'TK Có': '112', 'Số tiền': bank['Debit'], 'Đối tượng': party
+            })
+            
+    # Add COGS
+    nkc_rows = add_cogs_entries(nkc_rows, YEAR)
             
     df = pd.DataFrame(nkc_rows)
     df['dt'] = pd.to_datetime(df['Ngày hạch toán'], format='%d/%m/%Y'); df = df.sort_values('dt').drop(columns=['dt'])
     return df
 
 def generate_sct(df_nkc):
-    accounts = ['112', '131', '331', '1561', '5111', '642', '1331', '3331', '341', '635', '515']
+    accounts = ['1111', '112', '131', '331', '3368', '1561', '3341', '5111', '642', '1331', '3331', '341', '3411', '635', '515', '3383', '632']
     sct_data = {}
     for acc in accounts:
         rows = []; bal = 0

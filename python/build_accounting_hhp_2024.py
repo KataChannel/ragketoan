@@ -75,7 +75,6 @@ def fetch_database_data():
 def load_bank_statements_2024():
     all_trans = []
     if not os.path.exists(BANK_DIR):
-        print(f"Bank dir not found: {BANK_DIR}")
         return pd.DataFrame()
         
     for filename in os.listdir(BANK_DIR):
@@ -83,8 +82,6 @@ def load_bank_statements_2024():
         path = os.path.join(BANK_DIR, filename)
         
         try:
-            # Monthly statement logic - the columns are likely:
-            # 0: Date, 1: Content/Description, 2: Withdrawal, 3: Deposit, 4: Balance
             df_raw = pd.read_excel(path, header=None)
             
             def clean_m(v):
@@ -94,24 +91,31 @@ def load_bank_statements_2024():
                     return float(s)
                 except: return 0.0
 
+            date_col, desc_cols, thu_col, chi_col = -1, [], -1, -1
             if "sao ke" in filename.lower():
+                for r in range(min(20, len(df_raw))):
+                    for i in range(len(df_raw.columns)):
+                        val = str(df_raw.iloc[r, i]).strip().lower()
+                        if "ngày" in val and date_col == -1: date_col = i
+                        if ("nội dung" in val or "diễn giải" in val) and i not in desc_cols: desc_cols.append(i)
+                        if ("số tiền nhận" in val or "ghi có" in val or "thu" in val) and thu_col == -1: thu_col = i
+                        if ("số tiền chuyển" in val or "ghi nợ" in val or "chi" in val or "rút tiền" in val) and chi_col == -1: chi_col = i
+                
+                # Hardcoded for 2024 VTB layout
+                date_col, desc_cols, thu_col, chi_col = 1, [2], 4, 3
+
                 for index, row in df_raw.iterrows():
                     try:
-                        d_val = str(row.iloc[1])
-                        # Match formats like DD-MM-YYYY or DD/MM/YYYY
+                        d_val = str(row.iloc[date_col])
                         if not re.search(r'\d{2}[-/]\d{2}[-/]\d{4}', d_val): continue
-                        
-                        # Sometimes it has time: 19-02-2024 03:46:29
                         match = re.search(r'(\d{2}[-/]\d{2}[-/]\d{4})', d_val)
                         if not match: continue
-                        dt_s = match.group(1)
-                        
-                        dt = pd.to_datetime(dt_s, dayfirst=True, errors='coerce')
+                        dt = pd.to_datetime(match.group(1), dayfirst=True, errors='coerce')
                         if pd.isna(dt) or dt.year != YEAR: continue
                         
-                        debit = clean_m(row.iloc[3]) if len(row) > 3 else 0.0
-                        credit = clean_m(row.iloc[4]) if len(row) > 4 else 0.0
-                        desc = str(row.iloc[2]) if len(row) > 2 else ""
+                        debit = clean_m(row.iloc[chi_col]) if chi_col < len(row) else 0.0
+                        credit = clean_m(row.iloc[thu_col]) if thu_col < len(row) else 0.0
+                        desc = " ".join([str(row.iloc[c]) for c in desc_cols if c < len(row)])
                         
                         if debit == 0 and credit == 0: continue
                         if "số dư đầu kỳ" in desc.lower() or "opening balance" in desc.lower(): continue
@@ -119,18 +123,16 @@ def load_bank_statements_2024():
                         all_trans.append({'Bank': 'VTB', 'Date': dt, 'Description': desc, 'Debit': debit, 'Credit': credit})
                     except: continue
             elif "trả gốc vay" in filename.lower():
-                # Example: ['01/01/2024', 'Lãi vay...', '1000000']
                 for index, row in df_raw.iterrows():
                     try:
-                        d_val = str(row.iloc[1]) # Check column 1 for date
+                        d_val = str(row.iloc[1])
                         if not re.match(r'\d{2}[-/]\d{2}[-/]\d{4}', d_val): 
-                            d_val = str(row.iloc[0]) # Try column 0
+                            d_val = str(row.iloc[0])
                             if not re.match(r'\d{2}[-/]\d{2}[-/]\d{4}', d_val): continue
                         
                         dt = pd.to_datetime(d_val[:10], dayfirst=True, errors='coerce')
                         if pd.isna(dt) or dt.year != YEAR: continue
                         
-                        # Amount could be in col 2 or 3
                         amt = clean_m(row.iloc[2])
                         if amt == 0 and len(row) > 3: amt = clean_m(row.iloc[3])
                         
@@ -159,7 +161,6 @@ def fetch_opening_balances():
         '341': -79083346907.0,
         '635': 11611158.0
     }
-    # Priority: read from the actual 2023 SCT file if it exists
     if os.path.exists(SCT_2023_PATH):
         try:
             xl = pd.ExcelFile(SCT_2023_PATH)
@@ -175,10 +176,70 @@ def fetch_opening_balances():
 # ============================================================
 # ACCOUNT MAPPING
 # ============================================================
-def get_acc_for_item(ten):
-    t = str(ten).lower()
-    if any(k in t for k in ["cước", "dịch vụ", "điện lực", "nước", "internet", "văn phòng"]): return '6422'
-    return '1561'
+INVENTORY_SUPPLIERS = {
+    'CÔNG TY TNHH BEL VIỆT NAM', 
+    'CÔNG TY CỔ PHẦN THỰC PHẨM CHOLIMEX', 
+    'CÔNG TY CỔ PHẦN VIỆT NAM KỸ NGHỆ SÚC SẢN', 
+    'CÔNG TY TNHH NABATI VIỆT NAM', 
+    'CÔNG TY CỔ PHẦN NƯỚC GIẢI KHÁT SANEST KHÁNH HÒA',
+    'CÔNG TY CỔ PHẦN SÁCH VÀ THIẾT BỊ TRƯỜNG HỌC GIA LAI'
+}
+
+def get_debit_account_for_purchase(supplier_name, item_names):
+    s = str(supplier_name).strip()
+    full_items_text = " ".join([str(t) for t in item_names]).lower()
+    expense_keywords = [
+        "xăng", "dầu", "do ", "giấy", "bảo trì", "sửa chữa", "phụ tùng", 
+        "lốp", "vỏ xe", "nhớt", "cước", "dịch vụ", "văn phòng", "photo", "vận chuyển"
+    ]
+    
+    if any(k in full_items_text for k in expense_keywords):
+        return '6422'
+        
+    if s in INVENTORY_SUPPLIERS:
+        return '1561'
+        
+    return '6422'
+
+def map_bank_account_2024(desc, is_credit):
+    d = str(desc).lower()
+    if is_credit: # Money In (Nợ 112)
+        if any(k in d for k in ["nộp vào", "nộp tiền", "nop tien", "nt vao tk", "nop tk", "bidv cty nộp vào vcb cty", "rút bidv", "nộp-", "nt-", "luân chuyển"]):
+            return '1111'
+        if any(k in d for k in ["quỹ từ tkd", "quỹ từ ctv"]):
+            return '3368'
+        if any(k in d for k in ["vay vcb tt", "vay thanh toán", "giải ngân"]):
+            return '3411'
+        if any(k in d for k in ["lãi", "tra lai"]):
+            return '515'
+        return '131'
+    else: # Money Out (Có 112)
+        # Ngân hàng hạch toán Nợ 635, Có 112 theo yêu cầu
+        if any(k in d for k in ["thanh toán lương", "unc lương", "tiền lương", "thanh toán lương cty", "tt tiền lương", "thanh toán tiền ứng", "tạm ứng", "tiền ứng"]):
+            return '3341'
+        if any(k in d for k in ["bảo hiểm", "bhxh", "bhyt"]):
+            return '3383'
+        return '635' # Default for outflow is 635
+
+def add_cogs_entries(nkc_rows, year):
+    path_xnt = f"/chikiet/kata2025/ragketoan/docs/hoang-huy-phat/XNT_HHP_{year}.xlsx"
+    if not os.path.exists(path_xnt):
+        return nkc_rows
+    try:
+        df_xnt = pd.read_excel(path_xnt, sheet_name='xnt12thang')
+        for m in range(1, 13):
+            col_name = f'Xuất T{m} VNĐ'
+            if col_name in df_xnt.columns:
+                monthly_gv = df_xnt.iloc[:-1][col_name].sum()
+                if monthly_gv > 0:
+                    last_day = (pd.to_datetime(f"{year}-{m:02d}-01") + pd.offsets.MonthEnd(0)).strftime('%d/%m/%Y')
+                    nkc_rows.append({
+                        'Ngày hạch toán': last_day, 'Ngày chứng từ': last_day, 'Số chứng từ': f'GV{m:02d}', 
+                        'Diễn giải': f"Giá vốn hàng bán - Tháng {m}/{year}", 
+                        'TK Nợ': '632', 'TK Có': '1561', 'Số tiền': float(monthly_gv), 'Đối tượng': 'CTY HHP'
+                    })
+    except: pass
+    return nkc_rows
 
 def generate_nkc_2024(df_inv, df_det, df_bank):
     nkc_rows = []
@@ -194,7 +255,8 @@ def generate_nkc_2024(df_inv, df_det, df_bank):
     for _, inv in df_inv[df_inv['loaihd'] == 'muavao'].iterrows():
         supp, date_s = inv['nbten'], inv['tdlap'].strftime('%d/%m/%Y')
         det = df_det[df_det['idhdonServer'] == inv['idServer']]
-        acc_debit = get_acc_for_item(det.iloc[0]['ten']) if not det.empty else '1561'
+        item_names = det['ten'].tolist() if not det.empty else []
+        acc_debit = get_debit_account_for_purchase(supp, item_names)
         nkc_rows.append({'Ngày hạch toán': date_s, 'Ngày chứng từ': date_s, 'Số chứng từ': f"HĐ{inv['shdon']}", 'Diễn giải': f"Mua hàng từ {supp}", 'TK Nợ': acc_debit, 'TK Có': '331', 'Số tiền': float(inv['tgtcthue']), 'Đối tượng': supp})
         if inv['tgtthue'] > 0:
             nkc_rows.append({'Ngày hạch toán': date_s, 'Ngày chứng từ': date_s, 'Số chứng từ': f"HĐ{inv['shdon']}", 'Diễn giải': f"Thuế GTGT đầu vào", 'TK Nợ': '1331', 'TK Có': '331', 'Số tiền': float(inv['tgtthue']), 'Đối tượng': supp})
@@ -207,52 +269,34 @@ def generate_nkc_2024(df_inv, df_det, df_bank):
         
         # Credit to Bank = Cash In (Nợ 112)
         if bank['Credit'] > 0:
-            if "luân chuyển" in d or "rút tiền nộp vào nh" in d:
-                tk_co = '3368'
-            elif any(k in d for k in ["rút bidv", "nộp vào vcb", "bidv cty nộp vào vcb cty", "nộp tiền vào tài khoản", "nt vao tk", "nop tk", "nop tien", "nt-", "nop-"]):
-                tk_co = '1111'
-            elif "vay vcb tt tiền hàng" in d or "vay thanh toán" in d:
-                tk_co = '3411'
-            elif "lãi" in d or "tra lai" in d:
-                tk_co = '515'
-            elif "thu nợ" in d or "kh trả nợ" in d:
-                tk_co = '131'
-            else:
-                tk_co = '131' # Default for inflows is 131 (customer payment)
-                
+            desc = str(bank['Description'])
+            if "luân chuyển" in desc.lower():
+                desc = "Nộp tiền mặt vào tài khoản"
+            tk_co = map_bank_account_2024(bank['Description'], True)
             nkc_rows.append({
-                'Ngày hạch toán': date_s, 'Ngày chứng từ': date_s, 'Số chứng từ': bank['Bank'][:3],
+                'Ngày hạch toán': date_s, 'Ngày chứng từ': date_s, 'Số chứng từ': 'NH', 
                 'Diễn giải': desc, 'TK Nợ': '112', 'TK Có': tk_co, 'Số tiền': float(bank['Credit']), 'Đối tượng': party
             })
             
         # Debit from Bank = Cash Out (Có 112)
         if bank['Debit'] > 0:
-            if any(k in d for k in ["thanh toán lương", "unc lương", "tiền lương", "thanh toán lương cty", "tt tiền lương"]):
-                tk_no = '3341'
-            elif any(k in d for k in ["thanh toán tiền ứng", "tạm ứng", "tiền ứng"]):
-                tk_no = '3341' # Per user rule: thanh toán tiền ứng nợ 3341
-            elif any(k in d for k in ["phí", "duy trì", "chuyển tiền", "phí thanh toán", "phí chuyển khoản", "thu phí tk", "vat"]):
-                tk_no = '635'
-            elif "bảo hiểm" in d:
-                tk_no = '3383'
-            elif "vay vcb tt tiền hàng" in d or "vay thanh toán" in d:
-                # User wants "hạch toán song song"
+            # Special case for loan payment "song song"
+            if any(k in d for k in ["vay vcb tt tiền hàng", "vay thanh toán"]):
                 nkc_rows.append({
                     'Ngày hạch toán': date_s, 'Ngày chứng từ': date_s, 'Số chứng từ': 'VAY',
                     'Diễn giải': f"Giải ngân vay thanh toán tiền hàng - {desc}", 'TK Nợ': '112', 'TK Có': '3411', 'Số tiền': float(bank['Debit']), 'Đối tượng': party
                 })
                 tk_no = '331'
-            elif "lãi vay" in d or "lai suat" in d or "tra no tk vay" in d:
-                tk_no = '635'
-            elif "gốc" in d or "trả gốc" in d or "tra no khoan vay" in d:
-                tk_no = '341'
             else:
-                tk_no = '331' # Default for outflows is 331 (vendor payment)
+                tk_no = map_bank_account_2024(desc, False)
                 
             nkc_rows.append({
                 'Ngày hạch toán': date_s, 'Ngày chứng từ': date_s, 'Số chứng từ': bank['Bank'][:3],
                 'Diễn giải': desc, 'TK Nợ': tk_no, 'TK Có': '112', 'Số tiền': float(bank['Debit']), 'Đối tượng': party
             })
+            
+    # Add COGS
+    nkc_rows = add_cogs_entries(nkc_rows, YEAR)
             
     df = pd.DataFrame(nkc_rows)
     if not df.empty:
@@ -261,7 +305,7 @@ def generate_nkc_2024(df_inv, df_det, df_bank):
     return df
 
 def generate_sct_2024(df_nkc, opening_balances):
-    accounts = ['111', '112', '131', '331', '1561', '5111', '642', '1331', '3331', '341', '635', '515']
+    accounts = ['1111', '112', '131', '331', '3368', '1561', '3341', '5111', '642', '1331', '3331', '341', '3411', '635', '515', '3383', '632']
     sct_data = {}
     for acc in accounts:
         rows = []
