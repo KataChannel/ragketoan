@@ -171,17 +171,52 @@ INVENTORY_SUPPLIERS = {
     'CÔNG TY CỔ PHẦN SÁCH VÀ THIẾT BỊ TRƯỜNG HỌC GIA LAI'
 }
 
+def get_product_avg_prices(df_inv, df_det):
+    """
+    Calculate weighted average prices for products based on Purchases and Opening Balance
+    to be used for COGS calculation.
+    """
+    TOTAL_OPENING_VALUE = 15447634554
+    DEFAULT_PRICE = 20000 
+    
+    # Purchases (muavao)
+    purchases = df_inv[df_inv['loaihd'] == 'muavao']
+    purch_ids = purchases['idServer'].tolist()
+    purch_details = df_det[df_det['idhdonServer'].isin(purch_ids)]
+    
+    # Group by product name
+    prod_stats = purch_details.groupby('ten').agg({'sluong': 'sum', 'thtien': 'sum'}).reset_index()
+    total_purch_amt = float(prod_stats['thtien'].sum())
+    
+    avg_prices = {}
+    if total_purch_amt > 0:
+        for _, row in prod_stats.iterrows():
+            name = row['ten']
+            purch_qty = float(row['sluong'])
+            purch_amt = float(row['thtien'])
+            # Share of opening based on purchase weight
+            opening_amt_share = (purch_amt / total_purch_amt) * TOTAL_OPENING_VALUE
+            opening_qty_est = purch_qty * 0.2
+            avg_p = (opening_amt_share + purch_amt) / (opening_qty_est + purch_qty) if (opening_qty_est + purch_qty) > 0 else DEFAULT_PRICE
+            avg_prices[name] = avg_p
+    else:
+        # Fallback if no purchases found
+        unique_names = df_det['ten'].unique()
+        if len(unique_names) > 0:
+            share = TOTAL_OPENING_VALUE / len(unique_names)
+            for name in unique_names:
+                avg_prices[name] = DEFAULT_PRICE # Simplified
+                
+    return avg_prices
+
 def get_debit_account_for_purchase(supplier_name, item_names):
     """
     Ưu tiên 1: Kiểm tra từ khóa trong tên hàng để hạch toán vào 642 (Xăng dầu, phụ tùng, văn phòng phẩm...)
     Ưu tiên 2: Kiểm tra nhà cung cấp hàng hóa để hạch toán vào 156
     """
     s = str(supplier_name).strip()
-    
-    # Kết hợp tất cả tên hàng trong hóa đơn để kiểm tra từ khóa
     full_items_text = " ".join([str(t) for t in item_names]).lower()
     
-    # Các từ khóa hạch toán vào chi phí (642) cho dù là nhà cung cấp nào
     expense_keywords = [
         "xăng", "dầu", "do ", "giấy", "bảo trì", "sửa chữa", "phụ tùng", 
         "lốp", "vỏ xe", "nhớt", "cước", "dịch vụ", "văn phòng", "photo", "vận chuyển"
@@ -189,11 +224,9 @@ def get_debit_account_for_purchase(supplier_name, item_names):
     
     if any(k in full_items_text for k in expense_keywords):
         return '6422'
-        
     if s in INVENTORY_SUPPLIERS:
         return '1561'
-        
-    return '6422' # Mặc định còn lại là chi phí
+    return '6422' # Default to expense
 
 def map_bank_account(desc, is_credit, amount):
     """
@@ -244,11 +277,25 @@ def add_cogs_entries(nkc_rows, year):
 def generate_nkc(df_inv, df_det, df_bank):
     nkc_rows = []
     # Sale
+    avg_prices = get_product_avg_prices(df_inv, df_det)
     for _, inv in df_inv[df_inv['loaihd'] == 'banra'].iterrows():
         cust, date_s = inv['nmten'], inv['tdlap'].strftime('%d/%m/%Y')
-        nkc_rows.append({'Ngày hạch toán': date_s, 'Ngày chứng từ': date_s, 'Số chứng từ': f"HĐ{inv['shdon']}", 'Diễn giải': f"Bán hàng cho {cust}", 'TK Nợ': '131', 'TK Có': '5111', 'Số tiền': float(inv['tgtcthue']), 'Đối tượng': cust})
+        shdon = inv['shdon']
+        nkc_rows.append({'Ngày hạch toán': date_s, 'Ngày chứng từ': date_s, 'Số chứng từ': f"HĐ{shdon}", 'Diễn giải': f"Bán hàng cho {cust}", 'TK Nợ': '131', 'TK Có': '5111', 'Số tiền': float(inv['tgtcthue']), 'Đối tượng': cust})
         if inv['tgtthue'] > 0:
-            nkc_rows.append({'Ngày hạch toán': date_s, 'Ngày chứng từ': date_s, 'Số chứng từ': f"HĐ{inv['shdon']}", 'Diễn giải': f"Thuế GTGT đầu ra", 'TK Nợ': '131', 'TK Có': '3331', 'Số tiền': float(inv['tgtthue']), 'Đối tượng': cust})
+            nkc_rows.append({'Ngày hạch toán': date_s, 'Ngày chứng từ': date_s, 'Số chứng từ': f"HĐ{shdon}", 'Diễn giải': f"Thuế GTGT đầu ra", 'TK Nợ': '131', 'TK Có': '3331', 'Số tiền': float(inv['tgtthue']), 'Đối tượng': cust})
+        
+        # Add COGS (632) entries per item
+        det_sales = df_det[df_det['idhdonServer'] == inv['idServer']]
+        for _, d in det_sales.iterrows():
+            prod_name = d['ten']
+            qty = d['sluong']
+            avg_p = avg_prices.get(prod_name, 20000)
+            cogs_amt = float(qty) * float(avg_p)
+            nkc_rows.append({
+                'Ngày hạch toán': date_s, 'Ngày chứng từ': date_s, 'Số chứng từ': f"GV{shdon}", 
+                'Diễn giải': f"Giá vốn - {prod_name}", 'TK Nợ': '632', 'TK Có': '1561', 'Số tiền': float(cogs_amt), 'Đối tượng': 'CTY HHP'
+            })
     
     # Purchase
     for _, inv in df_inv[df_inv['loaihd'] == 'muavao'].iterrows():
@@ -310,7 +357,7 @@ def generate_sct(df_nkc):
         acc_rows = df_nkc[(df_nkc['TK Nợ'].str.startswith(acc)) | (df_nkc['TK Có'].str.startswith(acc))]
         for _, row in acc_rows.iterrows():
             is_no = row['TK Nợ'].startswith(acc); p_no = row['Số tiền'] if is_no else 0; p_co = 0 if is_no else row['Số tiền']
-            if acc in ['112', '131', '1331', '1561', '642', '632', '635']: bal += p_no - p_co
+            if acc in ['1111', '112', '131', '1331', '1561', '642', '632', '635']: bal += p_no - p_co
             else: bal += p_co - p_no
             rows.append({'Ngày hạch toán': row['Ngày hạch toán'], 'Ngày chứng từ': row['Ngày chứng từ'], 'Số chứng từ': row['Số chứng từ'], 'Diễn giải': row['Diễn giải'], 'TK Đối ứng': row['TK Có'] if is_no else row['TK Nợ'], 'Đầu kỳ': 0, 'Phát sinh Nợ': p_no, 'Phát sinh Có': p_co, 'Cuối kỳ': bal, 'Đối tượng': row['Đối tượng']})
         sct_data[acc] = pd.DataFrame(rows)
