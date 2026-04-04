@@ -255,15 +255,19 @@ def map_bank_account(desc, is_credit, amount):
         return '635'
 
 def add_cogs_entries(nkc_rows, year):
-    path_xnt = f"/chikiet/kata2025/ragketoan/docs/hoang-huy-phat/XNT_HHP_{year}.xlsx"
+    path_xnt = f"/chikiet/kata2025/ragketoan/docs/hoang-huy-phat/sosach2023/XNT_HoangHuyPhat_{year}.xlsx"
     if not os.path.exists(path_xnt):
         return nkc_rows
     try:
         df_xnt = pd.read_excel(path_xnt, sheet_name='xnt12thang')
         for m in range(1, 13):
-            col_name = f'Xuất T{m} VNĐ'
-            if col_name in df_xnt.columns:
-                monthly_gv = df_xnt.iloc[:-1][col_name].sum()
+            # The XNT script creates sheets "Tháng 1", "Tháng 2", etc.
+            sheet_name = f"Tháng {m}"
+            try:
+                df_m = pd.read_excel(path_xnt, sheet_name=sheet_name)
+                # Ensure we only sum numeric values and exclude the "TỔNG CỘNG" row
+                df_m = df_m[df_m['Mã Hàng'] != 'TỔNG CỘNG']
+                monthly_gv = df_m['Xuất Theo Giá Vốn'].sum()
                 if monthly_gv > 0:
                     last_day = (pd.to_datetime(f"{year}-{m:02d}-01") + pd.offsets.MonthEnd(0)).strftime('%d/%m/%Y')
                     nkc_rows.append({
@@ -271,7 +275,12 @@ def add_cogs_entries(nkc_rows, year):
                         'Diễn giải': f"Giá vốn hàng bán - Tháng {m}/{year}", 
                         'TK Nợ': '632', 'TK Có': '1561', 'Số tiền': float(monthly_gv), 'Đối tượng': 'CTY HHP'
                     })
-    except: pass
+            except Exception as e:
+                # print(f"Skipping sheet {sheet_name}: {e}")
+                pass
+    except Exception as e: 
+        print(f"Error reading XNT file: {e}")
+        pass
     return nkc_rows
 
 def generate_nkc(df_inv, df_det, df_bank):
@@ -285,17 +294,17 @@ def generate_nkc(df_inv, df_det, df_bank):
         if inv['tgtthue'] > 0:
             nkc_rows.append({'Ngày hạch toán': date_s, 'Ngày chứng từ': date_s, 'Số chứng từ': f"HĐ{shdon}", 'Diễn giải': f"Thuế GTGT đầu ra", 'TK Nợ': '131', 'TK Có': '3331', 'Số tiền': float(inv['tgtthue']), 'Đối tượng': cust})
         
-        # Add COGS (632) entries per item
-        det_sales = df_det[df_det['idhdonServer'] == inv['idServer']]
-        for _, d in det_sales.iterrows():
-            prod_name = d['ten']
-            qty = d['sluong']
-            avg_p = avg_prices.get(prod_name, 20000)
-            cogs_amt = float(qty) * float(avg_p)
-            nkc_rows.append({
-                'Ngày hạch toán': date_s, 'Ngày chứng từ': date_s, 'Số chứng từ': f"GV{shdon}", 
-                'Diễn giải': f"Giá vốn - {prod_name}", 'TK Nợ': '632', 'TK Có': '1561', 'Số tiền': float(cogs_amt), 'Đối tượng': 'CTY HHP'
-            })
+        # Add COGS (632) entries per item (DANGEROUS: REMOVED TO PREVENT DUPLICATES)
+        # det_sales = df_det[df_det['idhdonServer'] == inv['idServer']]
+        # for _, d in det_sales.iterrows():
+        #     prod_name = d['ten']
+        #     qty = d['sluong']
+        #     avg_p = avg_prices.get(prod_name, 20000)
+        #     cogs_amt = float(qty) * float(avg_p)
+        #     nkc_rows.append({
+        #         'Ngày hạch toán': date_s, 'Ngày chứng từ': date_s, 'Số chứng từ': f"GV{shdon}", 
+        #         'Diễn giải': f"Giá vốn - {prod_name}", 'TK Nợ': '632', 'TK Có': '1561', 'Số tiền': float(cogs_amt), 'Đối tượng': 'CTY HHP'
+        #     })
     
     # Purchase
     for _, inv in df_inv[df_inv['loaihd'] == 'muavao'].iterrows():

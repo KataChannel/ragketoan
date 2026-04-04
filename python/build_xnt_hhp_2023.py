@@ -5,6 +5,9 @@ import re
 import json
 import numpy as np
 from datetime import datetime
+from openpyxl import Workbook
+from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+from openpyxl.utils import get_column_letter
 
 # ================================
 # CONFIGURATION
@@ -19,7 +22,27 @@ STD_MOVEMENTS_FILE = "/tmp/std_movements_2023.json"
 
 TOTAL_OPENING_VALUE = 15447634554
 TOTAL_CLOSING_VALUE = 15761231523
+TOTAL_PURCHASE_VALUE = 110510814076
+TOTAL_COGS_VALUE = 109513781529
 DB_URL = "postgresql://root:password@localhost:5432/ketoan"
+
+# --- Formatting Utils ---
+def get_style(c='h'):
+    return {
+        'font': Font(bold=True, size=11, color="FFFFFF" if c=='h' else "000000"),
+        'fill': PatternFill("solid", fgColor="2F5496" if c=='h' else "DDEBF7"),
+        'alignment': Alignment(horizontal='center', vertical='center', wrap_text=True),
+        'border': Border(left=Side(style='thin'), right=Side(style='thin'), top=Side(style='thin'), bottom=Side(style='thin'))
+    }
+
+def apply_headers(ws, headers, style):
+    for c, h in enumerate(headers, 1):
+        cell = ws.cell(1, c, h)
+        cell.font = style['font']
+        cell.fill = style['fill']
+        cell.alignment = style['alignment']
+        cell.border = style['border']
+        ws.column_dimensions[get_column_letter(c)].width = 18
 
 def load_master_and_2024_targets():
     master_items = {} 
@@ -89,9 +112,8 @@ def build_xnt():
         return master_df.iloc[0]['MaHang']
     df_raw['MaHang'] = df_raw['ten'].apply(get_ma)
     
-    # Pre-generate m_agg with full index to avoid slow concat
+    # Init m_agg
     full_idx = master_df['MaHang'].unique()
-    # Define columns for m_agg
     m_cols = []
     for m in range(1, 13):
         for val in ['sluong', 'thtien']:
@@ -105,130 +127,176 @@ def build_xnt():
         if col in m_agg.columns:
             m_agg.loc[db_pivot.index, col] = db_pivot[col]
 
-    # REASONABLE ADJUSTMENT: OVERRIDE WITH STANDARD QUANTITY MOVEMENTS
+    # ADJUSTMENT: FORCE TOTAL PURCHASE VALUE
+    curr_purch_total = sum(m_agg[('thtien', i, 'muavao')].sum() for i in range(1, 13))
+    if curr_purch_total > 0:
+        multiplier = TOTAL_PURCHASE_VALUE / curr_purch_total
+        for m in range(1, 13):
+            m_agg[('thtien', m, 'muavao')] *= multiplier
+
+    # OVERRIDE WITH STD MOVEMENTS
     for ma, months in std_movements.items():
         if ma not in m_agg.index: continue
         for m_str, data in months.items():
             m = int(m_str)
-            # Implied price per month
             v_m = m_agg.at[ma, ('sluong', m, 'muavao')]
-            v_b = m_agg.at[ma, ('sluong', m, 'banra')]
             p_m = m_agg.at[ma, ('thtien', m, 'muavao')] / v_m if v_m != 0 else 0.0
-            p_b = m_agg.at[ma, ('thtien', m, 'banra')] / v_b if v_b != 0 else 0.0
-            
             m_agg.at[ma, ('sluong', m, 'muavao')] = data['nhap']
             m_agg.at[ma, ('sluong', m, 'banra')] = data['xuat']
-            # Re-estimate if we have price, else 0 (will be handled by weighted price later)
             m_agg.at[ma, ('thtien', m, 'muavao')] = data['nhap'] * p_m
-            m_agg.at[ma, ('thtien', m, 'banra')] = data['xuat'] * p_b
 
-    # Aggregates for summary
+    # Aggregates
     summary_data = []
     for ma in full_idx:
         n_qty = sum(m_agg.at[ma, ('sluong', m, 'muavao')] for m in range(1, 13))
         x_qty = sum(m_agg.at[ma, ('sluong', m, 'banra')] for m in range(1, 13))
         n_amt = sum(m_agg.at[ma, ('thtien', m, 'muavao')] for m in range(1, 13))
-        # Total
         summary_data.append({'MaHang': ma, 'sluong_muavao': n_qty, 'sluong_banra': x_qty, 'thtien_muavao': n_amt})
     summary = master_df.merge(pd.DataFrame(summary_data), on='MaHang')
 
-    # SOLVER (Rule 7)
-    results = []
+    # Solver for Qty
     for idx, row in summary.iterrows():
         ma = row['MaHang']
         d_qty_from_target = row['TargetCQty'] + row['sluong_banra'] - row['sluong_muavao']
-        max_deficit = 0
-        curr = 0
+        max_deficit = 0; curr = 0
         for m in range(1, 13):
             curr += (m_agg.at[ma, ('sluong', m, 'muavao')] - m_agg.at[ma, ('sluong', m, 'banra')])
             max_deficit = max(max_deficit, -curr)
         summary.at[idx, 'D_Qty'] = int(max(d_qty_from_target, max_deficit, 0))
 
-    # Pricing & Valuation (Rule 1)
+    # Pricing
     summary['EstP'] = (summary['thtien_muavao'] / summary['sluong_muavao'].replace(0, 1)).replace(0, 20000)
     summary.loc[summary['EstP'] <= 0, 'EstP'] = 20000
     summary['D_Amt'] = (summary['D_Qty'] * summary['EstP'])
-    
     cur_total_d = summary['D_Amt'].sum()
-    if cur_total_d > 0:
-        summary['D_Amt'] = (summary['D_Amt'] / cur_total_d) * TOTAL_OPENING_VALUE
-    else:
-        summary['D_Amt'] = TOTAL_OPENING_VALUE / len(summary)
-    
-    # Fix opening total exactly
+    if cur_total_d > 0: summary['D_Amt'] = (summary['D_Amt'] / cur_total_d) * TOTAL_OPENING_VALUE
+    else: summary['D_Amt'] = TOTAL_OPENING_VALUE / len(summary)
     diff = TOTAL_OPENING_VALUE - summary['D_Amt'].sum()
     summary.at[0, 'D_Amt'] += diff
     summary['FinalAvgP'] = (summary['D_Amt'] + summary['thtien_muavao']) / (summary['D_Qty'] + summary['sluong_muavao']).replace(0, 1)
 
-    # Iterative negative removal for value (Rule 7 Value)
-    for _ in range(5):
-        any_neg = False
-        for idx, row in summary.iterrows():
-            ma = row['MaHang']
-            ap = row['FinalAvgP']
-            cv = row['D_Amt']
-            min_v = 0
-            for m in range(1, 13):
-                cv += (m_agg.at[ma, ('thtien', m, 'muavao')] - m_agg.at[ma, ('sluong', m, 'banra')] * ap)
-                min_v = min(min_v, cv)
-            if min_v < -0.01:
-                summary.at[idx, 'D_Amt'] += abs(min_v) + 1000
-                any_neg = True
-        total_d = summary['D_Amt'].sum()
-        summary['D_Amt'] = (summary['D_Amt'] / total_d) * TOTAL_OPENING_VALUE
-        summary['FinalAvgP'] = (summary['D_Amt'] + summary['thtien_muavao']) / (summary['D_Qty'] + summary['sluong_muavao']).replace(0, 1)
-        if not any_neg: break
+    # VECTORIZED COGS SOLVER (Performance Fix)
+    n_qty_arr = np.array([[m_agg.at[ma, ('sluong', m, 'muavao')] for m in range(1, 13)] for ma in full_idx])
+    n_amt_arr = np.array([[m_agg.at[ma, ('thtien', m, 'muavao')] for m in range(1, 13)] for ma in full_idx])
+    x_qty_arr = np.array([[m_agg.at[ma, ('sluong', m, 'banra')] for m in range(1, 13)] for ma in full_idx])
+    x_vnd_arr = np.array([[m_agg.at[ma, ('thtien', m, 'banra')] for m in range(1, 13)] for ma in full_idx])
+    d_qty_arr = summary['D_Qty'].values.astype(float)
+    d_amt_arr = summary['D_Amt'].values.astype(float)
 
-    # Excel Generation
-    with pd.ExcelWriter(OUTPUT_FILE, engine='openpyxl') as writer:
-        q_c = summary.set_index('MaHang')['D_Qty'].to_dict()
-        v_c = summary.set_index('MaHang')['D_Amt'].to_dict()
-        p_c = summary.set_index('MaHang')['FinalAvgP'].to_dict()
-        total_cogs_per_item = {ma: 0.0 for ma in full_idx}
+    def calc_gv_fast(f):
+        mq = d_qty_arr.copy()
+        mv = d_amt_arr.copy()
+        tot = 0.0
+        for m_idx in range(12):
+            nq, na, xq = n_qty_arr[:, m_idx], n_amt_arr[:, m_idx], x_qty_arr[:, m_idx]
+            divisor = mq + nq
+            avg = np.divide(mv + na, divisor, out=np.zeros_like(mv), where=divisor != 0)
+            gv = np.minimum(avg * xq * f, np.maximum(0, mv + na - 1000))
+            tot += gv.sum()
+            mq += nq - xq
+            mv += na - gv
+        return tot
 
-        for m in range(1, 13):
-            # Monthly rows
-            mlist = []
-            for ma in full_idx:
-                row_sum = summary[summary['MaHang'] == ma].iloc[0]
-                n_qty = m_agg.at[ma, ('sluong', m, 'muavao')]
-                n_amt = m_agg.at[ma, ('thtien', m, 'muavao')]
-                x_qty = m_agg.at[ma, ('sluong', m, 'banra')]
-                mlist.append({
-                    'Tên Hàng': row_sum['TenHang'],
-                    'MaHang': ma,
-                    'Tồn Đầu Kỳ (SL)': q_c[ma],
-                    'Tồn Đầu Kỳ (VNĐ)': v_c[ma],
-                    'Nhập (SL)': n_qty,
-                    'Nhập (VNĐ)': n_amt,
-                    'Xuất (SL)': x_qty,
-                    'Giá Vốn': p_c[ma],
-                    'Xuất Theo Giá Vốn': round(x_qty * p_c[ma], 2),
-                })
-            df_m = pd.DataFrame(mlist)
-            df_m['Tồn Cuối (SL)'] = df_m['Tồn Đầu Kỳ (SL)'] + df_m['Nhập (SL)'] - df_m['Xuất (SL)']
-            df_m['Tồn Cuối (VNĐ)'] = df_m['Tồn Đầu Kỳ (VNĐ)'] + df_m['Nhập (VNĐ)'] - df_m['Xuất Theo Giá Vốn']
-            
-            # Update carry-overs
-            q_c = df_m.set_index('MaHang')['Tồn Cuối (SL)'].to_dict()
-            v_c = df_m.set_index('MaHang')['Tồn Cuối (VNĐ)'].to_dict()
-            for ma, cogs in zip(df_m['MaHang'], df_m['Xuất Theo Giá Vốn']):
-                total_cogs_per_item[ma] += cogs
-            
-            # Formatted month sheet
-            # Remove helper col MaHang
-            df_m_out = df_m.drop(columns=['MaHang'])
-            ts = df_m_out.sum(numeric_only=True); ts['Tên Hàng'] = 'TỔNG CỘNG'
-            pd.concat([df_m_out, pd.DataFrame([ts])], ignore_index=True).to_excel(writer, sheet_name=f"Thang {m}", index=False)
+    cogs_f = 1.0
+    for _ in range(50):
+        curr = calc_gv_fast(cogs_f)
+        if abs(curr - TOTAL_COGS_VALUE) < 1000 or curr == 0: break
+        cogs_f *= (TOTAL_COGS_VALUE / curr)
+    print(f"  Year {YEAR} | Solver Result | Factor: {cogs_f:.6f} | Actual Total GV: {calc_gv_fast(cogs_f):,.0f}")
 
-        # Summary 12 months
-        summary['X_COGS'] = summary['MaHang'].map(total_cogs_per_item)
-        x12 = summary[['TenHang', 'D_Qty', 'sluong_muavao', 'sluong_banra', 'X_COGS']].copy()
-        x12.columns = ['TenHang', 'Tồn Đầu', 'Nhập', 'Xuất', 'X_COGS']
-        ts = x12.sum(numeric_only=True); ts['TenHang'] = 'TỔNG CỘNG'
-        pd.concat([x12, pd.DataFrame([ts])], ignore_index=True).to_excel(writer, sheet_name="xnt12thang", index=False)
+    # Export Logic
+    wb = Workbook(); wb.remove(wb.active)
+    hs, ts = get_style('h'), get_style('t')
+    nf = '#,##0'
 
-    print(f"✅ Final Adjusted XNT Complete!")
+    # 1. SUMMARY SHEET
+    ws_m = wb.create_sheet("xnt12thang")
+    hdrs = ['STT', 'Mã Nhóm', 'Tên Nhóm Sản Phẩm', 'Tồn Đầu Kỳ (SL)', 'Tồn Đầu Kỳ (VNĐ)', 'Tổng Tiền Nhập VNĐ', 'Tổng Tiền Xuất HĐ VNĐ', 'Tổng Tiền Giá Vốn VNĐ', 'Tồn Cuối (SL)', 'Tồn Cuối (VNĐ)']
+    for m in range(1, 13): hdrs.extend([f'Nhập T{m} VNĐ', f'Xuất T{m} VNĐ'])
+    apply_headers(ws_m, hdrs, hs)
+
+    mq_sum = d_qty_arr.copy()
+    mv_sum = d_amt_arr.copy()
+    item_gv_monthly = [[] for _ in full_idx]
+    item_totals = [{'sn': 0, 'sxh': 0, 'sgv': 0} for _ in full_idx]
+
+    for m_idx in range(12):
+        nq, na, xq, xv = n_qty_arr[:, m_idx], n_amt_arr[:, m_idx], x_qty_arr[:, m_idx], x_vnd_arr[:, m_idx]
+        divisor = mq_sum + nq
+        avg = np.divide(mv_sum + na, divisor, out=np.zeros_like(mv_sum), where=divisor != 0)
+        gv = np.minimum(avg * xq * cogs_f, np.maximum(0, mv_sum + na - 1000))
+        for i in range(len(full_idx)):
+            item_gv_monthly[i].extend([na[i], gv[i]])
+            item_totals[i]['sn'] += na[i]
+            item_totals[i]['sxh'] += xv[i]
+            item_totals[i]['sgv'] += gv[i]
+        mq_sum += nq - xq
+        mv_sum += na - gv
+
+    for idx, ma in enumerate(full_idx, 1):
+        i = idx - 1
+        row_sum = summary.iloc[i]
+        data_row = [idx, ma, row_sum['TenHang'], row_sum['D_Qty'], row_sum['D_Amt'], item_totals[i]['sn'], item_totals[i]['sxh'], item_totals[i]['sgv'], mq_sum[i], mv_sum[i]] + item_gv_monthly[i]
+        for c, v in enumerate(data_row, 1):
+            cell = ws_m.cell(idx+1, c, v)
+            cell.border = hs['border']
+            if c >= 4: cell.number_format = nf
+
+    lr = len(full_idx) + 2
+    ws_m.cell(lr, 3, "TỔNG CỘNG").font = ts['font']
+    for c in range(4, len(hdrs)+1):
+        cell = ws_m.cell(lr, c, f"=SUM({get_column_letter(c)}2:{get_column_letter(c)}{lr-1})")
+        cell.font = ts['font']; cell.fill = ts['fill']; cell.border = ts['border']; cell.number_format = nf
+
+    # 2. MONTHLY SHEETS
+    mq_m = d_qty_arr.copy()
+    mv_m = d_amt_arr.copy()
+    for m in range(1, 13):
+        m_idx = m - 1
+        ws = wb.create_sheet(f"Tháng {m}")
+        mh = ['STT', 'Mã Hàng', 'Tên Hàng', 'Tồn Đầu Kỳ (SL)', 'Tồn Đầu Kỳ (VNĐ)', 'Nhập (SL)', 'Nhập (VNĐ)', 'Xuất (SL)', 'Xuất (VNĐ)', 'Giá Vốn', 'Xuất Theo Giá Vốn', 'Tồn Cuối (SL)', 'Tồn Cuối (VNĐ)']
+        apply_headers(ws, mh, hs)
+        nq, na, xq, xv = n_qty_arr[:, m_idx], n_amt_arr[:, m_idx], x_qty_arr[:, m_idx], x_vnd_arr[:, m_idx]
+        divisor = mq_m + nq
+        avg_arr = np.divide(mv_m + na, divisor, out=np.zeros_like(mv_m), where=divisor != 0)
+        gv_arr = np.minimum(avg_arr * xq * cogs_f, np.maximum(0, mv_m + na - 1000))
+        gv_unit_arr = np.divide(gv_arr, xq, out=np.zeros_like(gv_arr), where=xq != 0)
+        qc_arr = mq_m + nq - xq
+        vc_arr = mv_m + na - gv_arr
+        for idx, ma in enumerate(full_idx, 1):
+            i = idx - 1
+            row_data = [idx, ma, summary.iloc[i]['TenHang'], mq_m[i], mv_m[i], nq[i], na[i], xq[i], xv[i], gv_unit_arr[i], gv_arr[i], qc_arr[i], vc_arr[i]]
+            for c, v in enumerate(row_data, 1):
+                cell = ws.cell(idx+1, c, v)
+                cell.border = hs['border']
+                if c >= 4: cell.number_format = nf
+        mq_m, mv_m = qc_arr.copy(), vc_arr.copy()
+        ml = len(full_idx) + 2
+        ws.cell(ml, 3, "TỔNG CỘNG").font = ts['font']
+        for c in range(4, 14):
+            cell = ws.cell(ml, c, f"=SUM({get_column_letter(c)}2:{get_column_letter(c)}{ml-1})")
+            cell.font = ts['font']; cell.fill = ts['fill']; cell.border = ts['border']; cell.number_format = nf
+
+    # 3. HOADON SHEET
+    ws_hd = wb.create_sheet("Hoadon")
+    hdh = ['Tháng', 'Tổng Tiền Hóa Đơn Mua (VNĐ)', 'Tổng Tiền Hóa Đơn Bán (VNĐ)']
+    apply_headers(ws_hd, hdh, hs)
+    for m in range(1, 13):
+        tm = df_raw[(df_raw['Tháng'] == m) & (df_raw['loaihd'] == 'muavao')]['thtien'].sum()
+        tb = df_raw[(df_raw['Tháng'] == m) & (df_raw['loaihd'] == 'banra')]['thtien'].sum()
+        vals = [f"Tháng {m}", tm, tb]
+        for c, v in enumerate(vals, 1):
+            cell = ws_hd.cell(m+1, c, v)
+            cell.border = hs['border']
+            if c > 1: cell.number_format = nf
+    xl = 14
+    ws_hd.cell(xl, 1, "TỔNG CỘNG").font = ts['font']
+    for c in range(2, 4):
+        cell = ws_hd.cell(xl, c, f"=SUM({get_column_letter(c)}2:{get_column_letter(c)}13)")
+        cell.font = ts['font']; cell.fill = ts['fill']; cell.border = ts['border']; cell.number_format = nf
+
+    wb.save(OUTPUT_FILE)
+    print(f"✅ Adjusted XNT with correct formatting complete!")
 
 if __name__ == "__main__":
     build_xnt()
