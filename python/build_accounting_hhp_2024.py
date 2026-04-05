@@ -245,7 +245,9 @@ def generate_nkc_2024(df_inv, df_det, df_bank):
     nkc_rows = []
     # Sale
     for _, inv in df_inv[df_inv['loaihd'] == 'banra'].iterrows():
-        cust, date_s = inv['nmten'], inv['tdlap'].strftime('%d/%m/%Y')
+        nmten = inv['nmten']
+        cust = str(nmten) if not pd.isna(nmten) and str(nmten).strip() != '' else "Khách lẻ"
+        date_s = inv['tdlap'].strftime('%d/%m/%Y')
         shdon = inv['shdon']
         nkc_rows.append({'Ngày hạch toán': date_s, 'Ngày chứng từ': date_s, 'Số chứng từ': f"HĐ{shdon}", 'Diễn giải': f"Bán hàng cho {cust}", 'TK Nợ': '131', 'TK Có': '5111', 'Số tiền': float(inv['tgtcthue']), 'Đối tượng': cust})
         if inv['tgtthue'] > 0:
@@ -253,7 +255,9 @@ def generate_nkc_2024(df_inv, df_det, df_bank):
     
     # Purchase
     for _, inv in df_inv[df_inv['loaihd'] == 'muavao'].iterrows():
-        supp, date_s = inv['nbten'], inv['tdlap'].strftime('%d/%m/%Y')
+        nbten = inv['nbten']
+        supp = str(nbten) if not pd.isna(nbten) and str(nbten).strip() != '' else "Nhà cung cấp lạ"
+        date_s = inv['tdlap'].strftime('%d/%m/%Y')
         det = df_det[df_det['idhdonServer'] == inv['idServer']]
         item_names = det['ten'].tolist() if not det.empty else []
         acc_debit = get_debit_account_for_purchase(supp, item_names)

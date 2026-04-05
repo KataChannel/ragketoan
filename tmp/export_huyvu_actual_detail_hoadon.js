@@ -42,14 +42,15 @@ async function run() {
   const resHeader = await client.query(`
     SELECT "idServer", shdon, tdlap, loaihd, nbten, nmten, nbmst, nmmst 
     FROM ext_listhoadon 
-    WHERE "congtyId" = $1 AND tdlap >= '2023-01-01' AND tdlap < '2024-01-01'
+    WHERE "congtyId" = $1 AND EXTRACT(YEAR FROM (tdlap AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Ho_Chi_Minh')) = 2023
     ORDER BY tdlap ASC`, [congtyId]);
 
   const resDetails = await client.query(`
     SELECT "idhdonServer", ten, thtien, tthue, sluong, dgia 
     FROM ext_detailhoadon 
     WHERE "idhdonServer" IN (
-      SELECT "idServer" FROM ext_listhoadon WHERE "congtyId" = $1 AND tdlap >= '2023-01-01' AND tdlap < '2024-01-01'
+      SELECT "idServer" FROM ext_listhoadon 
+      WHERE "congtyId" = $1 AND EXTRACT(YEAR FROM (tdlap AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Ho_Chi_Minh')) = 2023
     )`, [congtyId]);
 
   const detailsMap = new Map();

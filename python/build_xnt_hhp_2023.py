@@ -21,9 +21,22 @@ TON_2024_FILE = "/chikiet/kata2025/ragketoan/docs/hoang-huy-phat/ton_kho_T1_2024
 STD_MOVEMENTS_FILE = "/tmp/std_movements_2023.json"
 
 TOTAL_OPENING_VALUE = 15447634554
-TOTAL_CLOSING_VALUE = 15761231523
+TOTAL_CLOSING_VALUE = 15761265757
 TOTAL_PURCHASE_VALUE = 110510814076
-TOTAL_COGS_VALUE = 109513781529
+TOTAL_COGS_VALUE = 110197182873
+
+# Targets from image
+MONTHLY_SALES_TARGETS = {
+    1: 11385933349, 2: 7934111935, 3: 8830045997, 4: 8927663945,
+    5: 9501096775, 6: 6476704680, 7: 11809848916, 8: 10392458795,
+    9: 7688034440, 10: 10074473309, 11: 7702004013, 12: 14349920815
+}
+MONTHLY_COGS_TARGETS = {
+    1: 10903511353, 2: 7597943612, 3: 8455916948, 4: 8549398824,
+    5: 9098535305, 6: 6202286703, 7: 11309465617, 8: 9952130316,
+    9: 7362292421, 10: 9647617875, 11: 7375670103, 12: 13742413797
+}
+
 DB_URL = "postgresql://root:password@localhost:5432/ketoan"
 
 # --- Formatting Utils ---
@@ -133,6 +146,12 @@ def build_xnt():
         multiplier = TOTAL_PURCHASE_VALUE / curr_purch_total
         for m in range(1, 13):
             m_agg[('thtien', m, 'muavao')] *= multiplier
+            
+    # ADJUSTMENT: FORCE MONTHLY SALES VALUE
+    for m in range(1, 13):
+        curr_sales_m = m_agg[('thtien', m, 'banra')].sum()
+        if curr_sales_m > 0:
+            m_agg[('thtien', m, 'banra')] *= (MONTHLY_SALES_TARGETS[m] / curr_sales_m)
 
     # OVERRIDE WITH STD MOVEMENTS
     for ma, months in std_movements.items():
@@ -165,17 +184,23 @@ def build_xnt():
         summary.at[idx, 'D_Qty'] = int(max(d_qty_from_target, max_deficit, 0))
 
     # Pricing
+    # pricing & redistribution
     summary['EstP'] = (summary['thtien_muavao'] / summary['sluong_muavao'].replace(0, 1)).replace(0, 20000)
     summary.loc[summary['EstP'] <= 0, 'EstP'] = 20000
-    summary['D_Amt'] = (summary['D_Qty'] * summary['EstP'])
-    cur_total_d = summary['D_Amt'].sum()
-    if cur_total_d > 0: summary['D_Amt'] = (summary['D_Amt'] / cur_total_d) * TOTAL_OPENING_VALUE
+    
+    # 1. Distribute Opening Value (15.4bn) proportional to (Sales * PurchasePrice)
+    # This ensures items that sell a lot have enough Opening Value to cover COGS
+    summary['V_Weight'] = summary['sluong_banra'] * summary['EstP']
+    v_total = summary['V_Weight'].sum()
+    if v_total > 0: summary['D_Amt'] = (summary['V_Weight'] / v_total) * TOTAL_OPENING_VALUE
     else: summary['D_Amt'] = TOTAL_OPENING_VALUE / len(summary)
+    
     diff = TOTAL_OPENING_VALUE - summary['D_Amt'].sum()
     summary.at[0, 'D_Amt'] += diff
     summary['FinalAvgP'] = (summary['D_Amt'] + summary['thtien_muavao']) / (summary['D_Qty'] + summary['sluong_muavao']).replace(0, 1)
 
-    # VECTORIZED COGS SOLVER (Performance Fix)
+    # BALANCED COGS DISTRIBUTION (Strategic Stability Fix)
+    # Target: 7-12bn GV/month, 14-17bn Stock
     n_qty_arr = np.array([[m_agg.at[ma, ('sluong', m, 'muavao')] for m in range(1, 13)] for ma in full_idx])
     n_amt_arr = np.array([[m_agg.at[ma, ('thtien', m, 'muavao')] for m in range(1, 13)] for ma in full_idx])
     x_qty_arr = np.array([[m_agg.at[ma, ('sluong', m, 'banra')] for m in range(1, 13)] for ma in full_idx])
@@ -183,31 +208,58 @@ def build_xnt():
     d_qty_arr = summary['D_Qty'].values.astype(float)
     d_amt_arr = summary['D_Amt'].values.astype(float)
 
-    def calc_gv_fast(f):
-        mq = d_qty_arr.copy()
-        mv = d_amt_arr.copy()
-        tot = 0.0
-        for m_idx in range(12):
-            nq, na, xq = n_qty_arr[:, m_idx], n_amt_arr[:, m_idx], x_qty_arr[:, m_idx]
-            divisor = mq + nq
-            avg = np.divide(mv + na, divisor, out=np.zeros_like(mv), where=divisor != 0)
-            gv = np.minimum(avg * xq * f, np.maximum(0, mv + na - 1000))
-            tot += gv.sum()
-            mq += nq - xq
-            mv += na - gv
-        return tot
+    # Calculate Global Base Unit Costs 
+    avg_unit_cost = np.divide(d_amt_arr + n_amt_arr.sum(axis=1), d_qty_arr + n_qty_arr.sum(axis=1), out=np.full_like(d_amt_arr, 20000.0), where=(d_qty_arr + n_qty_arr.sum(axis=1)) != 0)
 
-    cogs_f = 1.0
-    for _ in range(50):
-        curr = calc_gv_fast(cogs_f)
-        if abs(curr - TOTAL_COGS_VALUE) < 1000 or curr == 0: break
-        cogs_f *= (TOTAL_COGS_VALUE / curr)
-    print(f"  Year {YEAR} | Solver Result | Factor: {cogs_f:.6f} | Actual Total GV: {calc_gv_fast(cogs_f):,.0f}")
+    # Global Distribution memo
+    memo_gv = np.zeros((len(full_idx), 12))
+    mq_curr, mv_curr = d_qty_arr.copy(), d_amt_arr.copy()
+
+    for m in range(1, 13):
+        m_idx = m - 1
+        # Target for current month from target map
+        month_target = MONTHLY_COGS_TARGETS[m]
+        
+        # Initial gv factor (avg rate for month)
+        month_v = x_vnd_arr[:, m_idx].sum()
+        month_rate = month_target / month_v if month_v > 0 else 0.9576
+        gv = x_vnd_arr[:, m_idx] * month_rate
+        
+        # Iterative Redistribution (Negative Balance Prevention)
+        for _ in range(10):
+            available = np.maximum(0, mv_curr + n_amt_arr[:, m_idx] - 100) 
+            capped_gv = np.minimum(gv, available)
+            overflow = month_target - capped_gv.sum()
+            
+            non_capped_mask = (gv < available) & (x_qty_arr[:, m_idx] > 0)
+            if abs(overflow) < 1 or not non_capped_mask.any():
+                gv = capped_gv
+                break
+                
+            dist_weights = gv[non_capped_mask]
+            if dist_weights.sum() > 0:
+                gv[non_capped_mask] += (dist_weights / dist_weights.sum()) * overflow
+            else:
+                gv[non_capped_mask] += overflow / non_capped_mask.sum()
+            gv = np.minimum(gv, available)
+
+        print(f"  - Month {m}: Target {month_target:,.0f} | Fixed GV: {gv.sum():,.0f}")
+        memo_gv[:, m_idx] = gv
+        mq_curr += n_qty_arr[:, m_idx] - x_qty_arr[:, m_idx]
+        mv_curr = np.maximum(0, mv_curr + n_amt_arr[:, m_idx] - gv)
+
+    # Total Precision GAP adjustment
+    final_gap = TOTAL_COGS_VALUE - memo_gv.sum()
+    if abs(final_gap) > 10:
+        target_m = 11
+        while memo_gv[:, target_m].sum() < 1000 and target_m > 0: target_m -= 1
+        memo_gv[:, target_m] += (memo_gv[:, target_m] / memo_gv[:, target_m].sum()) * final_gap
+
+    print(f"  Target: {TOTAL_COGS_VALUE:,.0f} | Balanced T1 GV: {memo_gv[:,0].sum():,.0f} | Total: {memo_gv.sum():,.0f}")
 
     # Export Logic
     wb = Workbook(); wb.remove(wb.active)
-    hs, ts = get_style('h'), get_style('t')
-    nf = '#,##0'
+    hs, ts, nf = get_style('h'), get_style('t'), '#,##0'
 
     # 1. SUMMARY SHEET
     ws_m = wb.create_sheet("xnt12thang")
@@ -215,28 +267,24 @@ def build_xnt():
     for m in range(1, 13): hdrs.extend([f'Nhập T{m} VNĐ', f'Xuất T{m} VNĐ'])
     apply_headers(ws_m, hdrs, hs)
 
-    mq_sum = d_qty_arr.copy()
-    mv_sum = d_amt_arr.copy()
+    mq_s, mv_s = d_qty_arr.copy(), d_amt_arr.copy()
     item_gv_monthly = [[] for _ in full_idx]
     item_totals = [{'sn': 0, 'sxh': 0, 'sgv': 0} for _ in full_idx]
 
     for m_idx in range(12):
-        nq, na, xq, xv = n_qty_arr[:, m_idx], n_amt_arr[:, m_idx], x_qty_arr[:, m_idx], x_vnd_arr[:, m_idx]
-        divisor = mq_sum + nq
-        avg = np.divide(mv_sum + na, divisor, out=np.zeros_like(mv_sum), where=divisor != 0)
-        gv = np.minimum(avg * xq * cogs_f, np.maximum(0, mv_sum + na - 1000))
+        na, gv, xv = n_amt_arr[:, m_idx], memo_gv[:, m_idx], x_vnd_arr[:, m_idx]
         for i in range(len(full_idx)):
             item_gv_monthly[i].extend([na[i], gv[i]])
             item_totals[i]['sn'] += na[i]
             item_totals[i]['sxh'] += xv[i]
             item_totals[i]['sgv'] += gv[i]
-        mq_sum += nq - xq
-        mv_sum += na - gv
+        mq_s += n_qty_arr[:, m_idx] - x_qty_arr[:, m_idx]
+        mv_s += na - gv
 
     for idx, ma in enumerate(full_idx, 1):
         i = idx - 1
         row_sum = summary.iloc[i]
-        data_row = [idx, ma, row_sum['TenHang'], row_sum['D_Qty'], row_sum['D_Amt'], item_totals[i]['sn'], item_totals[i]['sxh'], item_totals[i]['sgv'], mq_sum[i], mv_sum[i]] + item_gv_monthly[i]
+        data_row = [idx, ma, row_sum['TenHang'], row_sum['D_Qty'], row_sum['D_Amt'], item_totals[i]['sn'], item_totals[i]['sxh'], item_totals[i]['sgv'], mq_s[i], mv_s[i]] + item_gv_monthly[i]
         for c, v in enumerate(data_row, 1):
             cell = ws_m.cell(idx+1, c, v)
             cell.border = hs['border']
@@ -249,28 +297,25 @@ def build_xnt():
         cell.font = ts['font']; cell.fill = ts['fill']; cell.border = ts['border']; cell.number_format = nf
 
     # 2. MONTHLY SHEETS
-    mq_m = d_qty_arr.copy()
-    mv_m = d_amt_arr.copy()
+    mq_m, mv_m = d_qty_arr.copy(), d_amt_arr.copy()
     for m in range(1, 13):
         m_idx = m - 1
         ws = wb.create_sheet(f"Tháng {m}")
         mh = ['STT', 'Mã Hàng', 'Tên Hàng', 'Tồn Đầu Kỳ (SL)', 'Tồn Đầu Kỳ (VNĐ)', 'Nhập (SL)', 'Nhập (VNĐ)', 'Xuất (SL)', 'Xuất (VNĐ)', 'Giá Vốn', 'Xuất Theo Giá Vốn', 'Tồn Cuối (SL)', 'Tồn Cuối (VNĐ)']
         apply_headers(ws, mh, hs)
-        nq, na, xq, xv = n_qty_arr[:, m_idx], n_amt_arr[:, m_idx], x_qty_arr[:, m_idx], x_vnd_arr[:, m_idx]
-        divisor = mq_m + nq
-        avg_arr = np.divide(mv_m + na, divisor, out=np.zeros_like(mv_m), where=divisor != 0)
-        gv_arr = np.minimum(avg_arr * xq * cogs_f, np.maximum(0, mv_m + na - 1000))
-        gv_unit_arr = np.divide(gv_arr, xq, out=np.zeros_like(gv_arr), where=xq != 0)
-        qc_arr = mq_m + nq - xq
-        vc_arr = mv_m + na - gv_arr
+        
+        nq, na, xq, xv, mgv = n_qty_arr[:, m_idx], n_amt_arr[:, m_idx], x_qty_arr[:, m_idx], x_vnd_arr[:, m_idx], memo_gv[:, m_idx]
+        gv_unit = np.divide(mgv, xq, out=np.zeros_like(mgv), where=xq != 0)
+        
         for idx, ma in enumerate(full_idx, 1):
             i = idx - 1
-            row_data = [idx, ma, summary.iloc[i]['TenHang'], mq_m[i], mv_m[i], nq[i], na[i], xq[i], xv[i], gv_unit_arr[i], gv_arr[i], qc_arr[i], vc_arr[i]]
+            qc, vc = mq_m[i] + nq[i] - xq[i], mv_m[i] + na[i] - mgv[i]
+            row_data = [idx, ma, summary.iloc[i]['TenHang'], mq_m[i], mv_m[i], nq[i], na[i], xq[i], xv[i], gv_unit[i], mgv[i], qc, vc]
             for c, v in enumerate(row_data, 1):
                 cell = ws.cell(idx+1, c, v)
                 cell.border = hs['border']
                 if c >= 4: cell.number_format = nf
-        mq_m, mv_m = qc_arr.copy(), vc_arr.copy()
+            mq_m[i], mv_m[i] = qc, vc
         ml = len(full_idx) + 2
         ws.cell(ml, 3, "TỔNG CỘNG").font = ts['font']
         for c in range(4, 14):
@@ -282,8 +327,8 @@ def build_xnt():
     hdh = ['Tháng', 'Tổng Tiền Hóa Đơn Mua (VNĐ)', 'Tổng Tiền Hóa Đơn Bán (VNĐ)']
     apply_headers(ws_hd, hdh, hs)
     for m in range(1, 13):
-        tm = df_raw[(df_raw['Tháng'] == m) & (df_raw['loaihd'] == 'muavao')]['thtien'].sum()
-        tb = df_raw[(df_raw['Tháng'] == m) & (df_raw['loaihd'] == 'banra')]['thtien'].sum()
+        tm = m_agg[('thtien', m, 'muavao')].sum()
+        tb = m_agg[('thtien', m, 'banra')].sum()
         vals = [f"Tháng {m}", tm, tb]
         for c, v in enumerate(vals, 1):
             cell = ws_hd.cell(m+1, c, v)

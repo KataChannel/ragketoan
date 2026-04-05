@@ -160,14 +160,37 @@ def build_excel(res, all_g, year, out_p, tdg, hd_d, cogs_f):
 
 def main():
     parser = argparse.ArgumentParser(); parser.add_argument('--year', type=int, required=True); args = parser.parse_args()
-    engine = create_engine(DB_URI); t_start, t_gv = (15447634554, 109513781529) if args.year == 2023 else (None, 103332100062)
-    if args.year == 2024:
+    engine = create_engine(DB_URI)
+    
+    if args.year == 2023:
+        t_start, t_gv = (15447634554, 110197182873)
+    else:
+        # 2024: read opening from 2023 closing
+        t_start = 15761265757  # Default = 2023 Cuối Kỳ
+        t_gv = 103332100062
         try:
-            df23 = pd.read_excel(os.path.join(OUTPUT_DIR, f"XNT_HHP_2023.xlsx"), sheet_name='xnt12thang')
-            t_start = df23.iloc[:-1]['Tồn Cuối (VNĐ)'].sum()
-            print(f"  2024 Opening set from 2023 Ending: {t_start:,.0f}")
-        except:
-            t_start = 20836261554 # Expected based on math
+            search_paths = [
+                os.path.join(OUTPUT_DIR, 'sosach2023', 'XNT_HoangHuyPhat_2023.xlsx'),
+                os.path.join(OUTPUT_DIR, 'XNT_HHP_2023.xlsx'),
+            ]
+            for fpath in search_paths:
+                if os.path.exists(fpath):
+                    df23 = pd.read_excel(fpath, sheet_name='xnt12thang')
+                    last_row = df23.iloc[-1]
+                    col_cuoi = [c for c in df23.columns if 'Cuối' in str(c) and ('VNĐ' in str(c) or 'Tiền' in str(c))]
+                    if col_cuoi:
+                        val = last_row[col_cuoi[0]]
+                    else:
+                        val = last_row.iloc[-1]
+                    if pd.notna(val) and val > 0:
+                        t_start = float(val)
+                        print(f"  2024 Opening set from {os.path.basename(fpath)}: {t_start:,.0f}")
+                    else:
+                        print(f"  File found but value invalid, using default: {t_start:,.0f}")
+                    break
+        except Exception as e:
+            print(f"  Using default 2024 opening: {t_start:,.0f} (error: {e})")
+    
     df_l, df_d = fetch_data(engine, COMPANY_ID, args.year)
     if df_l.empty: return
     res, groups, tdg, hd, f = process_xnt(df_l, df_d, args.year, t_start, t_gv)

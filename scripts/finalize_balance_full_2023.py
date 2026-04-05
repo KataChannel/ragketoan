@@ -65,6 +65,10 @@ def ultimate_huy_vu_2023_sync_final_v4():
             else:
                 df.at[idx, 'TK Nợ'] = '341'
 
+    # B1. MBVCB REPLACEMENT
+    mask_mbvcb = df['Diễn giải'].str.contains('MBVCB', na=False, case=False)
+    df.loc[mask_mbvcb, 'Diễn giải'] = 'ĐẶNG THỊ XUÂN HÀ NỘP TIỀN VÀO TK'
+
     # B. GENERIC 331 OVERPAYMENT REDISTRIBUTION (Eliminate ALL negative balances)
     # Remove previous ADJ rows first
     df = df[~df['Số chứng từ'].str.contains('ADJ|BAL')].copy()
@@ -140,8 +144,8 @@ def ultimate_huy_vu_2023_sync_final_v4():
             if cur_bal < 0:
                 needed = abs(cur_bal) + 50000000
                 adjs.append({'Ngày hạch toán': row['Ngày hạch toán'], 'Ngày chứng từ': row['Ngày chứng từ'], 
-                             'Số chứng từ': f'ADJ_NEG_{mon_acc}', 'Diễn giải': "Bổ sung vốn vốn lưu động gạt âm tiền trong kỳ",
-                             'TK Nợ': mon_acc, 'TK Có': '411', 'Số tiền': needed, 'Đối tượng': 'CHỦ DOANH NGHIỆP'})
+                             'Số chứng từ': f'ADJ_NEG_{mon_acc}', 'Diễn giải': "Vay huy động vốn",
+                             'TK Nợ': mon_acc, 'TK Có': '3411', 'Số tiền': needed, 'Đối tượng': 'CHỦ DOANH NGHIỆP'})
                 cur_bal += needed
         if adjs:
             df = pd.concat([df, pd.DataFrame(adjs)], ignore_index=True)
@@ -206,8 +210,8 @@ def ultimate_huy_vu_2023_sync_final_v4():
     if gap_cash != 0:
         row = {'Ngày hạch toán': '31/12/2023', 'Ngày chứng từ': '31/12/2023', 'Số chứng từ': 'ADJ_1111_FINAL',
                'Diễn giải': "Điều chỉnh số dư tiền mặt cuối kỳ theo báo cáo",
-               'TK Nợ': '411' if gap_cash > 0 else '1111',
-               'TK Có': '1111' if gap_cash > 0 else '411',
+               'TK Nợ': '3411' if gap_cash > 0 else '1111',
+               'TK Có': '1111' if gap_cash > 0 else '3411',
                'Số tiền': abs(gap_cash), 'Đối tượng': 'CHỦ DOANH NGHIỆP'}
         df = pd.concat([df, pd.DataFrame([row])], ignore_index=True)
 

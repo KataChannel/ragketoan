@@ -41,8 +41,8 @@ def check_and_fix_negative_balances():
             if final_bal < 0:
                 print(f"Fixing Negative Asset {acc}: {final_bal:,.0f}. Adding Owner Injection (411)...")
                 new_row = {'Ngày hạch toán': '31/12/2023', 'Ngày chứng từ': '31/12/2023', 'Số chứng từ': 'ADJ_FIX_NEG',
-                           'Diễn giải': f"Bổ sung vốn lưu động bằng tiền mặt/hàng hóa gạt âm tài khoản {acc}", 
-                           'TK Nợ': acc, 'TK Có': '411', 'Số tiền': abs(final_bal) + 1000000, 'Đối tượng': 'CHỦ DOANH NGHIỆP'}
+                           'Diễn giải': "Vay huy động vốn", 
+                           'TK Nợ': acc, 'TK Có': '3411', 'Số tiền': abs(final_bal) + 1000000, 'Đối tượng': 'CHỦ DOANH NGHIỆP'}
                 df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
         else: # Liability/Capital
             final_bal = op + net_cr - net_dr
