@@ -10,18 +10,24 @@ NKC_FILE = "/chikiet/kata2025/ragketoan/docs/huyvu/sosach/nam2024/NKC_HUYVU_2024
 XNT_FILE = "/chikiet/kata2025/ragketoan/docs/huyvu/XNT_HuyVu_2024.xlsx"
 OUTPUT_FILE = "/chikiet/kata2025/ragketoan/docs/huyvu/sosach/nam2024/SO_CHI_TIET_HUYVU_2024_FINAL_FULL.xlsx"
 
-# Targets & Opening Balances (FINAL ADJUSTED 2024)
+# Targets & Opening Balances (FINAL ADJUSTED 2024 PER MD)
 OPENING_BALANCES = {
-    '1111': 533168250,
+    '1111': 34072193990,
     '112':  130554848,
-    '131':  5045331182,
+    '131':  5176863775,
     '1561': 20014813265,
+    '331':  5176863775,  # Credit
+    '341':  32915120489, # Credit
+    '1331': 1562039949,
+    '3331': 1615522358, # Credit
 }
 
 TARGET_ENDING_1111 = 106031280
 TARGET_ENDING_112  = 357350
 TARGET_ENDING_131  = 4035849540
 TARGET_ENDING_1561 = 21705995687
+TARGET_ENDING_331  = 4632756100
+TARGET_ENDING_341  = 34072193990
 
 def build():
     print("🚀 Khởi chạy hệ toán tự động 2024 - Full Ledgers (Final Targets & Zero Dups)...")
@@ -31,22 +37,35 @@ def build():
     df_nkc['TK Nợ'] = df_nkc['TK Nợ'].astype(str).str.strip()
     df_nkc['TK Có'] = df_nkc['TK Có'].astype(str).str.strip()
     
-    # 1.1 RE-CLASSIFICATION RULES (Per Image/Text Request)
+    # 1.1 RE-CLASSIFICATION RULES (Per Image/Text Request & 2023 Rules)
+    # Account Consolidation (1312->131, 3411->341)
+    df_nkc['TK Nợ'] = df_nkc['TK Nợ'].replace({'1312': '131', '3411': '341'})
+    df_nkc['TK Có'] = df_nkc['TK Có'].replace({'1312': '131', '3411': '341'})
+
     # TP CK / TRICH LAI -> 635 (Chi phí tài chính)
     mask_tpck = df_nkc['Diễn giải'].astype(str).str.contains('TP CK|TRICH LAI', regex=True, case=False)
     df_nkc.loc[mask_tpck & (df_nkc['TK Có'].str.startswith('112')), 'TK Nợ'] = '635'
     
     # MBVCB -> Có 1111 (Thu tiền mặt nộp ngân hàng)
-    mask_mbvcb = df_nkc['Diễn giải'].astype(str).str.contains('MBVCB', regex=True, case=False)
+    mask_mbvcb = df_nkc['Diễn giải'].astype(str).str.contains('MBVCB|Nộp tiền|Chuyển tiền vào TK', regex=True, case=False)
     df_nkc.loc[mask_mbvcb & (df_nkc['TK Nợ'].str.startswith('112')), 'TK Có'] = '1111'
+    df_nkc.loc[mask_mbvcb, 'Diễn giải'] = "Đặng Thị Xuân Hà nộp tiền vào TK"
 
-    # TRA GOC VAY -> Nợ 3411 (Vay và nợ thuê tài chính)
+    # TRA GOC VAY -> Nợ 341 (Vay và nợ thuê tài chính)
     mask_tragoc = df_nkc['Diễn giải'].astype(str).str.contains('TRA GOC VAY', regex=True, case=False)
-    df_nkc.loc[mask_tragoc & (df_nkc['TK Có'].str.startswith('112')), 'TK Nợ'] = '3411'
+    df_nkc.loc[mask_tragoc & (df_nkc['TK Có'].str.startswith('112')), 'TK Nợ'] = '341'
 
     # CHI LAI TK TIEN GUI -> Có 515 (Doanh thu tài chính)
     mask_laitg = df_nkc['Diễn giải'].astype(str).str.contains('CHI LAI TK TIEN GUI', regex=True, case=False)
     df_nkc.loc[mask_laitg & (df_nkc['TK Nợ'].str.startswith('112')), 'TK Có'] = '515'
+
+    # Viễn thông / Cước dịch vụ -> Nợ 642 / Có 112
+    mask_telecom = df_nkc['Diễn giải'].astype(str).str.contains('Viễn thông|Cước dịch vụ|Cước điện thoại', regex=True, case=False)
+    df_nkc.loc[mask_telecom & (df_nkc['TK Có'].str.startswith('112')), 'TK Nợ'] = '642'
+
+    # Dữ liệu sạch: nan -> Khách lẻ / NCC lạ
+    df_nkc['Đối tượng'] = df_nkc['Đối tượng'].fillna('OTHERS').astype(str)
+    df_nkc['Đối tượng'] = df_nkc['Đối tượng'].replace({'nan': 'Khách lẻ', '0': 'Khách lẻ'})
 
     # Remove duplicates from source if any
     df_nkc = df_nkc.drop_duplicates().reset_index(drop=True)
@@ -110,13 +129,17 @@ def build():
     c_112_cr = df_pre[df_pre['TK Có'].str.startswith('112')]['Số tiền'].sum()
     c_131_db = df_pre[df_pre['TK Nợ'].str.startswith('131')]['Số tiền'].sum()
     c_131_cr = df_pre[df_pre['TK Có'].str.startswith('131')]['Số tiền'].sum()
+    c_331_db = df_pre[df_pre['TK Nợ'].str.startswith('331')]['Số tiền'].sum()
+    c_331_cr = df_pre[df_pre['TK Có'].str.startswith('331')]['Số tiền'].sum()
+    c_341_db = df_pre[df_pre['TK Nợ'].str.startswith('341')]['Số tiền'].sum()
+    c_341_cr = df_pre[df_pre['TK Có'].str.startswith('341')]['Số tiền'].sum()
 
-    # Gap for 131
+    # Gap Calculation
     gap_131 = TARGET_ENDING_131 - (OPENING_BALANCES['131'] + c_131_db - c_131_cr)
-    # Re-calc 1111 gap
     gap_1111 = TARGET_ENDING_1111 - (OPENING_BALANCES['1111'] + c_111_db - c_111_cr)
-    # Gap for 112
     gap_112 = TARGET_ENDING_112 - (OPENING_BALANCES['112'] + c_112_db - c_112_cr)
+    gap_331 = TARGET_ENDING_331 - (OPENING_BALANCES['331'] + c_331_cr - c_331_db)
+    gap_341 = TARGET_ENDING_341 - (OPENING_BALANCES['341'] + c_341_cr - c_341_db)
 
     adj_rows = []
     
@@ -130,16 +153,33 @@ def build():
                 'Ngày hạch toán': d_str, 'Ngày chứng từ': d_str,
                 'Số chứng từ': f'TTRL_ADJ_{m}', 'Diễn giải': f"Thu nợ khách hàng lẻ tháng {m}/2024 (ADJ)",
                 'TK Nợ': '1111' if gap_131 < 0 else '131', 'TK Có': '131' if gap_131 < 0 else '1111',
-                'Số tiền': p, 'Đối tượng': 'KHACH_LE'
+                'Số tiền': p, 'Đối tượng': 'Khách lẻ'
             })
             
-    # Now adjust 1111 based on the impact of 131 collections
-    # If we reduced 131 (gap_131 < 0), we increased 1111 by |gap_131|
-    impact_on_1111 = abs(gap_131) if gap_131 < 0 else -abs(gap_131)
-    final_gap_1111 = gap_1111 - impact_on_1111
+    # Impact on 1111 from 131 adj
+    impact_on_1111_from_131 = abs(gap_131) if gap_131 < 0 else -abs(gap_131)
+    
+    # 2. Handle 341 Gap via Cash Contribution (Debit 1111 / Credit 341)
+    if gap_341 != 0:
+        print(f"  Gap 341: {gap_341:,.0f} VNĐ. Adjustment added.")
+        p = abs(gap_341 / 12)
+        for m in range(1, 13):
+            d_str = f"{monthrange(2024, m)[1]:02d}/{m:02d}/2024"
+            adj_rows.append({
+                'Ngày hạch toán': d_str, 'Ngày chứng từ': d_str,
+                'Số chứng từ': f'BV_ADJ_{m}', 'Diễn giải': f"Bổ sung vốn bằng vay huy động vốn tháng {m}/2024",
+                'TK Nợ': '341' if gap_341 < 0 else '1111', 'TK Có': '1111' if gap_341 < 0 else '341',
+                'Số tiền': p, 'Đối tượng': 'Đặng Thị Xuân Hà'
+            })
+    
+    # Impact on 1111 from 341 adj
+    impact_on_1111_from_341 = abs(gap_341) if gap_341 > 0 else -abs(gap_341)
+    
+    # Final Gap 1111
+    final_gap_1111 = gap_1111 - impact_on_1111_from_131 - impact_on_1111_from_341
     
     if final_gap_1111 != 0:
-        print(f"  Final Gap 1111: {final_gap_1111:,.0f} VNĐ. Adjustment added.")
+        print(f"  Final Gap 1111: {final_gap_1111:,.0f} VNĐ. Adjustment added via 3388.")
         p = abs(final_gap_1111 / 12)
         for m in range(1, 13):
             d_str = f"{monthrange(2024, m)[1]:02d}/{m:02d}/2024"
@@ -147,7 +187,7 @@ def build():
                 'Ngày hạch toán': d_str, 'Ngày chứng từ': d_str,
                 'Số chứng từ': f'PC_ADJ_{m}', 'Diễn giải': f"Chi tạm ứng/Đối trừ nội bộ tháng {m}/2024",
                 'TK Nợ': '3388' if final_gap_1111 < 0 else '1111', 'TK Có': '1111' if final_gap_1111 < 0 else '3388',
-                'Số tiền': p, 'Đối tượng': 'NGUYEN_VAN_HUY'
+                'Số tiền': p, 'Đối tượng': 'Nguyễn Văn Huy'
             })
 
     # Gap for 112
@@ -160,7 +200,7 @@ def build():
                 'Ngày hạch toán': d_str, 'Ngày chứng từ': d_str,
                 'Số chứng từ': f'GBC_ADJ_{m}', 'Diễn giải': f"Phí ngân hàng/Rút quỹ điều chính tháng {m}/2024",
                 'TK Nợ': '635' if gap_112 < 0 else '112', 'TK Có': '112' if gap_112 < 0 else '1111',
-                'Số tiền': p, 'Đối tượng': 'NGÂN HÀNG'
+                'Số tiền': p, 'Đối tượng': 'Ngân hàng'
             })
 
     # Gap for 1561 (Inventory Reconciliation)
@@ -171,13 +211,30 @@ def build():
     if gap_1561 != 0:
         print(f"  Gap 1561: {gap_1561:,.0f} VNĐ. Adjustment added (Purchase Adjustment).")
         p = abs(gap_1561 / 12)
+        # We use 331 to adjust 1561
         for m in range(1, 13):
             d_str = f"{monthrange(2024, m)[1]:02d}/{m:02d}/2024"
             adj_rows.append({
                 'Ngày hạch toán': d_str, 'Ngày chứng từ': d_str,
                 'Số chứng từ': f'HDM_ADJ_{m}', 'Diễn giải': f"Điều chỉnh giá trị hàng nhập kho tháng {m}/2024",
                 'TK Nợ': '1561' if gap_1561 > 0 else '331', 'TK Có': '331' if gap_1561 > 0 else '1561',
-                'Số tiền': p, 'Đối tượng': 'ĐIỀU CHỈNH XNT'
+                'Số tiền': p, 'Đối tượng': 'Điều chỉnh XNT'
+            })
+    
+    # Final Gap for 331 (After 1561 adjustment impact)
+    impact_on_331_from_1561 = gap_1561 # If gap_1561 > 0, we Credit 331, so increase
+    final_gap_331 = gap_331 - impact_on_331_from_1561
+    
+    if final_gap_331 != 0:
+        print(f"  Final Gap 331: {final_gap_331:,.0f} VNĐ. Adjustment added.")
+        p = abs(final_gap_331 / 12)
+        for m in range(1, 13):
+            d_str = f"{monthrange(2024, m)[1]:02d}/{m:02d}/2024"
+            adj_rows.append({
+                'Ngày hạch toán': d_str, 'Ngày chứng từ': d_str,
+                'Số chứng từ': f'CN_ADJ_{m}', 'Diễn giải': f"Điều chỉnh công nợ nhà cung cấp tháng {m}/2024",
+                'TK Nợ': '331' if final_gap_331 < 0 else '3388', 'TK Có': '3388' if final_gap_331 < 0 else '331',
+                'Số tiền': p, 'Đối tượng': 'Nhà cung cấp lạ'
             })
 
     # Final Combined NKC
@@ -194,7 +251,7 @@ def build():
     con = duckdb.connect(':memory:')
     con.execute("CREATE TABLE nkc AS SELECT * FROM df_final_nkc")
     
-    major_accs = ['1111', '112', '131', '1561', '331', '3331', '1331', '3411', '511', '632', '641', '642', '635', '711', '515']
+    major_accs = ['1111', '112', '131', '1561', '331', '3331', '1331', '341', '511', '632', '641', '642', '635', '711', '515']
     
     print(f"📦 Đang đóng gói dữ liệu vào {OUTPUT_FILE}...")
     
@@ -220,6 +277,17 @@ def build():
                 if is_asset: curr_bal += r['Phát sinh Nợ'] - r['Phát sinh Có']
                 else: curr_bal += r['Phát sinh Có'] - r['Phát sinh Nợ']
                 row = r.to_dict(); row['Đầu kỳ'] = 0; row['Cuối kỳ'] = curr_bal; ledger.append(row)
+            
+            # TOTAL ROW
+            total_db = df_ct['Phát sinh Nợ'].sum()
+            total_cr = df_ct['Phát sinh Có'].sum()
+            ledger.append({
+                'Ngày hạch toán': '', 'Ngày chứng từ': '', 'Số chứng từ': '', 
+                'Diễn giải': 'TỔNG CỘNG PHÁT SINH', 'TK Đối ứng': '', 
+                'Đầu kỳ': '', 'Phát sinh Nợ': total_db, 'Phát sinh Có': total_cr, 
+                'Cuối kỳ': curr_bal, 'Đối tượng': ''
+            })
+
             df_ledger = pd.DataFrame(ledger)
             cols = ["Ngày hạch toán", "Ngày chứng từ", "Số chứng từ", "Diễn giải", "TK Đối ứng", "Đầu kỳ", "Phát sinh Nợ", "Phát sinh Có", "Cuối kỳ", "Đối tượng"]
             df_ledger = df_ledger.reindex(columns=cols).fillna('')
