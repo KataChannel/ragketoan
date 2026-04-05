@@ -33,6 +33,13 @@ Dưới đây là danh sách các hạng mục quan trọng đã được thực
 - **Kiểm soát:** Cộng dồn số dư đầu kỳ của 131/1312 và 341/3411 đảm bảo tính liên tục của dữ liệu sau khi gộp tài khoản.
 - **Kiểm tra:** Đảm bảo không trùng lặp số dư đối với các tài khoản vay có chung nguồn gốc.
 
+### 6. Điều chỉnh Hạch toán Cước Viễn thông
+- **Yêu cầu:** Chuyển đổi các nghiệp vụ thanh toán cước dịch vụ viễn thông sang đúng tài khoản chi phí quản lý.
+- **Thực hiện:**
+    - Tự động nhận diện các dòng *"Cước dịch vụ Viễn thông"* trong NKC.
+    - Chỉnh sửa từ mặc định sang: **Nợ 642** (Chi phí quản trị) / **Có 112** (Tiền gửi ngân hàng).
+- **Phạm vi:** Áp dụng cho toàn bộ các chứng từ dịch vụ viễn thông trong năm 2023 (~43 triệu VNĐ).
+
 ---
 
 ### Danh sách file liên quan (Docs/Python):

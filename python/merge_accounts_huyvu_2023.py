@@ -36,7 +36,7 @@ def merge_accounts():
     df_nkc = pd.read_excel(NKC_FILE)
     
     print("Merging accounts in NKC...")
-    # Robust string conversion for account codes
+    # 1. Standardize basic accounts
     def clean_acc(x):
         if pd.isna(x): return ""
         s = str(x).strip().split('.')[0]
@@ -46,6 +46,11 @@ def merge_accounts():
 
     df_nkc['TK Nợ'] = df_nkc['TK Nợ'].apply(clean_acc)
     df_nkc['TK Có'] = df_nkc['TK Có'].apply(clean_acc)
+    
+    # 2. Specific Adjustment: Cước dịch vụ Viễn thông (642/112)
+    vt_mask = df_nkc['Diễn giải'].str.contains('Viễn thông', case=False, na=False)
+    df_nkc.loc[vt_mask, 'TK Nợ'] = '642'
+    df_nkc.loc[vt_mask, 'TK Có'] = '112'
     
     with pd.ExcelWriter(NKC_FILE, engine='openpyxl') as writer:
         df_nkc.to_excel(writer, index=False)
