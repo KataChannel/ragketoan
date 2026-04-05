@@ -103,6 +103,15 @@ for _, row in df_nkc.iterrows():
         redist_list['3331'].append({'Ngày hạch toán': dt, 'Số chứng từ': so_ct, 'Diễn giải': tax_dg, 'TK Đối ứng': '131', 'Phát sinh Nợ': 0, 'Phát sinh Có': tax_v, 'Prio': 2})
         redist_list['131'].append({'Ngày hạch toán': dt, 'Số chứng từ': so_ct, 'Diễn giải': tax_dg, 'TK Đối ứng': '3331', 'Phát sinh Nợ': tax_v, 'Phát sinh Có': 0, 'Prio': 2})
 
+# Add Monthly Bank Interest (515)
+interest_parts = segment_amount(1120551, 12, False)
+for i, amt in enumerate(interest_parts):
+    m = i + 1
+    last_day = (pd.to_datetime(f'2024-{m:02d}-01') + pd.offsets.MonthEnd(0)).strftime('%d/%m/%Y')
+    dg_i = f'Lãi tiền gửi ngân hàng tháng {m:02d}'
+    redist_list['515'].append({'Ngày hạch toán': last_day, 'Số chứng từ': 'LNK_BANK', 'Diễn giải': dg_i, 'TK Đối ứng': '112', 'Phát sinh Nợ': 0, 'Phát sinh Có': amt, 'Prio': 0})
+    redist_list['112'].append({'Ngày hạch toán': last_day, 'Số chứng từ': 'LNK_BANK', 'Diễn giải': dg_i, 'TK Đối ứng': '515', 'Phát sinh Nợ': amt, 'Phát sinh Có': 0, 'Prio': 0})
+
 for tk in redist_list:
     df_tk = pd.DataFrame(redist_list[tk])
     if not df_tk.empty:
