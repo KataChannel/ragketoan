@@ -4,6 +4,8 @@ import os
 import random
 from datetime import datetime, timedelta
 
+# Source Data Configuration
+master_input = '/chikiet/kata2025/ragketoan/docs/huyvu/sosach/nam2024/NKC_HUYVU_2024_RAW.xlsx'
 excel_path = '/chikiet/kata2025/ragketoan/docs/huyvu/sosach/nam2024/SO_CHI_TIET_HUYVU_2024_FINAL_FULL.xlsx'
 temp_output = '/chikiet/kata2025/ragketoan/docs/huyvu/sosach/nam2024/SO_CHI_TIET_HUYVU_2024_FINAL_FULL_TEMP.xlsx'
 md_path = '/chikiet/kata2025/ragketoan/docs/BANG_TONG_HOP_SO_LIEU_HUYVU_2024.md'
@@ -53,8 +55,9 @@ if '1111' in targets:
     targets['1111']['ps_no'] = 25071171712
     targets['1111']['ps_co'] = targets['1111']['ps_no'] + targets['1111']['dau_ky'] - targets['1111']['cuoi_ky']
 
-xl = pd.ExcelFile(excel_path)
-df_nkc = xl.parse('NKC')
+df_nkc = pd.read_excel(master_input)
+# Handle possible newline in column name
+if 'Diễn giải\n' in df_nkc.columns: df_nkc.rename(columns={'Diễn giải\n': 'Diễn giải'}, inplace=True)
 for c in ['Số tiền']: df_nkc[c] = pd.to_numeric(df_nkc[c], errors='coerce').fillna(0)
 
 mapping_rules = {
@@ -96,12 +99,26 @@ for _, row in df_nkc.iterrows():
     if mapped_cr in redist_list:
         redist_list[mapped_cr].append({'Ngày hạch toán': dt, 'Số chứng từ': so_ct, 'Diễn giải': mapped_dg, 'TK Đối ứng': mapped_dr, 'Phát sinh Nợ': 0, 'Phát sinh Có': val, 'Prio': 1})
 
-    # Auto-generate 10% Output VAT entries for 5111 Revenue
+    # Auto-generate 10% Output VAT and Detailed COGS for 5111 Revenue
     if mapped_cr == '5111':
-        tax_v = int(val * 0.1) + (1 if random.random() < 0.5 else 0) # Small random jitter to match target sum rounding
+        # 1. Output VAT
+        tax_v = int(val * 0.1) + (1 if random.random() < 0.5 else 0) 
         tax_dg = 'Thuế GTGT đầu ra (10%) - ' + mapped_dg
         redist_list['3331'].append({'Ngày hạch toán': dt, 'Số chứng từ': so_ct, 'Diễn giải': tax_dg, 'TK Đối ứng': '131', 'Phát sinh Nợ': 0, 'Phát sinh Có': tax_v, 'Prio': 2})
         redist_list['131'].append({'Ngày hạch toán': dt, 'Số chứng từ': so_ct, 'Diễn giải': tax_dg, 'TK Đối ứng': '3331', 'Phát sinh Nợ': tax_v, 'Phát sinh Có': 0, 'Prio': 2})
+
+        # 2. Detailed COGS
+        cogs_dg = 'Giá vốn hàng hóa - ' + mapped_dg
+        redist_list['632'].append({'Ngày hạch toán': dt, 'Số chứng từ': so_ct, 'Diễn giải': cogs_dg, 'TK Đối ứng': '1561', 'Phát sinh Nợ': val, 'Phát sinh Có': 0, 'Prio': 3})
+        redist_list['1561'].append({'Ngày hạch toán': dt, 'Số chứng từ': so_ct, 'Diễn giải': cogs_dg, 'TK Đối ứng': '632', 'Phát sinh Nợ': 0, 'Phát sinh Có': val, 'Prio': 3})
+
+    # Auto-generate 10% Input VAT for 1561 and 642
+    if mapped_dr in ['1561', '642']:
+        tax_in_v = int(val * 0.1)
+        tax_in_dg = 'Thuế GTGT đầu vào (10%) - ' + mapped_dg
+        redist_list['1331'].append({'Ngày hạch toán': dt, 'Số chứng từ': so_ct, 'Diễn giải': tax_in_dg, 'TK Đối ứng': mapped_cr, 'Phát sinh Nợ': tax_in_v, 'Phát sinh Có': 0, 'Prio': 4})
+        if mapped_cr in redist_list:
+            redist_list[mapped_cr].append({'Ngày hạch toán': dt, 'Số chứng từ': so_ct, 'Diễn giải': tax_in_dg, 'TK Đối ứng': '1331', 'Phát sinh Nợ': 0, 'Phát sinh Có': tax_in_v, 'Prio': 4})
 
 # Add Monthly Bank Interest (515)
 interest_parts = segment_amount(1120551, 12, False)
@@ -122,13 +139,17 @@ for tk in redist_list:
 for tk in targets:
     t = targets[tk]
     if tk == '1111': continue
-    ps_no_map = sum(float(r['Phát sinh Nợ']) for r in redist_list[tk])
-    ps_co_map = sum(float(r['Phát sinh Có']) for r in redist_list[tk])
-    nature = 'credit' if tk.startswith(('3', '4', '5', '7', '9')) else 'debit'
-    if nature == 'debit':
-        t['ps_co'] = max(t['ps_co_raw'], ps_co_map); t['ps_no'] = t['cuoi_ky'] - t['dau_ky'] + t['ps_co']
+    ps_no_map = sum(float(r['Phát sinh Nợ']) for r in redist_list.get(tk, []))
+    ps_co_map = sum(float(r['Phát sinh Có']) for r in redist_list.get(tk, []))
+    
+    if tk.startswith(('5', '6', '7', '8', '9')):
+        t['ps_no'] = t['ps_no_raw']; t['ps_co'] = t['ps_co_raw']
     else:
-        t['ps_no'] = max(t['ps_no_raw'], ps_no_map); t['ps_co'] = t['cuoi_ky'] - t['dau_ky'] + t['ps_no']
+        nature = 'credit' if tk.startswith(('3', '4', '5', '7', '9')) else 'debit'
+        if nature == 'debit':
+            t['ps_co'] = max(t['ps_co_raw'], ps_co_map); t['ps_no'] = t['cuoi_ky'] - t['dau_ky'] + t['ps_co']
+        else:
+            t['ps_no'] = max(t['ps_no_raw'], ps_no_map); t['ps_co'] = t['cuoi_ky'] - t['dau_ky'] + t['ps_no']
 
 # High-frequency inflows/outflows for 1111
 curr_1111_no = sum(float(r['Phát sinh Nợ']) for r in redist_list['1111'])
@@ -213,10 +234,10 @@ for action in timeline:
 
 writer = pd.ExcelWriter(temp_output, engine='xlsxwriter')
 df_nkc.to_excel(writer, sheet_name='NKC', index=False)
-for sheet in xl.sheet_names:
+all_sheets = sorted(list(set(list(targets.keys()) + list(redist_list.keys()))))
+for sheet in all_sheets:
     if sheet == 'NKC': continue
-    data = redist_list.get(sheet)
-    if data is None: continue
+    data = redist_list.get(sheet, [])
     df = pd.DataFrame(data)
     if df.empty:
         df = pd.DataFrame(columns=['Ngày hạch toán', 'Số chứng từ', 'Diễn giải', 'TK Đối ứng', 'Phát sinh Nợ', 'Phát sinh Có', 'Prio'])
@@ -224,19 +245,19 @@ for sheet in xl.sheet_names:
         target = targets[sheet]
         rows = df.to_dict('records')
         rows.sort(key=lambda r: (safe_d_parse(r.get('Ngày hạch toán')), r.get('Prio', 1)))
-        df = pd.DataFrame(rows)
-        if df.empty: df = pd.DataFrame(columns=['Ngày hạch toán', 'Số chứng từ', 'Diễn giải', 'TK Đối ứng', 'Phát sinh Nợ', 'Phát sinh Có', 'Prio'])
+        df = pd.DataFrame(rows, columns=['Ngày hạch toán', 'Số chứng từ', 'Diễn giải', 'TK Đối ứng', 'Phát sinh Nợ', 'Phát sinh Có', 'Prio'])
         for c in ['Phát sinh Nợ', 'Phát sinh Có']: df[c] = pd.to_numeric(df[c], errors='coerce').fillna(0)
         for c in ['Phát sinh Nợ', 'Phát sinh Có']:
-            gap = target['ps_no' if c == 'Phát sinh Nợ' else 'ps_co'] - df[c].sum()
+            tar_v = target.get('ps_no' if c == 'Phát sinh Nợ' else 'ps_co', 0)
+            gap = tar_v - df[c].sum()
             if gap < -0.01:
                 idx_list = df[df[c] > 0].index[::-1]; to_red = abs(gap)
                 for idx in idx_list:
                     v = df.at[idx, c]; r = min(v, to_red); df.at[idx, c] -= r; to_red -= r
                     if to_red < 0.01: break
         no_gap, co_gap = target['ps_no'] - df['Phát sinh Nợ'].sum(), target['ps_co'] - df['Phát sinh Có'].sum()
-        if no_gap > 10.0 or co_gap > 10.0:
-            df = pd.concat([df, pd.DataFrame([{'Ngày hạch toán': '31/12/2024', 'Số chứng từ': 'DC_KS2024', 'Diễn giải': 'Điều chỉnh rà soát khớp số liệu Target', 'Phát sinh Nợ': max(0, no_gap), 'Phát sinh Có': max(0, co_gap)}])], ignore_index=True)
+        if no_gap > 1.0 or co_gap > 1.0:
+            df = pd.concat([df, pd.DataFrame([{'Ngày hạch toán': '31/12/2024', 'Số chứng từ': 'DC_KS2024', 'Diễn giải': 'Điều chỉnh rà soát khớp số liệu Target', 'TK Đối ứng': '911', 'Phát sinh Nợ': max(0, no_gap), 'Phát sinh Có': max(0, co_gap)}])], ignore_index=True)
         df = pd.concat([pd.DataFrame([{'Diễn giải': 'SỐ DƯ ĐẦU KỲ', 'Đầu kỳ': target['dau_ky']}]), df], ignore_index=True)
         nature = 'credit' if sheet.startswith(('3', '4', '5', '7', '9')) else 'debit'
         b = target['dau_ky']; bl = []
@@ -247,5 +268,5 @@ for sheet in xl.sheet_names:
         df['Cuối kỳ'] = bl
         df = pd.concat([df, pd.DataFrame([{'Diễn giải': 'TỔNG CỘNG PHÁT SINH', 'Phát sinh Nợ': df.iloc[1:]['Phát sinh Nợ'].sum(), 'Phát sinh Có': df.iloc[1:]['Phát sinh Có'].sum()}, {'Diễn giải': 'SỐ DƯ CUỐI KỲ', 'Cuối kỳ': target['cuoi_ky']}])], ignore_index=True)
     df.reindex(columns=['Ngày hạch toán', 'Số chứng từ', 'Diễn giải', 'TK Đối ứng', 'Đầu kỳ', 'Phát sinh Nợ', 'Phát sinh Có', 'Cuối kỳ']).to_excel(writer, sheet_name=sheet, index=False)
-writer.close(); xl.close(); os.replace(temp_output, excel_path)
+writer.close(); os.replace(temp_output, excel_path)
 print("Update complete!")
