@@ -64,3 +64,7 @@ Khi thực hiện các tác vụ code trong dự án `ragketoan`, agent cần tu
 3. **Khi chuẩn hóa Dữ liệu (Data Normalization):**
    - Luôn ưu tiên Phản ánh đúng bản chất giao dịch thay vì chỉ nhìn vào mã chứng từ.
    - Ghi chú rõ ràng trong mã nguồn khi có các bút toán điều chỉnh dựa trên sự Thận trọng hoặc Trọng yếu.
+
+4. **Khi Điều chỉnh Số liệu (Adjustment Logic):**
+   - **Tuyệt đối tránh số âm:** Trong các script rà soát và khớp số dư (reconciliation), hạn chế tối đa việc tạo bút toán điều chỉnh mang giá trị âm. 
+   - **Cơ chế Phân bổ Giảm (Distribution):** Nếu số liệu hiện tại lớn hơn mục tiêu, thực hiện giảm trừ trực tiếp vào các dòng phát sinh dương trước đó (ưu tiên từ cuối năm ngược lên) thay vì ghi âm vào cột Nợ/Có. Việc này giúp sổ sách "sạch" và đúng chuẩn trình bày kế toán.

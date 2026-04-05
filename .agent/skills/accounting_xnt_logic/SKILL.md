@@ -23,5 +23,48 @@ Trong các hệ thống phân bổ hoặc sinh báo cáo XNT tự động qua t�
 - => Phương án hợp lý là cứ cho dồn tồn kho tiền bị âm (sau đó reset Tồn cuối về 0 để chuyển qua tháng sau) nhưng phải giữ nguyên vẹn giá bán `x_tien` của tháng đó.
 
 ## 4. Phân Loại Hàng Hóa Nằm Ngoài Tồn Kho (SKIP Items)
-- Các hóa đơn có chứa Phí Ngân hàng, Bảo hiểm, Dịch vụ viễn thông, Thức ăn/Đồ uống... là các giao dịch ngoài hệ sinh thái quản lý hàng hóa vật tư CNTT.  
-- Khi trích xuất hóa đơn vào bảng kê, các hóa đơn mà **toàn bộ Mặt hàng (Chi tiết) đều thuộc dạng SKIP** cũng cần phải bị loại bỏ để đảm bảo Tổng Nhập khớp hoàn toàn với những mặt hàng đã đưa vào Tờ Khai Thuế.
+## 5. Quy Tắc Phân Loại Hạch Toán Theo Diễn Giải (Mapping Rules)
+Khi hạch toán các giao dịch ngân hàng theo "Mua hàng" hoặc "Chi phí", cần tuân thủ các từ khóa diễn giải sau đây để gán tài khoản chính xác (Đặc biệt áp dụng cho Huy Vũ 2024):
+
+### Tài Khoản 635 (Chi phí tài chính)
+Dành cho các khoản phí ngân hàng trực tiếp, lãi vay và các dịch vụ vận tải đặc thù theo hợp đồng:
+*   **Từ khóa chính:** `TP CK`, `TRICH LAI`, `THU PHI`, `PHI T03`, `Dịch vụ ngân hàng`, `SMS Banking`, `THU LAI`.
+*   **Dịch vụ bảo lãnh:** `Bao lanh`, `Phat Hanh Bao lanh`.
+*   **Vay vốn:** `Tien vay`, `Trich thu 1 phan Tien vay`.
+*   **Vận đơn đặc thù:** `Đường bộ Vận đơn số` (NB: Nhất Tín).
+
+### Tài Khoản 341 (Chi trả vay huy động vốn)
+Áp dụng cho các nghiệp vụ thanh toán nội bộ hoặc tạm ứng thực chất là trả nợ vay:
+*   **Từ khóa chính:** `Chi tạm ứng`, `Đối trừ nội bộ`, `Chi từ tạm ứng`.
+*   **Hạch toán:** Ghi Nợ TK 341 / Có TK 111. Diễn giải mới: `Chi trả vay huy động vốn`.
+
+### Tài Khoản 642 (Chi phí quản lý doanh nghiệp)
+Dành cho các dịch vụ tiện ích, viễn thông, nhiên liệu và phí cầu đường thường xuyên:
+*   **Viễn thông/IT:** `Viễn thông`, `Cước dịch vụ`, `Cước điện thoại`, `Công nghệ thông tin`, `viễn thông trả sau`.
+*   **Nhà cung cấp viễn thông:** `Tập đoàn Công nghiệp - Viễn thông Quân đội` (Viettel), `VNPT`, `MOBIFONE`.
+*   **Nhiên liệu:** `Xăng RON95`, `Dầu DO`.
+*   **Phí cầu đường:** `Cước đường bộ xe` (NB: VETC).
+*   **Giao dịch đặc thù:** `Thu phi chuyen tien ngoai he thong` (ACB).
+
+*Lưu ý:* Khi script xử lý, thứ tự ưu tiên các quy tắc này là quan trọng. Các quy tắc chi tiết hơn (nhữ tên nhà cung cấp hoặc dịch vụ cụ thể) nên được kiểm tra sau các quy tắc chung nếu có sự chồng lấn.
+
+## 6. Quy Tắc Điều Chỉnh Số Liệu Tránh Số Âm (Zero-Negative Adjustment Rule)
+Khi thực hiện điều chỉnh (Adjustment) số liệu để khớp với số dư mục tiêu (Target), tuyệt đối không được ghi số âm vào các cột Phát sinh Nợ hoặc Phát sinh Có. 
+
+### Nguyên tắc xử lý "Phân bổ giảm" (Distribution):
+- **Nếu Chênh lệch (Gap) < 0:** Tức là số liệu hiện tại đang cao hơn mục tiêu. Thay vì tạo một dòng điều chỉnh âm, phải thực hiện "phân bổ giảm" bằng cách trừ trực tiếp vào các dòng phát sinh dương hiện có trong sổ của chính tài khoản đó.
+- **Thứ tự ưu tiên:** Nên trừ từ các dòng phát sinh muộn nhất (cuối năm) ngược lên trên cho đến khi đủ số lượng cần giảm.
+- **Kiểm soát:** Đảm bảo sau khi trừ, giá trị tại dòng đó không bị âm (min = 0). Nếu dòng đó không đủ để trừ hết, tiếp tục trừ sang dòng phía trên.
+- **Mục tiêu:** Tổng cộng cột (Total) sau khi điều chỉnh phải khớp chính xác với Target và tất cả các dòng đều là số dương hoặc bằng 0.
+
+## 7. Quy Tắc Phân Bổ Điều Chỉnh Thực Tế (Realistic Distribution Rule)
+Đối với các tài khoản có tần suất giao dịch cao và số dư tiền mặt lớn (như TK 1111 - Tiền mặt), thay vì sử dụng một dòng điều chỉnh tổng quát "DC_KS" vào cuối năm, nên thực hiện phân bổ thành nhiều bút toán nhỏ lẻ rải rác trong suốt kỳ kế toán.
+
+### Nội dung thực hiện:
+- **Ngẫu nhiên hóa (Randomization):** Chia nhỏ số tiền cần điều chỉnh thành nhiều bút toán với giá trị khác nhau (không trùng số) để mô phỏng các giao dịch thực tế (như thu tiền khách hàng lẻ, nộp tiền vào quỹ,...).
+- **Diễn giải nghiệp vụ:** Sử dụng các nội dung giao dịch thực tế thay vì từ khóa "Điều chỉnh". Ví dụ:
+    - *Thu nợ khách hàng (Đối ứng TK 131)*
+    - *Vay huy động vốn (Đối ứng TK 341)*
+    - *Thu tiền bán lẻ (Đối ứng TK 5111)*
+- **Phân bổ thời gian:** Rải đều các bút toán này vào các ngày làm việc trong năm (ưu tiên các ngày có ít phát sinh hoặc theo quy trình kinh doanh).
+- **Tính đối ứng:** Luôn đảm bảo cập nhật đồng bộ sang cả hai sổ (Sổ Nợ và Sổ Có) để giữ nguyên tắc cân bằng kế toán (Double-entry).

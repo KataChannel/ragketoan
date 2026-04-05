@@ -37,14 +37,18 @@ def build():
     df_nkc['TK Nợ'] = df_nkc['TK Nợ'].astype(str).str.strip()
     df_nkc['TK Có'] = df_nkc['TK Có'].astype(str).str.strip()
     
-    # 1.1 RE-CLASSIFICATION RULES (Per Image/Text Request & 2023 Rules)
+    # 1.1 RE-CLASSIFICATION RULES (Per Request & 2024 Rules Updates)
     # Account Consolidation (1312->131, 3411->341)
     df_nkc['TK Nợ'] = df_nkc['TK Nợ'].replace({'1312': '131', '3411': '341'})
     df_nkc['TK Có'] = df_nkc['TK Có'].replace({'1312': '131', '3411': '341'})
 
-    # TP CK / TRICH LAI -> 635 (Chi phí tài chính)
-    mask_tpck = df_nkc['Diễn giải'].astype(str).str.contains('TP CK|TRICH LAI', regex=True, case=False)
-    df_nkc.loc[mask_tpck & (df_nkc['TK Có'].str.startswith('112')), 'TK Nợ'] = '635'
+    # Financial Expenses -> 635 (Phí ngân hàng, Lãi vay, Bảo lãnh, Vận đơn đường bộ đặc thù)
+    # Includes: THU PHI, PHI T03, Đường bộ Vận đơn số, Dịch vụ ngân hàng, SMS Banking, Bao lanh, Tien vay, THU LAI
+    mask_635 = df_nkc['Diễn giải'].astype(str).str.contains(
+        'TP CK|TRICH LAI|THU PHI|PHI T03|Đường bộ Vận đơn số|Dịch vụ ngân hàng|SMS Banking|Bao lanh|Tien vay|THU LAI', 
+        regex=True, case=False
+    )
+    df_nkc.loc[mask_635 & (df_nkc['TK Có'].str.startswith('112')), 'TK Nợ'] = '635'
     
     # MBVCB -> Có 1111 (Thu tiền mặt nộp ngân hàng)
     mask_mbvcb = df_nkc['Diễn giải'].astype(str).str.contains('MBVCB|Nộp tiền|Chuyển tiền vào TK', regex=True, case=False)
@@ -59,9 +63,13 @@ def build():
     mask_laitg = df_nkc['Diễn giải'].astype(str).str.contains('CHI LAI TK TIEN GUI', regex=True, case=False)
     df_nkc.loc[mask_laitg & (df_nkc['TK Nợ'].str.startswith('112')), 'TK Có'] = '515'
 
-    # Viễn thông / Cước dịch vụ -> Nợ 642 / Có 112
-    mask_telecom = df_nkc['Diễn giải'].astype(str).str.contains('Viễn thông|Cước dịch vụ|Cước điện thoại', regex=True, case=False)
-    df_nkc.loc[mask_telecom & (df_nkc['TK Có'].str.startswith('112')), 'TK Nợ'] = '642'
+    # Management/Admin/Fuel/Telecom -> 642
+    # Includes: Viễn thông, Công nghệ thông tin, Quân đội, viễn thông trả sau, Cước đường bộ xe, Xăng RON95, Thu phi chuyen tien ngoai he thong
+    mask_642 = df_nkc['Diễn giải'].astype(str).str.contains(
+        'Viễn thông|Cước dịch vụ|Cước điện thoại|Công nghệ thông tin|Quân đội|viễn thông trả sau|Cước đường bộ xe|Xăng RON95|Thu phi chuyen tien ngoai he thong', 
+        regex=True, case=False
+    )
+    df_nkc.loc[mask_642 & (df_nkc['TK Có'].str.startswith('112')), 'TK Nợ'] = '642'
 
     # Dữ liệu sạch: nan -> Khách lẻ / NCC lạ
     df_nkc['Đối tượng'] = df_nkc['Đối tượng'].fillna('OTHERS').astype(str)
