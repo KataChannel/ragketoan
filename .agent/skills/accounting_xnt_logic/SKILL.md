@@ -62,9 +62,9 @@ Khi thực hiện điều chỉnh (Adjustment) số liệu để khớp với s�
 
 ### Nội dung thực hiện:
 - **Ngẫu nhiên hóa (Randomization):** Chia nhỏ số tiền cần điều chỉnh thành nhiều bút toán với giá trị khác nhau (không trùng số) để mô phỏng các giao dịch thực tế (như thu tiền khách hàng lẻ, nộp tiền vào quỹ,...).
-- **Diễn giải nghiệp vụ:** Sử dụng các nội dung giao dịch thực tế thay vì từ khóa "Điều chỉnh". Ví dụ:
-    - *Thu nợ khách hàng (Đối ứng TK 131)*
+- **Diễn giải nghiệp vụ:** Sử dụng các nội dung giao dịch thực tế thay vì từ khóa "Điều chỉnh". Ví dụ (Theo chuẩn Huy Vũ 2024):
+    - *Thu bán lẻ hàng hóa (Đối ứng TK 131)* - Gộp chung toàn bộ các khoản thu nợ và bán lẻ, tuyệt đối không dùng TK 5111.
     - *Vay huy động vốn (Đối ứng TK 341)*
-    - *Thu tiền bán lẻ (Đối ứng TK 5111)*
+    - *Chi trả vay huy động vốn (Đối ứng TK 341)*
 - **Phân bổ thời gian:** Rải đều các bút toán này vào các ngày làm việc trong năm (ưu tiên các ngày có ít phát sinh hoặc theo quy trình kinh doanh).
 - **Tính đối ứng:** Luôn đảm bảo cập nhật đồng bộ sang cả hai sổ (Sổ Nợ và Sổ Có) để giữ nguyên tắc cân bằng kế toán (Double-entry).

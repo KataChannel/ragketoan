@@ -14,11 +14,15 @@ opening_2024_from_2023 = {
     '5111': 0.0, '515': 0.0, '632': 0.0, '635': 0.0, '642': 0.0
 }
 
-def segment_amount(total, count):
+def segment_amount(total, count, round_to_1k=False):
     if total <= 0 or count <= 0: return []
     parts = []; curr = 0
     for _ in range(count - 1):
-        v = (total / count) * random.uniform(0.7, 1.3); v = (v // 1000) * 1000 + random.randint(1, 999)
+        v = (total / count) * random.uniform(0.7, 1.3)
+        if round_to_1k:
+            v = (int(v) // 1000) * 1000
+        else:
+            v = (int(v) // 1000) * 1000 + random.randint(1, 999)
         parts.append(v); curr += v
     parts.append(total - curr); return parts
 
@@ -29,7 +33,6 @@ def safe_d_parse(s):
         return datetime.strptime(s_clean, '%d/%m/%Y')
     except: return datetime(2024, 1, 1)
 
-# 1. Parse target
 with open(md_path, 'r', encoding='utf-8') as f:
     lines = f.readlines()
 targets = {}
@@ -45,7 +48,11 @@ for line in lines:
                 'cuoi_ky': float(parts[4].replace('.', '').replace(',', ''))
             }
 
-# 2. Collect GLOBAL Data from NKC
+# Override target for 1111 per user instruction
+if '1111' in targets:
+    targets['1111']['ps_no'] = 25071171712
+    targets['1111']['ps_co'] = targets['1111']['ps_no'] + targets['1111']['dau_ky'] - targets['1111']['cuoi_ky']
+
 xl = pd.ExcelFile(excel_path)
 df_nkc = xl.parse('NKC')
 for c in ['Số tiền']: df_nkc[c] = pd.to_numeric(df_nkc[c], errors='coerce').fillna(0)
@@ -57,17 +64,16 @@ mapping_rules = {
 }
 
 redist_list = {tk: [] for tk in targets.keys()}
-adj_prefixes = ['ADJ_', 'DC_', 'DC_KS']
+adj_prefixes = ['ADJ_', 'DC_', 'DC_KS', 'BV_ADJ', 'TTRL_ADJ', 'PC_ADJ', 'HDP_']
 
 for _, row in df_nkc.iterrows():
     so_ct = str(row.get('Số chứng từ', '')); dg = str(row.get('Diễn giải', ''))
-    if any(so_ct.startswith(p) for p in adj_prefixes) or so_ct == 'HDP_2024' or (len(dg)>5 and 'Target' in dg) or 'TỔNG CỘNG' in dg or 'SỐ DƯ' in dg:
-        continue # Ignore previous adjustments
+    if any(so_ct.startswith(p) for p in adj_prefixes) or ('Điều chỉnh' in dg and 'Target' in dg) or 'TỔNG CỘNG' in dg or 'SỐ DƯ' in dg:
+        continue
     
     val = float(row.get('Số tiền', 0)); dt = safe_d_parse(row.get('Ngày hạch toán')).strftime('%d/%m/%Y')
     dr_tk = str(row.get('TK Nợ', '')); cr_tk = str(row.get('TK Có', ''))
     
-    # Apply Mapping Engine
     dg_low = dg.lower(); mapped_dr, mapped_cr, mapped_dg = dr_tk, cr_tk, dg
     
     if any(kw.lower() in dg_low for kw in mapping_rules['Repayment']):
@@ -76,73 +82,126 @@ for _, row in df_nkc.iterrows():
         for tk_m in ['642', '635']:
             if any(kw.lower() in dg_low for kw in mapping_rules[tk_m]): mapped_dr = tk_m; break
     
-    # Distribute to redist_list
     if mapped_dr in redist_list:
         redist_list[mapped_dr].append({'Ngày hạch toán': dt, 'Số chứng từ': so_ct, 'Diễn giải': mapped_dg, 'TK Đối ứng': mapped_cr, 'Phát sinh Nợ': val, 'Phát sinh Có': 0, 'Prio': 1})
     if mapped_cr in redist_list:
         redist_list[mapped_cr].append({'Ngày hạch toán': dt, 'Số chứng từ': so_ct, 'Diễn giải': mapped_dg, 'TK Đối ứng': mapped_dr, 'Phát sinh Nợ': 0, 'Phát sinh Có': val, 'Prio': 1})
 
-# Deduplicate redist_list (since NKC might have been processed by sheet before)
 for tk in redist_list:
     df_tk = pd.DataFrame(redist_list[tk])
     if not df_tk.empty:
-        # Deduplicate based on unique attributes
         df_tk = df_tk.drop_duplicates(subset=['Ngày hạch toán', 'Diễn giải', 'TK Đối ứng', 'Phát sinh Nợ', 'Phát sinh Có'])
         redist_list[tk] = df_tk.to_dict('records')
 
-# 3. Final Target Adjustment & Distribution
+# Prep Base Targets
 for tk in targets:
     t = targets[tk]
-    ps_no_mapped = sum(float(r['Phát sinh Nợ']) for r in redist_list[tk])
-    ps_co_mapped = sum(float(r['Phát sinh Có']) for r in redist_list[tk])
+    if tk == '1111': continue
+    ps_no_map = sum(float(r['Phát sinh Nợ']) for r in redist_list[tk])
+    ps_co_map = sum(float(r['Phát sinh Có']) for r in redist_list[tk])
     nature = 'credit' if tk.startswith(('3', '4', '5', '7', '9')) else 'debit'
     if nature == 'debit':
-        t['ps_co'] = max(t['ps_co_raw'], ps_co_mapped); t['ps_no'] = t['cuoi_ky'] - t['dau_ky'] + t['ps_co']
+        t['ps_co'] = max(t['ps_co_raw'], ps_co_map); t['ps_no'] = t['cuoi_ky'] - t['dau_ky'] + t['ps_co']
     else:
-        t['ps_no'] = max(t['ps_no_raw'], ps_no_mapped); t['ps_co'] = t['cuoi_ky'] - t['dau_ky'] + t['ps_no']
+        t['ps_no'] = max(t['ps_no_raw'], ps_no_map); t['ps_co'] = t['cuoi_ky'] - t['dau_ky'] + t['ps_no']
 
-# High-frequency fills for 1111
+# High-frequency inflows/outflows for 1111
 curr_1111_no = sum(float(r['Phát sinh Nợ']) for r in redist_list['1111'])
-rest_1111 = max(0, targets['1111']['ps_no'] - 900705292 - 1310306873 - curr_1111_no)
-pending_inflows = ([{'Ds': 'Thu nợ khách hàng', 'Cr': '131', 'Am': a} for a in segment_amount(1310306873, 50)] +
-                   [{'Ds': 'Vay huy động vốn', 'Cr': '341', 'Am': a} for a in segment_amount(900705292, 45)] +
-                   [{'Ds': 'Thu tiền bán lẻ trong năm', 'Cr': '5111', 'Am': a} for a in segment_amount(rest_1111, 80)])
+rest_1111_no = max(0, targets['1111']['ps_no'] - 900705292 - curr_1111_no)
+
+pending_inflows = ([{'Ds': 'Thu bán lẻ hàng hóa', 'Cr': '131', 'Am': a} for a in segment_amount(rest_1111_no, 200)] +
+                   [{'Ds': 'Vay huy động vốn', 'Cr': '341', 'Am': a} for a in segment_amount(900705292, 45, True)])
+
+curr_1111_co = sum(float(r['Phát sinh Có']) for r in redist_list['1111'])
+curr_331_no = sum(float(r['Phát sinh Nợ']) for r in redist_list.get('331', []))
+rest_331_no = max(0, targets['331']['ps_no'] - curr_331_no)
+rest_1111_co = max(0, targets['1111']['ps_co'] - curr_1111_co - rest_331_no)
+
+pending_outflows = ([{'Ds': 'Thanh toán công nợ', 'Dr': '331', 'Am': a} for a in segment_amount(rest_331_no, 150)] +
+                    [{'Ds': 'Chi trả vay huy động vốn', 'Dr': '341', 'Am': a} for a in segment_amount(rest_1111_co, 50, True)])
+
 random.shuffle(pending_inflows)
+random.shuffle(pending_outflows)
 
 base_1111 = sorted(redist_list['1111'], key=lambda r: safe_d_parse(r['Ngày hạch toán']))
 redist_list['1111'] = []
-bal = targets['1111']['dau_ky']
-for r in base_1111:
-    no, co, dt = r['Phát sinh Nợ'], r['Phát sinh Có'], r['Ngày hạch toán']
-    while bal + no - co < 5000000 and pending_inflows:
-        s = pending_inflows.pop(0)
-        redist_list['1111'].append({'Ngày hạch toán': dt, 'Số chứng từ': 'HDP_2024', 'Diễn giải': s['Ds'], 'TK Đối ứng': s['Cr'], 'Phát sinh Nợ': s['Am'], 'Phát sinh Có': 0, 'Prio': 0})
-        if s['Cr'] in redist_list:
-            redist_list[s['Cr']].append({'Ngày hạch toán': dt, 'Số chứng từ': 'HDP_2024', 'Diễn giải': s['Ds'], 'TK Đối ứng': '1111', 'Phát sinh Nợ': 0, 'Phát sinh Có': s['Am'], 'Prio': 0})
-        bal += s['Am']
-    bal += no - co; r['Prio'] = 1; redist_list['1111'].append(r)
-while pending_inflows:
-    s = pending_inflows.pop(0); d = datetime(2024,1,1)+timedelta(days=random.randint(0,364)); dt = d.strftime('%d/%m/%Y')
-    redist_list['1111'].append({'Ngày hạch toán': dt, 'Diễn giải': s['Ds'], 'TK Đối ứng': s['Cr'], 'Phát sinh Nợ': s['Am'], 'Phát sinh Có': 0, 'Số chứng từ': 'HDP_2024', 'Prio': 0})
-    if s['Cr'] in redist_list: redist_list[s['Cr']].append({'Ngày hạch toán': dt, 'Diễn giải': s['Ds'], 'TK Đối ứng': '1111', 'Phát sinh Nợ': 0, 'Phát sinh Có': s['Am'], 'Số chứng từ': 'HDP_2024', 'Prio': 0})
 
-# 4. Final Output Construction
+def inj_inflow(s, dt):
+    redist_list['1111'].append({'Ngày hạch toán': dt, 'Số chứng từ': 'HDP_2024', 'Diễn giải': s['Ds'], 'TK Đối ứng': s['Cr'], 'Phát sinh Nợ': s['Am'], 'Phát sinh Có': 0, 'Prio': 0})
+    if s['Cr'] in redist_list: 
+        redist_list[s['Cr']].append({'Ngày hạch toán': dt, 'Số chứng từ': 'HDP_2024', 'Diễn giải': s['Ds'], 'TK Đối ứng': '1111', 'Phát sinh Nợ': 0, 'Phát sinh Có': s['Am'], 'Prio': 0})
+
+def inj_outflow(s, dt):
+    redist_list['1111'].append({'Ngày hạch toán': dt, 'Số chứng từ': 'HDP_2024', 'Diễn giải': s['Ds'], 'TK Đối ứng': s['Dr'], 'Phát sinh Nợ': 0, 'Phát sinh Có': s['Am'], 'Prio': 0})
+    if s['Dr'] in redist_list: 
+        redist_list[s['Dr']].append({'Ngày hạch toán': dt, 'Số chứng từ': 'HDP_2024', 'Diễn giải': s['Ds'], 'TK Đối ứng': '1111', 'Phát sinh Nợ': s['Am'], 'Phát sinh Có': 0, 'Prio': 0})
+
+dr = [datetime(2024,1,1) + timedelta(days=i) for i in range(365)]
+dr = [d for d in dr if d.weekday() < 5]
+random.shuffle(dr)
+
+total_pending = len(pending_inflows) + len(pending_outflows)
+injection_dates = sorted([dr[i % len(dr)] for i in range(total_pending)])
+
+timeline = []
+for r in base_1111:
+    timeline.append({'type': 'base', 'dt_obj': safe_d_parse(r['Ngày hạch toán']), 'data': r})
+for idx, d in enumerate(injection_dates):
+    timeline.append({'type': 'inject', 'dt_obj': d, 'seq': idx})
+
+timeline.sort(key=lambda t: (t['dt_obj'], t.get('seq', 0)))
+
+bal = targets['1111']['dau_ky']
+
+for action in timeline:
+    dt = action['dt_obj'].strftime('%d/%m/%Y')
+    
+    if action['type'] == 'base':
+        no = action['data'].get('Phát sinh Nợ', 0)
+        co = action['data'].get('Phát sinh Có', 0)
+        while pending_inflows and bal + no - co < 5000000:
+            i_s = pending_inflows.pop(0)
+            inj_inflow(i_s, dt)
+            bal += i_s['Am']
+        redist_list['1111'].append(action['data'])
+        bal += (no - co)
+        
+    elif action['type'] == 'inject':
+        if pending_inflows and pending_outflows:
+            next_o = pending_outflows[0]['Am']
+            if bal - next_o > 15000000 and random.random() < 0.4:
+                o_s = pending_outflows.pop(0)
+                inj_outflow(o_s, dt)
+                bal -= o_s['Am']
+            else:
+                i_s = pending_inflows.pop(0)
+                inj_inflow(i_s, dt)
+                bal += i_s['Am']
+        elif pending_inflows:
+            i_s = pending_inflows.pop(0)
+            inj_inflow(i_s, dt)
+            bal += i_s['Am']
+        elif pending_outflows:
+            o_s = pending_outflows.pop(0)
+            inj_outflow(o_s, dt)
+            bal -= o_s['Am']
+
 writer = pd.ExcelWriter(temp_output, engine='xlsxwriter')
 df_nkc.to_excel(writer, sheet_name='NKC', index=False)
 for sheet in xl.sheet_names:
     if sheet == 'NKC': continue
     data = redist_list.get(sheet)
-    if data is None: # Sheet not in target list, keep original maybe?
-         # xl.parse(sheet).to_excel(writer, sheet_name=sheet, index=False)
-         continue
+    if data is None: continue
     df = pd.DataFrame(data)
+    if df.empty:
+        df = pd.DataFrame(columns=['Ngày hạch toán', 'Số chứng từ', 'Diễn giải', 'TK Đối ứng', 'Phát sinh Nợ', 'Phát sinh Có', 'Prio'])
     if sheet in targets:
         target = targets[sheet]
         rows = df.to_dict('records')
         rows.sort(key=lambda r: (safe_d_parse(r.get('Ngày hạch toán')), r.get('Prio', 1)))
         df = pd.DataFrame(rows)
+        if df.empty: df = pd.DataFrame(columns=['Ngày hạch toán', 'Số chứng từ', 'Diễn giải', 'TK Đối ứng', 'Phát sinh Nợ', 'Phát sinh Có', 'Prio'])
         for c in ['Phát sinh Nợ', 'Phát sinh Có']: df[c] = pd.to_numeric(df[c], errors='coerce').fillna(0)
-        # Reducer/Adjuster
         for c in ['Phát sinh Nợ', 'Phát sinh Có']:
             gap = target['ps_no' if c == 'Phát sinh Nợ' else 'ps_co'] - df[c].sum()
             if gap < -0.01:
@@ -153,7 +212,6 @@ for sheet in xl.sheet_names:
         no_gap, co_gap = target['ps_no'] - df['Phát sinh Nợ'].sum(), target['ps_co'] - df['Phát sinh Có'].sum()
         if no_gap > 10.0 or co_gap > 10.0:
             df = pd.concat([df, pd.DataFrame([{'Ngày hạch toán': '31/12/2024', 'Số chứng từ': 'DC_KS2024', 'Diễn giải': 'Điều chỉnh rà soát khớp số liệu Target', 'Phát sinh Nợ': max(0, no_gap), 'Phát sinh Có': max(0, co_gap)}])], ignore_index=True)
-        # Balances
         df = pd.concat([pd.DataFrame([{'Diễn giải': 'SỐ DƯ ĐẦU KỲ', 'Đầu kỳ': target['dau_ky']}]), df], ignore_index=True)
         nature = 'credit' if sheet.startswith(('3', '4', '5', '7', '9')) else 'debit'
         b = target['dau_ky']; bl = []
