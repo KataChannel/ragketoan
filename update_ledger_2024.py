@@ -58,9 +58,10 @@ df_nkc = xl.parse('NKC')
 for c in ['Số tiền']: df_nkc[c] = pd.to_numeric(df_nkc[c], errors='coerce').fillna(0)
 
 mapping_rules = {
-    '635': ['TP CK', 'TRICH LAI', 'THU PHI', 'PHI T03', 'Dịch vụ ngân hàng', 'SMS Banking', 'THU LAI', 'Bao lanh', 'Phat Hanh Bao lanh', 'Tien vay', 'Trich thu 1 phan Tien vay', 'Đường bộ Vận đơn số'],
-    '642': ['Viễn thông', 'Cước dịch vụ', 'Cước điện thoại', 'Công nghệ thông tin', 'viễn thông trả sau', 'Viettel', 'VNPT', 'MOBIFONE', 'Xăng RON95', 'Dầu DO', 'Cước đường bộ xe', 'Thu phi chuyen tien ngoai he thong'],
-    'Repayment': ['Chi tạm ứng', 'Đối trừ nội bộ', 'Chi trả vay huy động vốn', 'Chi từ tạm ứng']
+    '635': ['TP CK', 'TRICH LAI', 'THU PHI', 'PHI T03', 'Dịch vụ ngân hàng', 'SMS Banking', 'THU LAI', 'Bao lanh', 'Phat Hanh Bao lanh', 'Tien vay', 'Trich thu 1 phan Tien vay', 'Đường bộ Vận đơn số', 'phí chuyển tiền'],
+    '642': ['Viễn thông', 'Cước dịch vụ', 'Cước điện thoại', 'Công nghệ thông tin', 'viễn thông trả sau', 'Viettel', 'VNPT', 'MOBIFONE', 'Xăng RON95', 'Dầu DO', 'Cước đường bộ xe', 'Thu phi chuyen tien ngoai he thong', 'Internet', 'Điện lực', 'Giao hàng', 'Tiền điện'],
+    'Repayment': ['Chi tạm ứng', 'Đối trừ nội bộ', 'Chi trả vay huy động vốn', 'Chi từ tạm ứng'],
+    'HW': ['Bộ chuyển đổi', 'Wifi', 'Thiết bị phát', 'Cáp mạng', 'Rệp nối', 'Máy in', 'Ram', 'Ổ cứng', 'Mực', 'Laptop', 'PC', 'UPS', 'Camera', 'DCP-', 'HL-', 'LBP-', 'MF-', 'TN-', 'GTX', 'Ryzen']
 }
 
 redist_list = {tk: [] for tk in targets.keys()}
@@ -79,8 +80,16 @@ for _, row in df_nkc.iterrows():
     if any(kw.lower() in dg_low for kw in mapping_rules['Repayment']):
         mapped_dr, mapped_cr, mapped_dg = '341', '1111', 'Chi trả vay huy động vốn'
     else:
-        for tk_m in ['642', '635']:
-            if any(kw.lower() in dg_low for kw in mapping_rules[tk_m]): mapped_dr = tk_m; break
+        # Protect VAT and predefined tax accounts
+        if dr_tk in ['1331', '3331'] or 'thuế gtgt' in dg_low:
+            pass
+        # Priority mapping for expense/goods entries
+        elif any(kw.lower() in dg_low for kw in mapping_rules['HW']):
+            mapped_dr = '1561'
+        elif any(kw.lower() in dg_low for kw in mapping_rules['635']):
+            mapped_dr = '635'
+        elif any(kw.lower() in dg_low for kw in mapping_rules['642']):
+            mapped_dr = '642'
     
     if mapped_dr in redist_list:
         redist_list[mapped_dr].append({'Ngày hạch toán': dt, 'Số chứng từ': so_ct, 'Diễn giải': mapped_dg, 'TK Đối ứng': mapped_cr, 'Phát sinh Nợ': val, 'Phát sinh Có': 0, 'Prio': 1})
