@@ -95,13 +95,14 @@ for _, row in df_nkc.iterrows():
         # Protect VAT and predefined tax accounts
         if dr_tk in ['1331', '3331'] or 'thuế gtgt' in dg_low:
             pass
-        # Priority mapping for expense/goods entries
-        elif any(kw.lower() in dg_low for kw in mapping_rules['HW']):
-            mapped_dr = '1561'
-        elif any(kw.lower() in dg_low for kw in mapping_rules['635']):
-            mapped_dr = '635'
-        elif any(kw.lower() in dg_low for kw in mapping_rules['642']):
-            mapped_dr = '642'
+        # Priority mapping for expense/goods entries (purchases) - Only if not sales
+        if cr_tk != '5111':
+            if any(kw.lower() in dg_low for kw in mapping_rules['HW']):
+                mapped_dr = '1561'
+            elif any(kw.lower() in dg_low for kw in mapping_rules['635']):
+                mapped_dr = '635'
+            elif any(kw.lower() in dg_low for kw in mapping_rules['642']):
+                mapped_dr = '642'
     
     if mapped_dr in ['1111', '112'] or mapped_cr in ['1111', '112']:
         # Keep for simulation
