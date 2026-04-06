@@ -56,9 +56,26 @@ for line in lines:
                 'cuoi_ky': parse_num(parts[4])
             }
 
+df_nkc = pd.read_excel(master_input)
+orig_len = len(df_nkc)
+df_nkc.drop_duplicates(inplace=True)
+if len(df_nkc) < orig_len:
+    print(f"Báo cáo: Đã tự động loại bỏ {orig_len - len(df_nkc)} dòng trùng lặp tuyệt đối trong NKC gốc.")
+
+# Handle possible newline in column name
+if 'Diễn giải\n' in df_nkc.columns: df_nkc.rename(columns={'Diễn giải\n': 'Diễn giải'}, inplace=True)
+for c in ['Số tiền']: df_nkc[c] = pd.to_numeric(df_nkc[c], errors='coerce').fillna(0)
+
 for tk, t in targets.items():
     nature = 'credit' if tk.startswith(('3', '4', '5', '7', '9', '2', '1331')) else 'debit'
-    current_no, current_co = t['ps_no'], t['ps_co']
+    
+    # Pre-calculate base activity from NKC to avoid negative dips in 131
+    base_no = df_nkc[df_nkc['TK Nợ'].astype(str).str.contains(tk, na=False)]['Số tiền'].sum()
+    base_co = df_nkc[df_nkc['TK Có'].astype(str).str.contains(tk, na=False)]['Số tiền'].sum()
+    
+    current_no = max(t['ps_no'], base_no)
+    current_co = max(t['ps_co'], base_co)
+    
     if nature == 'debit':
         # Target: ck = dk + no - co => no = ck - dk + co
         t['ps_no'] = max(current_no, t['cuoi_ky'] - t['dau_ky'] + current_co)
@@ -67,16 +84,6 @@ for tk, t in targets.items():
         # Target: ck = dk + co - no => co = ck - dk + no
         t['ps_co'] = max(current_co, t['cuoi_ky'] - t['dau_ky'] + current_no)
         t['ps_no'] = t['ps_co'] - (t['cuoi_ky'] - t['dau_ky'])
-
-# Override target for 1111 per user instruction (if still needed)
-if '1111' in targets:
-    targets['1111']['ps_no'] = max(targets['1111']['ps_no'], 25071171712)
-    targets['1111']['ps_co'] = targets['1111']['ps_no'] + targets['1111']['dau_ky'] - targets['1111']['cuoi_ky']
-
-df_nkc = pd.read_excel(master_input)
-# Handle possible newline in column name
-if 'Diễn giải\n' in df_nkc.columns: df_nkc.rename(columns={'Diễn giải\n': 'Diễn giải'}, inplace=True)
-for c in ['Số tiền']: df_nkc[c] = pd.to_numeric(df_nkc[c], errors='coerce').fillna(0)
 
 mapping_rules = {
     '635': ['TP CK', 'TRICH LAI', 'THU PHI', 'PHI T03', 'Dịch vụ ngân hàng', 'SMS Banking', 'THU LAI', 'Bao lanh', 'Phat Hanh Bao lanh', 'Tien vay', 'Trich thu 1 phan Tien vay', 'Đường bộ Vận đơn số', 'phí chuyển tiền'],
@@ -100,13 +107,10 @@ for _, row in df_nkc.iterrows():
     
     dg_low = dg.lower(); mapped_dr, mapped_cr, mapped_dg = dr_tk, cr_tk, dg
     
-    # Rule 4: Description Standardization for Bank Transfers
-    if 'mbvcb' in dg_low and dr_tk == '112' and cr_tk == '1111':
+    # Rule 4 & 8: MBVCB Deposit Enforcement (Nợ 112 / Có 1111)
+    if any(kw in dg_low for kw in ['mbvcb', 'nộp tiền', 'chuyển tiền vào tk']) and dr_tk == '112':
+        mapped_cr = '1111'
         mapped_dg = "Đặng Thị Xuân Hà nộp tiền vào ngân hàng"
-    elif 'mbvcb' in dg_low and dr_tk == '112' and cr_tk == '341':
-        mapped_dg = "Đặng Thị Xuân Hà nộp tiền vào TK"
-    elif any(kw.lower() in dg_low for kw in ['nộp tiền', 'chuyển tiền vào tk']) and dr_tk == '112':
-        mapped_dg = "Đặng Thị Xuân Hà nộp tiền vào TK"
     elif any(kw.lower() in dg_low for kw in mapping_rules['Repayment']):
         mapped_dr, mapped_cr, mapped_dg = '341', '1111', 'Chi trả vay huy động vốn'
     else:
@@ -200,7 +204,23 @@ for tk in targets:
 curr_1111_no = sum(float(r['Phát sinh Nợ']) for r in redist_list['1111'])
 rest_1111_no = max(0, targets['1111']['ps_no'] - 900705292 - curr_1111_no)
 
-pending_inflows = ([{'Ds': 'Thu bán lẻ hàng hóa', 'Cr': '131', 'Am': a} for a in segment_amount(rest_1111_no, 200)] +
+# 1111 PS_No should collect from 131, 5111 (up to target), and 711 (the rest)
+curr_131_co = sum(float(r['Phát sinh Có']) for r in redist_list.get('131', []))
+rest_131_co = max(0, targets['131']['ps_co'] - curr_131_co)
+
+curr_5111_co = sum(float(r['Phát sinh Có']) for r in redist_list.get('5111', []))
+rest_5111_co = max(0, targets['5111']['ps_co'] - curr_5111_co)
+
+# All sales from 131 eventually hit 5111. So we check how much 5111 still needs AFTER 131 collections
+target_5111 = targets['5111']['ps_co']
+missing_5111 = max(0, target_5111 - (curr_5111_co + rest_131_co))
+
+# 1111 needs 25B. We take rest_131_co, then missing_5111. The very rest goes to 711.
+rest_711_inflow = max(0, rest_1111_no - rest_131_co - missing_5111)
+
+pending_inflows = ([{'Ds': 'Thu tiền bán hàng', 'Cr': '131', 'Am': a} for a in segment_amount(rest_131_co, 120)] +
+                   [{'Ds': 'Thu bán lẻ hàng hóa (trực tiếp)', 'Cr': '5111', 'Am': a} for a in segment_amount(missing_5111, 80)] +
+                   [{'Ds': 'Thu nhập khác', 'Cr': '711', 'Am': a} for a in segment_amount(rest_711_inflow, 30)] +
                    [{'Ds': 'Vay huy động vốn', 'Cr': '341', 'Am': a} for a in segment_amount(900705292, 45, True)])
 
 curr_331_no = sum(float(r['Phát sinh Nợ']) for r in redist_list.get('331', []))
@@ -219,12 +239,25 @@ if '341' in targets:
     targets['341']['ps_no'] = max(targets['341'].get('ps_no', 0), rest_other_1111_co)
     targets['341']['ps_co'] = targets['341']['cuoi_ky'] - targets['341']['dau_ky'] + targets['341']['ps_no']
 
+# 131 PS_No must cover collections. Segment the gap and spread across the year.
+curr_131_no = sum(float(r['Phát sinh Nợ']) for r in redist_list.get('131', []))
+rest_131_no = max(0, targets['131']['ps_no'] - curr_131_no)
+
+pending_sales_131 = [{'Ds': 'Bán lẻ hàng hóa', 'Dr': '131', 'Cr': '5111', 'Am': a} for a in segment_amount(rest_131_no, 200)]
+
 random.shuffle(pending_inflows)
 random.shuffle(pending_outflows)
+random.shuffle(pending_sales_131)
 
 # Simulation loop starts with base_combined collected earlier
 redist_list['1111'] = []
 redist_list['112'] = []
+
+def inj_sale(s, dt):
+    if s['Dr'] in redist_list:
+        redist_list[s['Dr']].append({'Ngày hạch toán': dt, 'Số chứng từ': 'HDB_2024', 'Diễn giải': s['Ds'], 'TK Đối ứng': s['Cr'], 'Phát sinh Nợ': s['Am'], 'Phát sinh Có': 0, 'Prio': 0})
+    if s['Cr'] in redist_list:
+        redist_list[s['Cr']].append({'Ngày hạch toán': dt, 'Số chứng từ': 'HDB_2024', 'Diễn giải': s['Ds'], 'TK Đối ứng': s['Dr'], 'Phát sinh Nợ': 0, 'Phát sinh Có': s['Am'], 'Prio': 0})
 
 def inj_inflow(s, dt):
     redist_list['1111'].append({'Ngày hạch toán': dt, 'Số chứng từ': 'HDP_2024', 'Diễn giải': s['Ds'], 'TK Đối ứng': s['Cr'], 'Phát sinh Nợ': s['Am'], 'Phát sinh Có': 0, 'Prio': 0})
@@ -240,7 +273,7 @@ dr = [datetime(2024,1,1) + timedelta(days=i) for i in range(365)]
 dr = [d for d in dr if d.weekday() < 5]
 random.shuffle(dr)
 
-total_pending = len(pending_inflows) + len(pending_outflows)
+total_pending = len(pending_inflows) + len(pending_outflows) + len(pending_sales_131)
 injection_dates = sorted([dr[i % len(dr)] for i in range(total_pending)])
 
 timeline = []
@@ -253,6 +286,7 @@ timeline.sort(key=lambda t: (t['dt_obj'], t.get('seq', 0)))
 
 bal = targets['1111']['dau_ky']
 bal_112 = targets['112']['dau_ky']
+bal_131 = targets['131']['dau_ky']
 
 def inj_112_deposit(dt):
     global bal, bal_112
@@ -292,6 +326,9 @@ for action in timeline:
             while bal_112 - val < 500000: inj_112_deposit(dt)
             bal_112 -= val
             
+        if tk_dr == '131': bal_131 += val
+        elif tk_cr == '131': bal_131 -= val
+            
         # Record on both sides
         if tk_dr in redist_list:
             redist_list[tk_dr].append({'Ngày hạch toán': dt, 'Số chứng từ': r['so_ct'], 'Diễn giải': r['dg'], 'TK Đối ứng': tk_cr, 'Phát sinh Nợ': val, 'Phát sinh Có': 0, 'Prio': 1})
@@ -299,20 +336,19 @@ for action in timeline:
             redist_list[tk_cr].append({'Ngày hạch toán': dt, 'Số chứng từ': r['so_ct'], 'Diễn giải': r['dg'], 'TK Đối ứng': tk_dr, 'Phát sinh Nợ': 0, 'Phát sinh Có': val, 'Prio': 1})
         
     elif action['type'] == 'inject':
-        if pending_inflows and pending_outflows:
-            next_o = pending_outflows[0]['Am']
-            if bal - next_o > 15000000 and random.random() < 0.4:
-                o_s = pending_outflows.pop(0)
-                inj_outflow(o_s, dt)
-                bal -= o_s['Am']
-            elif pending_inflows:
-                i_s = pending_inflows.pop(0)
-                inj_inflow(i_s, dt)
-                bal += i_s['Am']
+        if pending_sales_131:
+            s_s = pending_sales_131.pop(0)
+            inj_sale(s_s, dt)
+            bal_131 += s_s['Am']
         elif pending_inflows:
             i_s = pending_inflows.pop(0)
+            # 131 Negative protection: Only collect if enough balance exists
+            if i_s['Cr'] == '131' and bal_131 - i_s['Am'] < 500000000:
+                pending_inflows.append(i_s) # Push back
+                continue
             inj_inflow(i_s, dt)
             bal += i_s['Am']
+            if i_s['Cr'] == '131': bal_131 -= i_s['Am']
         elif pending_outflows:
             o_s = pending_outflows.pop(0)
             if bal - o_s['Am'] > 5000000:

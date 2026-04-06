@@ -123,7 +123,7 @@ df.loc[mask_telecom & (df['TK Có'].str.startswith('112')), 'TK Nợ'] = '642'
 | `TP CK` hoặc `TRICH LAI` hoặc `THU PHI` hoặc `Dịch vụ ngân hàng` | **635** | 112 | Chi phí tài chính (lãi vay/phí NH) |
 | `TRA GOC VAY` hoặc `Trich thu 1 phan Tien vay` | **341** | 112 | Trả gốc vay |
 | `CHI LAI TK TIEN GUI` hoặc `THU LAI` (từ ngân hàng) | 112 | **515** | Doanh thu tài chính (lãi tiền gửi) |
-| `MBVCB` + TK Nợ bắt đầu bằng 112 | 112 | **1111** | Nộp tiền mặt vào ngân hàng |
+| `MBVCB` hoặc `Nộp tiền` (TK Nợ bắt đầu bằng 112) | **112** | **1111** | Nộp tiền mặt vào ngân hàng (MBVCB deposit) |
 | `Bao lanh` hoặc `Phat Hanh Bao lanh` | **635** | 112 | Chi phí bảo lãnh ngân hàng |
 | `Chi tạm ứng` hoặc `Đối trừ nội bộ` | **341** | 1111/112 | Thực chất là trả nợ vay cá nhân |
 
@@ -202,4 +202,27 @@ df.loc[mask_telecom & (df['TK Có'].str.startswith('112')), 'TK Nợ'] = '642'
 
 ---
 
-*Skill Rules được tổng hợp và hệ thống hóa từ quá trình xử lý kế toán Huy Vũ 2023–2024 bởi Antigravity, ngày 05/04/2026.*
+---
+
+## RULE 12: Hardware vs Expense Classification
+
+**Khi nào kích hoạt:** Khi gặp các mặt hàng có tính chất thiết bị mạng trong Diễn giải.
+
+| Keyword phát hiện | Tài khoản đúng | Ghi chú |
+|---|---|---|
+| `Switch`, `Router`, `Thiết bị chuyển mạch`, `Aptek`, `Draytek`, `Cáp mạng`, `Converter` | **1561** (Hàng hóa) | Không được đưa vào 642 dù nhà cung cấp là Viễn thông |
+| Các keyword khác liên quan đến phí dịch vụ | **642** (Chi phí QL) | Thuê bao, cước phí tháng |
+
+---
+
+## RULE 13: 131 Balance Stabilization Logic
+
+**Khi nào kích hoạt:** Khi xây dựng Sổ chi tiết 131 từ nguồn dữ liệu chưa khớp hoàn toàn.
+
+1. **Phân bổ doanh thu (Distributed Sales):** Không dồn doanh thu điều chỉnh vào cuối năm. Phải chia nhỏ và rải đều 12 tháng để làm "đệm" số dư.
+2. **Vùng đệm an toàn (Safety Buffer):** Trì hoãn các nghiệp vụ thu tiền (Cr 131) nếu số dư hiện tại xuống dưới **500,000,000 VNĐ**.
+3. **Cập nhật mục tiêu:** Target PS Nợ 131 phải được cộng dồn từ (Số dư cuối - Số dư đầu) + Toàn bộ số thu nợ thực tế trong Bank.
+
+---
+
+*Skill Rules được tổng hợp và hệ thống hóa từ quá trình xử lý kế toán Huy Vũ 2023–2024 bởi Antigravity, cập nhật ngày 06/04/2026.*
