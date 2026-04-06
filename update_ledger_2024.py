@@ -112,7 +112,13 @@ for _, row in df_nkc.iterrows():
         mapped_cr = '1111'
         mapped_dg = "Đặng Thị Xuân Hà nộp tiền vào ngân hàng"
     elif any(kw.lower() in dg_low for kw in mapping_rules['Repayment']):
-        mapped_dr, mapped_cr, mapped_dg = '341', '1111', 'Chi trả vay huy động vốn'
+        mapped_dr, mapped_dg = '341', 'Chi trả vay huy động vốn'
+        # Respect the existing source (1111 or 112)
+        mapped_cr = cr_tk if cr_tk in ['1111', '112'] else '1111'
+    elif any(kw.lower() in dg_low for kw in ['tien vay', 'giai ngan', 'vay von']):
+        mapped_cr, mapped_dg = '341', 'Vay huy động vốn'
+        # Respect the existing destination (1111 or 112)
+        mapped_dr = dr_tk if dr_tk in ['1111', '112'] else '1111'
     else:
         # Protect VAT and predefined tax accounts
         if dr_tk in ['1331', '3331'] or 'thuế gtgt' in dg_low:
@@ -376,31 +382,28 @@ for sheet in all_sheets:
         rows = df.to_dict('records')
         rows.sort(key=lambda r: (safe_d_parse(r.get('Ngày hạch toán')), r.get('Prio', 1)))
         df = pd.DataFrame(rows, columns=['Ngày hạch toán', 'Số chứng từ', 'Diễn giải', 'TK Đối ứng', 'Phát sinh Nợ', 'Phát sinh Có', 'Prio'])
-        for c in ['Phát sinh Nợ', 'Phát sinh Có']: df[c] = pd.to_numeric(df[c], errors='coerce').fillna(0)
+        for c in ['Phát sinh Nợ', 'Phát sinh Có']: df[c] = pd.to_numeric(df[c], errors='coerce').fillna(0).astype(float)
         for c in ['Phát sinh Nợ', 'Phát sinh Có']:
             tar_v = target.get('ps_no' if c == 'Phát sinh Nợ' else 'ps_co', 0)
             total_v = df[c].sum()
-            gap = tar_v - total_v
-            if gap < -0.01:
-                # If gap is significant (>50%), use proportional scaling for natural distribution
-                if abs(gap) > (total_v * 0.5) and total_v > 0:
+            if abs(tar_v - total_v) > 1.0:
+                if total_v > 0:
+                    # Force float and apply proportional scaling
                     factor = tar_v / total_v
-                    df[c] = (df[c] * factor).round(0)
-                else:
-                    # Sequential wiping for small adjustments
-                    idx_list = df[df[c] > 0].index[::-1]; to_red = abs(gap)
-                    for idx in idx_list:
-                        v = df.at[idx, c]; r = min(v, to_red); df.at[idx, c] -= r; to_red -= r
-                        if to_red < 0.01: break
-        
-        no_gap, co_gap = target['ps_no'] - df['Phát sinh Nợ'].sum(), target['ps_co'] - df['Phát sinh Có'].sum()
-        if no_gap > 1.0 or co_gap > 1.0:
-            df = pd.concat([df, pd.DataFrame([{'Ngày hạch toán': '31/12/2024', 'Số chứng từ': 'DC_KS2024', 'Diễn giải': 'Điều chỉnh rà soát khớp số liệu Target', 'TK Đối ứng': '911', 'Phát sinh Nợ': max(0, no_gap), 'Phát sinh Có': max(0, co_gap)}])], ignore_index=True)
-        
+                    df[c] = (df[c].astype(float) * factor).round(0)
+                elif tar_v > 0:
+                    # If target > 0 but simulation has 0, we must add at least one row or skip
+                    # Usually handled by redist_list logic, but as safety, check index 0
+                    if not df.empty: df.at[df.index[-1], c] = tar_v
+            
+            # Final micro-adjustment to handle rounding errors
+            diff = tar_v - df[c].sum()
+            if abs(diff) > 0 and not df.empty:
+                df.at[df.index[-1], c] += diff
+
         df = pd.concat([pd.DataFrame([{'Diễn giải': 'SỐ DƯ ĐẦU KỲ', 'Đầu kỳ': target['dau_ky']}]), df], ignore_index=True)
-        # Filter out rows that became 0 after gap adjustment or were 0 from simulation
-        # Keep index 0 (Opening Balance) and specific adjustment lines
-        mask = (df.index == 0) | (df['Số chứng từ'] == 'DC_KS2024') | (df['Phát sinh Nợ'] != 0) | (df['Phát sinh Có'] != 0)
+        # Keep index 0 (Opening Balance) and all activity rows
+        mask = (df.index == 0) | (df['Phát sinh Nợ'] != 0) | (df['Phát sinh Có'] != 0)
         df = df[mask].reset_index(drop=True)
         
         nature = 'credit' if sheet.startswith(('3', '4', '5', '7', '9', '2', '1331')) else 'debit'
