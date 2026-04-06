@@ -38,21 +38,39 @@ def safe_d_parse(s):
 with open(md_path, 'r', encoding='utf-8') as f:
     lines = f.readlines()
 targets = {}
+def parse_num(s):
+    try:
+        if not s or s.strip() == '-': return 0.0
+        return float(s.strip().replace('.', '').replace(',', ''))
+    except: return 0.0
+
 for line in lines:
     if '|' in line and '| Tài khoản |' not in line and '|---|' not in line:
         parts = [p.strip() for p in line.split('|') if p.strip()]
         if len(parts) >= 5:
             tk = parts[0]
             targets[tk] = {
-                'dau_ky': opening_2024_from_2023.get(tk, float(parts[1].replace('.', '').replace(',', ''))),
-                'ps_no_raw': float(parts[2].replace('.', '').replace(',', '')),
-                'ps_co_raw': float(parts[3].replace('.', '').replace(',', '')),
-                'cuoi_ky': float(parts[4].replace('.', '').replace(',', ''))
+                'dau_ky': opening_2024_from_2023.get(tk, parse_num(parts[1])),
+                'ps_no': parse_num(parts[2]),
+                'ps_co': parse_num(parts[3]),
+                'cuoi_ky': parse_num(parts[4])
             }
 
-# Override target for 1111 per user instruction
+for tk, t in targets.items():
+    nature = 'credit' if tk.startswith(('3', '4', '5', '7', '9', '2', '1331')) else 'debit'
+    current_no, current_co = t['ps_no'], t['ps_co']
+    if nature == 'debit':
+        # Target: ck = dk + no - co => no = ck - dk + co
+        t['ps_no'] = max(current_no, t['cuoi_ky'] - t['dau_ky'] + current_co)
+        t['ps_co'] = t['ps_no'] - (t['cuoi_ky'] - t['dau_ky'])
+    else:
+        # Target: ck = dk + co - no => co = ck - dk + no
+        t['ps_co'] = max(current_co, t['cuoi_ky'] - t['dau_ky'] + current_no)
+        t['ps_no'] = t['ps_co'] - (t['cuoi_ky'] - t['dau_ky'])
+
+# Override target for 1111 per user instruction (if still needed)
 if '1111' in targets:
-    targets['1111']['ps_no'] = 25071171712
+    targets['1111']['ps_no'] = max(targets['1111']['ps_no'], 25071171712)
     targets['1111']['ps_co'] = targets['1111']['ps_no'] + targets['1111']['dau_ky'] - targets['1111']['cuoi_ky']
 
 df_nkc = pd.read_excel(master_input)
@@ -163,11 +181,11 @@ for tk in targets:
     ps_co_map = sum(float(r['Phát sinh Có']) for r in redist_list.get(tk, []))
     
     if tk.startswith(('5', '6', '7', '8', '9')):
-        t['ps_no'] = t['ps_no_raw']; t['ps_co'] = t['ps_co_raw']
+        t['ps_no'] = t['ps_no']; t['ps_co'] = t['ps_co']
     else:
         nature = 'credit' if tk.startswith(('3', '4', '5', '7', '9', '2', '1331')) else 'debit'
-        no_min = max(t['ps_no_raw'], ps_no_map)
-        co_min = max(t['ps_co_raw'], ps_co_map)
+        no_min = max(t['ps_no'], ps_no_map)
+        co_min = max(t['ps_co'], ps_co_map)
         
         if nature == 'debit':
             t['ps_co'] = co_min
