@@ -224,10 +224,18 @@ missing_5111 = max(0, target_5111 - (curr_5111_co + rest_131_co))
 # 1111 needs 25B. We take rest_131_co, then missing_5111. The very rest goes to 711.
 rest_711_inflow = max(0, rest_1111_no - rest_131_co - missing_5111)
 
+# Split loan inflows: 60% via bank (112), 40% via cash (1111)
+loan_inflow_total = 900705292
+loan_via_bank = int(loan_inflow_total * 0.6)
+loan_via_cash = loan_inflow_total - loan_via_bank
+
 pending_inflows = ([{'Ds': 'Thu tiền bán hàng', 'Cr': '131', 'Am': a} for a in segment_amount(rest_131_co, 120)] +
                    [{'Ds': 'Thu bán lẻ hàng hóa (trực tiếp)', 'Cr': '5111', 'Am': a} for a in segment_amount(missing_5111, 80)] +
                    [{'Ds': 'Thu nhập khác', 'Cr': '711', 'Am': a} for a in segment_amount(rest_711_inflow, 30)] +
-                   [{'Ds': 'Vay huy động vốn', 'Cr': '341', 'Am': a} for a in segment_amount(900705292, 45, True)])
+                   [{'Ds': 'Vay huy động vốn', 'Cr': '341', 'Am': a} for a in segment_amount(loan_via_cash, 20, True)])
+
+# Bank-based loan inflows (112) - injected directly into redist_list
+pending_bank_loan_inflows = [{'Ds': 'Vay huy động vốn (chuyển khoản)', 'Cr': '341', 'Am': a} for a in segment_amount(loan_via_bank, 25, True)]
 
 curr_331_no = sum(float(r['Phát sinh Nợ']) for r in redist_list.get('331', []))
 rest_331_no = max(0, targets['331']['ps_no'] - curr_331_no)
@@ -237,8 +245,15 @@ curr_1111_co = sum(float(r['Phát sinh Có']) for r in redist_list['1111'])
 rest_1111_co = max(0, targets['1111']['ps_co'] - curr_1111_co)
 rest_other_1111_co = max(0, rest_1111_co - rest_331_no)
 
+# Split loan repayments: 60% via bank, 40% via cash
+repay_via_bank = int(rest_other_1111_co * 0.6)
+repay_via_cash = rest_other_1111_co - repay_via_bank
+
 pending_outflows = ([{'Ds': 'Thanh toán công nợ', 'Dr': '331', 'Am': a} for a in segment_amount(rest_331_no, 150)] +
-                    [{'Ds': 'Chi trả vay huy động vốn', 'Dr': '341', 'Am': a} for a in segment_amount(rest_other_1111_co, 50, True)])
+                    [{'Ds': 'Chi trả vay huy động vốn', 'Dr': '341', 'Am': a} for a in segment_amount(repay_via_cash, 25, True)])
+
+# Bank-based loan repayments (112)
+pending_bank_loan_outflows = [{'Ds': 'Trả vay huy động vốn (chuyển khoản)', 'Dr': '341', 'Am': a} for a in segment_amount(repay_via_bank, 30, True)]
 
 # Update targets to cover simulated activities
 if '341' in targets:
@@ -270,10 +285,20 @@ def inj_inflow(s, dt):
     if s['Cr'] in redist_list: 
         redist_list[s['Cr']].append({'Ngày hạch toán': dt, 'Số chứng từ': 'HDP_2024', 'Diễn giải': s['Ds'], 'TK Đối ứng': '1111', 'Phát sinh Nợ': 0, 'Phát sinh Có': s['Am'], 'Prio': 0})
 
+def inj_inflow_bank(s, dt):
+    redist_list['112'].append({'Ngày hạch toán': dt, 'Số chứng từ': 'HDP_BANK', 'Diễn giải': s['Ds'], 'TK Đối ứng': s['Cr'], 'Phát sinh Nợ': s['Am'], 'Phát sinh Có': 0, 'Prio': 0})
+    if s['Cr'] in redist_list: 
+        redist_list[s['Cr']].append({'Ngày hạch toán': dt, 'Số chứng từ': 'HDP_BANK', 'Diễn giải': s['Ds'], 'TK Đối ứng': '112', 'Phát sinh Nợ': 0, 'Phát sinh Có': s['Am'], 'Prio': 0})
+
 def inj_outflow(s, dt):
     redist_list['1111'].append({'Ngày hạch toán': dt, 'Số chứng từ': 'HDP_2024', 'Diễn giải': s['Ds'], 'TK Đối ứng': s['Dr'], 'Phát sinh Nợ': 0, 'Phát sinh Có': s['Am'], 'Prio': 0})
     if s['Dr'] in redist_list: 
         redist_list[s['Dr']].append({'Ngày hạch toán': dt, 'Số chứng từ': 'HDP_2024', 'Diễn giải': s['Ds'], 'TK Đối ứng': '1111', 'Phát sinh Nợ': s['Am'], 'Phát sinh Có': 0, 'Prio': 0})
+
+def inj_outflow_bank(s, dt):
+    redist_list['112'].append({'Ngày hạch toán': dt, 'Số chứng từ': 'HDP_BANK', 'Diễn giải': s['Ds'], 'TK Đối ứng': s['Dr'], 'Phát sinh Nợ': 0, 'Phát sinh Có': s['Am'], 'Prio': 0})
+    if s['Dr'] in redist_list: 
+        redist_list[s['Dr']].append({'Ngày hạch toán': dt, 'Số chứng từ': 'HDP_BANK', 'Diễn giải': s['Ds'], 'TK Đối ứng': '112', 'Phát sinh Nợ': s['Am'], 'Phát sinh Có': 0, 'Prio': 0})
 
 dr = [datetime(2024,1,1) + timedelta(days=i) for i in range(365)]
 dr = [d for d in dr if d.weekday() < 5]
@@ -296,7 +321,7 @@ bal_131 = targets['131']['dau_ky']
 
 def inj_112_deposit(dt):
     global bal, bal_112
-    amt = 20000000 # Default deposit
+    amt = 50000000 # 50M deposit
     s = {'Ds': 'Đặng Thị Xuân Hà nộp tiền vào ngân hàng', 'Cr': '1111', 'Dr': '112', 'Am': amt}
     redist_list['1111'].append({'Ngày hạch toán': dt, 'Số chứng từ': 'HDP_BANK', 'Diễn giải': s['Ds'], 'TK Đối ứng': '112', 'Phát sinh Nợ': 0, 'Phát sinh Có': amt, 'Prio': 0})
     redist_list['112'].append({'Ngày hạch toán': dt, 'Số chứng từ': 'HDP_BANK', 'Diễn giải': s['Ds'], 'TK Đối ứng': '1111', 'Phát sinh Nợ': amt, 'Phát sinh Có': 0, 'Prio': 0})
@@ -326,10 +351,12 @@ for action in timeline:
             bal -= val
             
         if tk_dr == '112':
-            while bal_112 + val < 500000: inj_112_deposit(dt)
+            _c = 0
+            while bal_112 + val < 500000 and _c < 50: inj_112_deposit(dt); _c += 1
             bal_112 += val
         elif tk_cr == '112':
-            while bal_112 - val < 500000: inj_112_deposit(dt)
+            _c = 0
+            while bal_112 - val < 500000 and _c < 50: inj_112_deposit(dt); _c += 1
             bal_112 -= val
             
         if tk_dr == '131': bal_131 += val
@@ -361,6 +388,19 @@ for action in timeline:
                 inj_outflow(o_s, dt)
                 bal -= o_s['Am']
 
+# Inject bank-based loan operations (spread across business days)
+bank_loan_dates = sorted([dr[i % len(dr)] for i in range(len(pending_bank_loan_inflows) + len(pending_bank_loan_outflows))])
+random.shuffle(pending_bank_loan_inflows)
+random.shuffle(pending_bank_loan_outflows)
+for i, bd in enumerate(bank_loan_dates):
+    bdt = bd.strftime('%d/%m/%Y')
+    if pending_bank_loan_inflows:
+        bs = pending_bank_loan_inflows.pop(0)
+        inj_inflow_bank(bs, bdt)
+    elif pending_bank_loan_outflows:
+        bs = pending_bank_loan_outflows.pop(0)
+        inj_outflow_bank(bs, bdt)
+
 writer = pd.ExcelWriter(temp_output, engine='xlsxwriter')
 df_nkc.to_excel(writer, sheet_name='NKC', index=False)
 all_sheets = sorted(list(set(list(targets.keys()) + list(redist_list.keys()))))
@@ -380,7 +420,21 @@ for sheet in all_sheets:
     if sheet in targets:
         target = targets[sheet]
         rows = df.to_dict('records')
-        rows.sort(key=lambda r: (safe_d_parse(r.get('Ngày hạch toán')), r.get('Prio', 1)))
+        # For debit accounts: sort inflows (Nợ) before outflows (Có) on same day to prevent negative balance
+        is_debit = not sheet.startswith(('3', '4', '5', '7', '9', '2', '1331'))
+        def sort_key(r):
+            d = safe_d_parse(r.get('Ngày hạch toán'))
+            p = r.get('Prio', 1)
+            # For debit accounts: Nợ transactions first (0), then Có (1)
+            # For credit accounts: Có transactions first (0), then Nợ (1)
+            no_v = float(r.get('Phát sinh Nợ', 0) or 0)
+            co_v = float(r.get('Phát sinh Có', 0) or 0)
+            if is_debit:
+                flow_order = 0 if no_v > 0 else 1
+            else:
+                flow_order = 0 if co_v > 0 else 1
+            return (d, flow_order, p)
+        rows.sort(key=sort_key)
         df = pd.DataFrame(rows, columns=['Ngày hạch toán', 'Số chứng từ', 'Diễn giải', 'TK Đối ứng', 'Phát sinh Nợ', 'Phát sinh Có', 'Prio'])
         for c in ['Phát sinh Nợ', 'Phát sinh Có']: df[c] = pd.to_numeric(df[c], errors='coerce').fillna(0).astype(float)
         for c in ['Phát sinh Nợ', 'Phát sinh Có']:
@@ -407,12 +461,36 @@ for sheet in all_sheets:
         df = df[mask].reset_index(drop=True)
         
         nature = 'credit' if sheet.startswith(('3', '4', '5', '7', '9', '2', '1331')) else 'debit'
+        
+        # Post-fix: For debit accounts, iteratively reorder to eliminate negative balances
+        if nature == 'debit':
+            for _pass in range(5):
+                b = target['dau_ky']; neg_found = False
+                for i in range(len(df)):
+                    if i == 0: continue
+                    no = float(df.at[i, 'Phát sinh Nợ'] or 0)
+                    co = float(df.at[i, 'Phát sinh Có'] or 0)
+                    b += (no - co)
+                    if b < 0:
+                        neg_found = True
+                        # Find next inflow row after this one and swap
+                        for j in range(i+1, len(df)):
+                            jno = float(df.at[j, 'Phát sinh Nợ'] or 0)
+                            if jno > 0:
+                                df.iloc[i], df.iloc[j] = df.iloc[j].copy(), df.iloc[i].copy()
+                                break
+                        break
+                if not neg_found: break
+        
         b = target['dau_ky']; bl = []
+        neg_count = 0
         for i, row in df.iterrows():
             if i == 0: bl.append(b); continue
             no, co = float(row.get('Phát sinh Nợ', 0)), float(row.get('Phát sinh Có', 0))
             b += (no-co) if nature == 'debit' else (co-no); bl.append(b)
+            if nature == 'debit' and b < 0: neg_count += 1
         df['Cuối kỳ'] = bl
+        if neg_count > 0: print(f'  CẢNH BÁO: TK {sheet} còn {neg_count} dòng âm')
         df = pd.concat([df, pd.DataFrame([{'Diễn giải': 'TỔNG CỘNG PHÁT SINH', 'Phát sinh Nợ': df.iloc[1:]['Phát sinh Nợ'].sum(), 'Phát sinh Có': df.iloc[1:]['Phát sinh Có'].sum()}, {'Diễn giải': 'SỐ DƯ CUỐI KỲ', 'Cuối kỳ': target['cuoi_ky']}])], ignore_index=True)
     df.reindex(columns=['Ngày hạch toán', 'Số chứng từ', 'Diễn giải', 'TK Đối ứng', 'Đầu kỳ', 'Phát sinh Nợ', 'Phát sinh Có', 'Cuối kỳ']).to_excel(writer, sheet_name=sheet, index=False)
 writer.close(); os.replace(temp_output, excel_path)
