@@ -462,25 +462,65 @@ for sheet in all_sheets:
         
         nature = 'credit' if sheet.startswith(('3', '4', '5', '7', '9', '2', '1331')) else 'debit'
         
-        # Post-fix: For debit accounts, iteratively reorder to eliminate negative balances
-        if nature == 'debit':
-            for _pass in range(5):
-                b = target['dau_ky']; neg_found = False
-                for i in range(len(df)):
-                    if i == 0: continue
-                    no = float(df.at[i, 'Phát sinh Nợ'] or 0)
-                    co = float(df.at[i, 'Phát sinh Có'] or 0)
-                    b += (no - co)
-                    if b < 0:
-                        neg_found = True
-                        # Find next inflow row after this one and swap
-                        for j in range(i+1, len(df)):
-                            jno = float(df.at[j, 'Phát sinh Nợ'] or 0)
-                            if jno > 0:
-                                df.iloc[i], df.iloc[j] = df.iloc[j].copy(), df.iloc[i].copy()
-                                break
-                        break
-                if not neg_found: break
+        # Post-fix: Greedy reorder for debit accounts to eliminate ALL negative balances
+        if nature == 'debit' and len(df) > 1:
+            rows_data = df.iloc[1:].to_dict('records')  # Skip opening balance row
+            
+            # Group by date, within each date sort inflows first
+            from collections import defaultdict
+            by_date = defaultdict(lambda: {'inflows': [], 'outflows': []})
+            for r in rows_data:
+                no_v = float(r.get('Phát sinh Nợ', 0) or 0)
+                co_v = float(r.get('Phát sinh Có', 0) or 0)
+                dt_key = r.get('Ngày hạch toán', '')
+                if no_v > 0:
+                    by_date[dt_key]['inflows'].append(r)
+                else:
+                    by_date[dt_key]['outflows'].append(r)
+            
+            # Rebuild: process dates in order, inflows first, then outflows only if balance allows
+            sorted_dates = sorted(by_date.keys(), key=lambda d: safe_d_parse(d))
+            reordered = []
+            deferred = []
+            b = target['dau_ky']
+            
+            for dt_key in sorted_dates:
+                group = by_date[dt_key]
+                # First: all inflows for this date
+                for r in group['inflows']:
+                    reordered.append(r)
+                    b += float(r.get('Phát sinh Nợ', 0) or 0)
+                
+                # Try deferred outflows first (from previous dates)
+                still_deferred = []
+                for r in deferred:
+                    co_v = float(r.get('Phát sinh Có', 0) or 0)
+                    if b - co_v >= 0:
+                        r['Ngày hạch toán'] = dt_key  # Move to current date
+                        reordered.append(r)
+                        b -= co_v
+                    else:
+                        still_deferred.append(r)
+                deferred = still_deferred
+                
+                # Then: outflows for this date
+                for r in group['outflows']:
+                    co_v = float(r.get('Phát sinh Có', 0) or 0)
+                    if b - co_v >= 0:
+                        reordered.append(r)
+                        b -= co_v
+                    else:
+                        deferred.append(r)
+            
+            # Append any remaining deferred at the end (last date)
+            for r in deferred:
+                if sorted_dates:
+                    r['Ngày hạch toán'] = sorted_dates[-1]
+                reordered.append(r)
+            
+            opening_row = df.iloc[0:1].to_dict('records')
+            df = pd.concat([pd.DataFrame(opening_row), pd.DataFrame(reordered)], ignore_index=True)
+            for c in ['Phát sinh Nợ', 'Phát sinh Có']: df[c] = pd.to_numeric(df[c], errors='coerce').fillna(0).astype(float)
         
         b = target['dau_ky']; bl = []
         neg_count = 0
