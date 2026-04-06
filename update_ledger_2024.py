@@ -343,15 +343,24 @@ for sheet in all_sheets:
         for c in ['Phát sinh Nợ', 'Phát sinh Có']: df[c] = pd.to_numeric(df[c], errors='coerce').fillna(0)
         for c in ['Phát sinh Nợ', 'Phát sinh Có']:
             tar_v = target.get('ps_no' if c == 'Phát sinh Nợ' else 'ps_co', 0)
-            gap = tar_v - df[c].sum()
+            total_v = df[c].sum()
+            gap = tar_v - total_v
             if gap < -0.01:
-                idx_list = df[df[c] > 0].index[::-1]; to_red = abs(gap)
-                for idx in idx_list:
-                    v = df.at[idx, c]; r = min(v, to_red); df.at[idx, c] -= r; to_red -= r
-                    if to_red < 0.01: break
+                # If gap is significant (>50%), use proportional scaling for natural distribution
+                if abs(gap) > (total_v * 0.5) and total_v > 0:
+                    factor = tar_v / total_v
+                    df[c] = (df[c] * factor).round(0)
+                else:
+                    # Sequential wiping for small adjustments
+                    idx_list = df[df[c] > 0].index[::-1]; to_red = abs(gap)
+                    for idx in idx_list:
+                        v = df.at[idx, c]; r = min(v, to_red); df.at[idx, c] -= r; to_red -= r
+                        if to_red < 0.01: break
+        
         no_gap, co_gap = target['ps_no'] - df['Phát sinh Nợ'].sum(), target['ps_co'] - df['Phát sinh Có'].sum()
         if no_gap > 1.0 or co_gap > 1.0:
             df = pd.concat([df, pd.DataFrame([{'Ngày hạch toán': '31/12/2024', 'Số chứng từ': 'DC_KS2024', 'Diễn giải': 'Điều chỉnh rà soát khớp số liệu Target', 'TK Đối ứng': '911', 'Phát sinh Nợ': max(0, no_gap), 'Phát sinh Có': max(0, co_gap)}])], ignore_index=True)
+        
         df = pd.concat([pd.DataFrame([{'Diễn giải': 'SỐ DƯ ĐẦU KỲ', 'Đầu kỳ': target['dau_ky']}]), df], ignore_index=True)
         # Filter out rows that became 0 after gap adjustment or were 0 from simulation
         # Keep index 0 (Opening Balance) and specific adjustment lines
