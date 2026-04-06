@@ -194,6 +194,11 @@ rest_other_1111_co = max(0, rest_1111_co - rest_331_no)
 pending_outflows = ([{'Ds': 'Thanh toán công nợ', 'Dr': '331', 'Am': a} for a in segment_amount(rest_331_no, 150)] +
                     [{'Ds': 'Chi trả vay huy động vốn', 'Dr': '341', 'Am': a} for a in segment_amount(rest_other_1111_co, 50, True)])
 
+# Update targets to cover simulated activities
+if '341' in targets:
+    targets['341']['ps_no'] = max(targets['341'].get('ps_no', 0), rest_other_1111_co)
+    targets['341']['ps_co'] = targets['341']['cuoi_ky'] - targets['341']['dau_ky'] + targets['341']['ps_no']
+
 random.shuffle(pending_inflows)
 random.shuffle(pending_outflows)
 
@@ -301,8 +306,15 @@ for sheet in all_sheets:
     if sheet == 'NKC': continue
     data = redist_list.get(sheet, [])
     df = pd.DataFrame(data)
+    if not df.empty:
+        # Eliminate zero-value rows (keep only rows with some activity)
+        cols = ['Phát sinh Nợ', 'Phát sinh Có']
+        for c in cols: df[c] = pd.to_numeric(df[c], errors='coerce').fillna(0)
+        df = df[(df['Phát sinh Nợ'] != 0) | (df['Phát sinh Có'] != 0)]
+    
     if df.empty:
         df = pd.DataFrame(columns=['Ngày hạch toán', 'Số chứng từ', 'Diễn giải', 'TK Đối ứng', 'Phát sinh Nợ', 'Phát sinh Có', 'Prio'])
+    
     if sheet in targets:
         target = targets[sheet]
         rows = df.to_dict('records')
@@ -321,11 +333,16 @@ for sheet in all_sheets:
         if no_gap > 1.0 or co_gap > 1.0:
             df = pd.concat([df, pd.DataFrame([{'Ngày hạch toán': '31/12/2024', 'Số chứng từ': 'DC_KS2024', 'Diễn giải': 'Điều chỉnh rà soát khớp số liệu Target', 'TK Đối ứng': '911', 'Phát sinh Nợ': max(0, no_gap), 'Phát sinh Có': max(0, co_gap)}])], ignore_index=True)
         df = pd.concat([pd.DataFrame([{'Diễn giải': 'SỐ DƯ ĐẦU KỲ', 'Đầu kỳ': target['dau_ky']}]), df], ignore_index=True)
-        nature = 'credit' if sheet.startswith(('3', '4', '5', '7', '9')) else 'debit'
+        # Filter out rows that became 0 after gap adjustment or were 0 from simulation
+        # Keep index 0 (Opening Balance) and specific adjustment lines
+        mask = (df.index == 0) | (df['Số chứng từ'] == 'DC_KS2024') | (df['Phát sinh Nợ'] != 0) | (df['Phát sinh Có'] != 0)
+        df = df[mask].reset_index(drop=True)
+        
+        nature = 'credit' if sheet.startswith(('3', '4', '5', '7', '9', '2', '1331')) else 'debit'
         b = target['dau_ky']; bl = []
         for i, row in df.iterrows():
             if i == 0: bl.append(b); continue
-            no, co = row.get('Phát sinh Nợ',0), row.get('Phát sinh Có',0)
+            no, co = float(row.get('Phát sinh Nợ', 0)), float(row.get('Phát sinh Có', 0))
             b += (no-co) if nature == 'debit' else (co-no); bl.append(b)
         df['Cuối kỳ'] = bl
         df = pd.concat([df, pd.DataFrame([{'Diễn giải': 'TỔNG CỘNG PHÁT SINH', 'Phát sinh Nợ': df.iloc[1:]['Phát sinh Nợ'].sum(), 'Phát sinh Có': df.iloc[1:]['Phát sinh Có'].sum()}, {'Diễn giải': 'SỐ DƯ CUỐI KỲ', 'Cuối kỳ': target['cuoi_ky']}])], ignore_index=True)
