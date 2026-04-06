@@ -101,6 +101,8 @@ for _, row in df_nkc.iterrows():
                 mapped_dr = '1561'
             elif any(kw.lower() in dg_low for kw in mapping_rules['635']):
                 mapped_dr = '635'
+                # Force TK 635 to always be Nợ 635 / Có 112
+                mapped_cr = '112'
             elif any(kw.lower() in dg_low for kw in mapping_rules['642']):
                 mapped_dr = '642'
     
