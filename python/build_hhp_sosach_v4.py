@@ -61,16 +61,23 @@ def load_bank_detailed():
         df = pd.read_excel(f, skiprows=header_row)
         
         # Explicit col maps based on HHP pattern
-        date_col, sh_col, desc_col, thu_col, chi_col = 3, 5, 7, 16, 17
+        date_col, sh_col, desc_col, obj_col, thu_col, chi_col = 3, 5, 6, 12, 16, 17
         if 'VCB' in f or 'VTB' in f:
-            date_col, sh_col, desc_col, thu_col, chi_col = 3, 5, 7, 12, 13
+            date_col, sh_col, desc_col, obj_col, thu_col, chi_col = 3, 5, 6, 12, 12, 13
             
         for _, row in df.iterrows():
             try:
+                def get_val(idx):
+                    if idx < len(row):
+                        v = row.iloc[idx]
+                        return "" if pd.isna(v) or str(v).lower() == 'nan' else str(v).strip()
+                    return ""
+
                 dt = pd.to_datetime(row.iloc[date_col], errors='coerce')
                 if pd.isna(dt) or dt.year != YEAR: continue
-                sh = str(row.iloc[sh_col]) if not pd.isna(row.iloc[sh_col]) else ""
-                desc = str(row.iloc[desc_col]) if not pd.isna(row.iloc[desc_col]) else ""
+                sh = get_val(sh_col)
+                desc = get_val(desc_col)
+                obj = get_val(obj_col)
                 
                 def clean_v(v):
                     if pd.isna(v) or str(v).lower() == 'nan': return 0.0
@@ -79,7 +86,7 @@ def load_bank_detailed():
                 thu = clean_v(row.iloc[thu_col])
                 chi = clean_v(row.iloc[chi_col])
                 if thu == 0 and chi == 0: continue
-                all_rows.append({'dt': dt, 'sh': sh, 'desc': desc, 'thu': thu, 'chi': chi, 'file': os.path.basename(f)})
+                all_rows.append({'dt': dt, 'sh': sh, 'desc': desc, 'obj': obj, 'thu': thu, 'chi': chi, 'file': os.path.basename(f)})
             except: continue
     return pd.DataFrame(all_rows)
 
@@ -109,11 +116,12 @@ def build_journal_v4(df_inv, df_det, df_bank):
 
     # 3. Bank Statements (Review & Supplement)
     for _, tx in df_bank.iterrows():
-        dt, d, thu, chi, sh = tx['dt'], str(tx['desc']), tx['thu'], tx['chi'], tx['sh']
-        # Helper: Extract name from desc
-        party = "BANK"
-        if "CTY" in d.upper(): party = d.split("CTY")[-1][:50].strip()
-        elif "KH" in d.upper(): party = d.split("KH")[-1][:50].strip()
+        dt, d, thu, chi, sh, obj_bank = tx['dt'], str(tx['desc']), tx['thu'], tx['chi'], tx['sh'], tx['obj']
+        # Use extracted object if available, otherwise fallback to party detection
+        party = obj_bank if obj_bank else "BANK"
+        if not party or party == "BANK":
+            if "CTY" in d.upper(): party = d.split("CTY")[-1][:50].strip()
+            elif "KH" in d.upper(): party = d.split("KH")[-1][:50].strip()
 
         if thu > 0: # Nợ 112
             acc_co = '131'
@@ -206,6 +214,10 @@ def generate_sct_premium(df_nkc):
         df_exp_nkc.columns = ['Ngày hạch toán', 'Số chứng từ', 'Diễn giải', 'TK Nợ', 'TK Có', 'Số tiền', 'Đối tượng']
         df_exp_nkc['Ngày chứng từ'] = df_exp_nkc['Ngày hạch toán']
         df_exp_nkc = df_exp_nkc[nkc_cols]
+        # Clean NaT/NaN for NKC
+        df_exp_nkc['Ngày hạch toán'] = df_exp_nkc['Ngày hạch toán'].apply(lambda x: x.strftime('%Y-%m-%d') if pd.notnull(x) else '')
+        df_exp_nkc['Ngày chứng từ'] = df_exp_nkc['Ngày chứng từ'].apply(lambda x: x.strftime('%Y-%m-%d') if pd.notnull(x) else '')
+        df_exp_nkc = df_exp_nkc.fillna('')
         df_exp_nkc.to_excel(writer, sheet_name='NKC', index=False)
         
         accounts = ['1111', '112', '131', '1331', '1561', '331', '3331', '341', '5111', '632', '642', '635']
@@ -226,8 +238,44 @@ def generate_sct_premium(df_nkc):
                 else: bal += pc - pn
                 rows.append({'Ngày hạch toán': r['dt'], 'Số chứng từ': r['sh'], 'Diễn giải': r['desc'], 'TK Đối ứng': opp, 'Đầu kỳ': 0, 'Phát sinh Nợ': pn, 'Phát sinh Có': pc, 'Cuối kỳ': bal})
             
-            pd.DataFrame(rows).to_excel(writer, sheet_name=acc[:31], index=False)
-    print(f"✅ Success! SCT updated with detailed bank entries.")
+            df_final = pd.DataFrame(rows)
+            # Add TOTAL row
+            total_no = df_final['Phát sinh Nợ'].sum()
+            total_co = df_final['Phát sinh Có'].sum()
+            total_row = pd.DataFrame([{
+                'Ngày hạch toán': None,
+                'Số chứng từ': '',
+                'Diễn giải': 'TỔNG CỘNG',
+                'TK Đối ứng': '',
+                'Đầu kỳ': 0,
+                'Phát sinh Nợ': total_no,
+                'Phát sinh Có': total_co,
+                'Cuối kỳ': bal
+            }])
+            df_final = pd.concat([df_final, total_row], ignore_index=True)
+            
+            sheet_name = acc[:31]
+            # Clean NaT/NaN for account sheet
+            df_final['Ngày hạch toán'] = df_final['Ngày hạch toán'].apply(lambda x: x.strftime('%Y-%m-%d') if pd.notnull(x) else '')
+            df_final = df_final.fillna('')
+            df_final.to_excel(writer, sheet_name=sheet_name, index=False)
+            
+            # Apply styling to the last row (TOTAL)
+            ws = writer.sheets[sheet_name]
+            last_row = ws.max_row
+            for cell in ws[last_row]:
+                cell.font = Font(bold=True)
+                cell.fill = PatternFill("solid", fgColor="DDEBF7")
+    
+    # Also add TOTAL row to NKC
+    with pd.ExcelWriter(SCT_PATH, engine='openpyxl', mode='a', if_sheet_exists='replace') as writer:
+        ws_nkc = writer.book['NKC']
+        last_val_row = ws_nkc.max_row
+        total_amt = df_nkc['amt'].sum()
+        ws_nkc.append([None, None, None, 'TỔNG CỘNG', None, None, total_amt, None])
+        for cell in ws_nkc[ws_nkc.max_row]:
+            cell.font = Font(bold=True)
+            cell.fill = PatternFill("solid", fgColor="DDEBF7")
 
 if __name__ == "__main__":
     df_i, df_d = fetch_invoices()
