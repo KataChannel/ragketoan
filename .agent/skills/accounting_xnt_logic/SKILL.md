@@ -23,30 +23,15 @@ Trong các hệ thống phân bổ hoặc sinh báo cáo XNT tự động qua t�
 - => Phương án hợp lý là cứ cho dồn tồn kho tiền bị âm (sau đó reset Tồn cuối về 0 để chuyển qua tháng sau) nhưng phải giữ nguyên vẹn giá bán `x_tien` của tháng đó.
 
 ## 4. Phân Loại Hàng Hóa Nằm Ngoài Tồn Kho (SKIP Items)
-## 5. Quy Tắc Phân Loại Hạch Toán Theo Diễn Giải (Mapping Rules)
-Khi hạch toán các giao dịch ngân hàng theo "Mua hàng" hoặc "Chi phí", cần tuân thủ các từ khóa diễn giải sau đây để gán tài khoản chính xác (Đặc biệt áp dụng cho Huy Vũ 2024):
+## 5. Quy Tắc Phân Loại Hạch Toán (Mapping Rules)
+Khi xử lý các nghiệp vụ hạch toán tự động, agent nên kiểm tra các bộ quy tắc mapping theo từng đối tượng khách hàng cụ thể.
 
-### Tài Khoản 635 (Chi phí tài chính)
-Dành cho các khoản phí ngân hàng trực tiếp, lãi vay và các dịch vụ vận tải đặc thù theo hợp đồng:
-*   **Từ khóa chính:** `TP CK`, `TRICH LAI`, `THU PHI`, `PHI T03`, `Dịch vụ ngân hàng`, `SMS Banking`, `THU LAI`.
-*   **Dịch vụ bảo lãnh:** `Bao lanh`, `Phat Hanh Bao lanh`.
-*   **Vay vốn:** `Tien vay`, `Trich thu 1 phan Tien vay`.
-*   **Vận đơn đặc thù:** `Đường bộ Vận đơn số` (NB: Nhất Tín).
+> [!TIP]
+> Đối với các nghiệp vụ của **Công ty Huy Vũ**, hãy sử dụng skill specialized: `huy_vu_accounting` để có bộ từ khóa và logic hạch toán đầy đủ nhất (bao gồm xử lý phí ngân hàng, viễn thông, và vay vốn).
 
-### Tài Khoản 341 (Chi trả vay huy động vốn)
-Áp dụng cho các nghiệp vụ thanh toán nội bộ hoặc tạm ứng thực chất là trả nợ vay:
-*   **Từ khóa chính:** `Chi tạm ứng`, `Đối trừ nội bộ`, `Chi từ tạm ứng`.
-*   **Hạch toán:** Ghi Nợ TK 341 / Có TK 111. Diễn giải mới: `Chi trả vay huy động vốn`.
-
-### Tài Khoản 642 (Chi phí quản lý doanh nghiệp)
-Dành cho các dịch vụ tiện ích, viễn thông, nhiên liệu và phí cầu đường thường xuyên:
-*   **Viễn thông/IT:** `Viễn thông`, `Cước dịch vụ`, `Cước điện thoại`, `Công nghệ thông tin`, `viễn thông trả sau`.
-*   **Nhà cung cấp viễn thông:** `Tập đoàn Công nghiệp - Viễn thông Quân đội` (Viettel), `VNPT`, `MOBIFONE`.
-*   **Nhiên liệu:** `Xăng RON95`, `Dầu DO`.
-*   **Phí cầu đường:** `Cước đường bộ xe` (NB: VETC).
-*   **Giao dịch đặc thù:** `Thu phi chuyen tien ngoai he thong` (ACB).
-
-*Lưu ý:* Khi script xử lý, thứ tự ưu tiên các quy tắc này là quan trọng. Các quy tắc chi tiết hơn (nhữ tên nhà cung cấp hoặc dịch vụ cụ thể) nên được kiểm tra sau các quy tắc chung nếu có sự chồng lấn.
+Các nguyên tắc chung khi script xử lý:
+- Thứ tự ưu tiên các quy tắc là quan trọng. 
+- Các quy tắc chi tiết hơn (như tên nhà cung cấp hoặc dịch vụ cụ thể) nên được kiểm tra sau các quy tắc chung nếu có sự chồng lấn.
 
 ## 6. Quy Tắc Điều Chỉnh Số Liệu Tránh Số Âm (Zero-Negative Adjustment Rule)
 Khi thực hiện điều chỉnh (Adjustment) số liệu để khớp với số dư mục tiêu (Target), tuyệt đối không được ghi số âm vào các cột Phát sinh Nợ hoặc Phát sinh Có. 
