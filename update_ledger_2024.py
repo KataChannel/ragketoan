@@ -104,6 +104,10 @@ for _, row in df_nkc.iterrows():
             elif any(kw.lower() in dg_low for kw in mapping_rules['642']):
                 mapped_dr = '642'
     
+    # Filter out 0-amount rows to keep ledgers clean
+    if val <= 0:
+        continue
+    
     if mapped_dr in ['1111', '112'] or mapped_cr in ['1111', '112']:
         # Keep for simulation
         base_combined.append({'dt': dt, 'so_ct': so_ct, 'dg': mapped_dg, 'dr': mapped_dr, 'cr': mapped_cr, 'val': val})
