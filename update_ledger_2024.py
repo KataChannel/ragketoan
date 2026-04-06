@@ -82,7 +82,7 @@ mapping_rules = {
     '635': ['TP CK', 'TRICH LAI', 'THU PHI', 'PHI T03', 'Dịch vụ ngân hàng', 'SMS Banking', 'THU LAI', 'Bao lanh', 'Phat Hanh Bao lanh', 'Tien vay', 'Trich thu 1 phan Tien vay', 'Đường bộ Vận đơn số', 'phí chuyển tiền'],
     '642': ['Viễn thông', 'Cước dịch vụ', 'Cước điện thoại', 'Công nghệ thông tin', 'viễn thông trả sau', 'Viettel', 'VNPT', 'MOBIFONE', 'Xăng RON95', 'Dầu DO', 'Cước đường bộ xe', 'Thu phi chuyen tien ngoai he thong', 'Internet', 'Điện lực', 'Giao hàng', 'Tiền điện'],
     'Repayment': ['Chi tạm ứng', 'Đối trừ nội bộ', 'Chi trả vay huy động vốn', 'Chi từ tạm ứng', 'TRA GOC VAY'],
-    'HW': ['Bộ chuyển đổi', 'Wifi', 'Thiết bị phát', 'Cáp mạng', 'Rệp nối', 'Máy in', 'Ram', 'Ổ cứng', 'Mực', 'Laptop', 'PC', 'UPS', 'Camera', 'DCP-', 'HL-', 'LBP-', 'MF-', 'TN-', 'GTX', 'Ryzen']
+    'HW': ['Thiết bị chuyển mạch', 'Aptek', 'Bộ định tuyến', 'Draytek', 'Vigor', 'Cáp', 'CAT6', 'UTP', 'Bộ chuyển đổi', 'Wifi', 'Thiết bị phát', 'Cáp mạng', 'Rệp nối', 'Máy in', 'Ram', 'Ổ cứng', 'Mực', 'Laptop', 'PC', 'UPS', 'Camera', 'DCP-', 'HL-', 'LBP-', 'MF-', 'TN-', 'GTX', 'Ryzen']
 }
 
 redist_list = {tk: [] for tk in targets.keys()}
