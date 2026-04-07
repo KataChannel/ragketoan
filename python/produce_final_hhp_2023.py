@@ -64,19 +64,27 @@ def load_all_inputs():
 def build_refined_journal(df_inv, df_det, df_bank, gv_val):
     print("⚡ Processing DuckDB Journaling...")
     con = duckdb.connect(':memory:')
+    # Aggregate items per invoice for detailed descriptions
+    df_items = df_det.groupby('idhdonServer')['ten'].apply(lambda x: ', '.join(map(str, x))).reset_index()
+    df_items.columns = ['idServer', 'item_list']
+    
+    # Merge item list into invoices
+    df_inv = df_inv.merge(df_items, on='idServer', how='left')
+    df_inv['item_list'] = df_inv['item_list'].fillna('Hàng hóa dịch vụ')
+
     con.register('inv', df_inv)
     con.register('det', df_det)
     con.register('bank', df_bank)
     
     sql = """
     -- 1. Sales (Ban ra)
-    SELECT dt, 'HĐ' || shdon as sh, 'Doanh thu: ' || nmten as "desc", '131' as dr, '5111' as cr, tgtcthue as amt, nmten as obj FROM inv WHERE loaihd = 'banra'
+    SELECT dt, 'HĐ' || shdon as sh, 'Doanh thu (' || item_list || '): ' || nmten as "desc", '131' as dr, '5111' as cr, tgtcthue as amt, nmten as obj FROM inv WHERE loaihd = 'banra'
     UNION ALL
     SELECT dt, 'HĐ' || shdon as sh, 'Thuế GTGT đầu ra' as "desc", '131' as dr, '3331' as cr, tgtthue as amt, nmten as obj FROM inv WHERE loaihd = 'banra' AND tgtthue > 0
     
     -- 2. Purchases (Mua vao)
     UNION ALL
-    SELECT dt, 'HĐ' || shdon as sh, 'Mua vào: ' || nbten as "desc", 
+    SELECT dt, 'HĐ' || shdon as sh, 'Mua vào (' || item_list || '): ' || nbten as "desc", 
            CASE WHEN nbten LIKE '%Xăng%' OR nbten LIKE '%Dầu%' OR nbten LIKE '%Vận tải%' THEN '642' ELSE '1561' END as dr, 
            '331' as cr, tgtcthue as amt, nbten as obj FROM inv WHERE loaihd = 'muavao'
     UNION ALL
