@@ -1,3 +1,4 @@
+#!/mnt/chikiet/kata2025/ragketoan/.venv/bin/python
 import pandas as pd
 import psycopg2
 import duckdb
@@ -13,10 +14,10 @@ from openpyxl import Workbook
 DB_URI = "postgresql://root:password@localhost:5432/ketoan"
 COMPANY_ID = "03b043e9-b7cd-42bc-a4ea-db710552af82"
 YEAR = 2023
-SCT_PATH = "/chikiet/kata2025/ragketoan/docs/hoang-huy-phat/sosach2023/SO_CHI_TIET_HHP_2023.xlsx"
-NKC_XLSX_PATH = "/chikiet/kata2025/ragketoan/docs/hoang-huy-phat/sosach2023/NKC_HHP_2023.xlsx"
-BANK_TOTAL_PATH = "/chikiet/kata2025/ragketoan/docs/hoang-huy-phat/sosach2023/SAO_KE_TONG_HOP_HHP_2023.xlsx"
-XNT_PATH = "/chikiet/kata2025/ragketoan/docs/hoang-huy-phat/sosach2023/XNT_HoangHuyPhat_2023.xlsx"
+SCT_PATH = "/mnt/chikiet/kata2025/ragketoan/docs/hoang-huy-phat/sosach2023/SO_CHI_TIET_HHP_2023.xlsx"
+NKC_XLSX_PATH = "/mnt/chikiet/kata2025/ragketoan/docs/hoang-huy-phat/sosach2023/NKC_HHP_2023.xlsx"
+BANK_TOTAL_PATH = "/mnt/chikiet/kata2025/ragketoan/docs/hoang-huy-phat/sosach2023/SAO_KE_TONG_HOP_HHP_2023.xlsx"
+XNT_PATH = "/mnt/chikiet/kata2025/ragketoan/docs/hoang-huy-phat/sosach2023/XNT_HoangHuyPhat_2023.xlsx"
 
 OPENING_BALANCES = {
     '1111': 616993656, '112': 37628290, '131': 108374327, '331': 4668735402,
