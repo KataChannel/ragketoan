@@ -1,0 +1,33 @@
+--- LEDGER 112 SUMMARY BY BANK ---
+       Phát sinh Nợ   Phát sinh Có
+Bank                              
+0                 0              0
+ADJ               0    36937530634
+BID     37984386740     3854894325
+VCB   1534501567500  1531775773970
+VTB    295354181670   295222550710
+Total Debit: 1,867,840,135,910
+Total Credit: 1,867,790,749,639
+
+Sample transactions:
+   Ngày hạch toán Số chứng từ                           Diễn giải  Phát sinh Nợ  Phát sinh Có
+0      01/01/2023           0                        SỐ DƯ ĐẦU KỲ             0             0
+1      03/01/2023         BID           Trần Quý Đức - 0972195252             0       5000000
+2      03/01/2023         VCB                         Trả gốc vay             0    2800000000
+3      04/01/2023         VCB              Chi nộp tiền tài khoản    3281200000             0
+4      04/01/2023         VCB              Chi nộp tiền tài khoản     797030000             0
+5      04/01/2023         VCB                Trả mua hàng Súc sản             0    4754763580
+6      05/01/2023         BID                                 TKD     525592160             0
+7      05/01/2023         VCB             Chi nộp tiền tài  khoản    2197900000             0
+8      05/01/2023         VCB              Chi nộp tiền tài khoản     852140000             0
+9      05/01/2023         VCB              Chi nộp tiền tài khoản    1092510000             0
+10     05/01/2023         VCB             Chi nộp tiền tài  khoản     710000000             0
+11     05/01/2023         VCB              Chi nộp tiền tài khoản     649000000             0
+12     05/01/2023         VCB                   Trả các khoản vay             0    5850000000
+13     05/01/2023         VCB                       Phí ngân hàng             0        110000
+14     05/01/2023         VCB  VCC - Vay VCB tt tiền hàng Cty CLM    8440268510             0
+15     05/01/2023         VCB                         Trả gốc vay             0    5850000000
+16     06/01/2023         BID     VCB- Cty TNHHMTV Hoàng Huy Phát             0      52000000
+17     06/01/2023         BID                Bel - Hào 0976661079             0      20113799
+18     06/01/2023         BID             Bel - Hiếu - 0989080214             0      19165665
+19     06/01/2023         BID                          Bel - Liễu             0      15116385

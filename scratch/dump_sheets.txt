@@ -1,0 +1,92 @@
+
+--- SAO KÊ BIDV 2023 CHÍNH.xls :: SAO KÊ ---
+                                         Unnamed: 0                                                                             Unnamed: 1   Unnamed: 2                                                                          Unnamed: 3                              Unnamed: 4 Unnamed: 5 Unnamed: 6 Unnamed: 7 Unnamed: 8
+0                                               NaN  Quản lý 0983827174 - 0905228229\nTK - 62010002282229\nTrịnh Lê Hiệp\nNH - BIDV Gialai          NaN                                                                                 NaN                         SỔ QUỸ TIỀN GỬI        NaN        NaN        NaN        NaN
+1                                               NaN                                                                                    NaN          NaN                                                                                 NaN  Từ ngày 01/01/2023 đến ngày 31/12/2023        NaN        NaN        NaN        NaN
+2   Tên quỹ: BIDV - Công ty TNHH MTV Hoàng Huy Phát                                                                                    NaN          NaN                                                                                 NaN                                     NaN        NaN        NaN        NaN        NaN
+3                                               NaN                                                                                    NaN          NaN                                                                                 NaN                                     NaN        NaN        NaN        NaN        NaN
+4                                               NaN                                                                                    NaN          NaN                                                                                 NaN                                     NaN        NaN        NaN        NaN        NaN
+5                                               NaN                                                                                    NaN          NaN                                                                                 NaN                                     NaN        NaN        NaN        NaN        NaN
+6                                               STT                                                                                   NGÀY     SỐ PHIẾU                                                                           DIỄN GIẢI                               ĐỐI TƯỢNG     ĐẦU KỲ      PS NỢ      PS CÓ     DƯ CKY
+7                                               NaN                                                                                    NaN          NaN                                                                                 NaN                                SỐ DƯ ĐK    4104056        NaN        NaN        NaN
+8                                                 1                                                                    2023-01-03 19:05:00  T0123-30200                                                                     cty bel chuyển                                      TKD        NaN   53484300        NaN   57588356
+9                                                 2                                                                    2023-01-04 06:37:55  T0123-30456                                                                     cty bel chuyển                                      TKD        NaN   67334443        NaN  124922799
+10                                                3                                                                    2023-01-05 11:13:45  C0123-00071                                                                        rút tiền mặt         VCB- Cty TNHHMTV Hoàng Huy Phát        NaN        NaN   64900000   60022799
+11                                                4                                                                    2023-01-05 20:15:58  T0123-31081                                             TKD -Cty NBT chuyển tiền thưởng cho NPP                                     TKD        NaN   52559216        NaN  112582015
+12                                                5                                                                    2023-01-06 09:17:20  C0123-00115                                                                        rút tiền mặt         VCB- Cty TNHHMTV Hoàng Huy Phát        NaN        NaN   52000000   60582015
+13                                                6                                                                    2023-01-06 09:26:06  C0123-00121                                               NDT -UNC tt tiền lương Cty -Bel-A Hào                    Bel - Hào 0976661079        NaN        NaN   20113799   40468216
+14                                                7                                                                    2023-01-06 09:26:47  C0123-00122                                            NDT -UNC tt tiền lương Cty -Bel-Bel Hiếu                 Bel - Hiếu - 0989080214        NaN        NaN   19165665   21302551
+15                                                8                                                                    2023-01-06 09:27:26  C0123-00123                                            NDT -UNC tt tiền lương Cty -Bel-Bel Liễu                              Bel - Liễu        NaN        NaN   15116385    6186166
+16                                                9                                                                    2023-01-12 20:05:52  T0123-33156                                                                      NỘP TIỀN VÒ TK                                     BDV        NaN   70000000        NaN   76186166
+17                                               10                                                                    2023-01-12 20:06:36  C0123-00262  NDT -Ck banking tt tiền điện T1/2023-Nguyễn Trịnh Minh Huy theo số PC 10AA 0544165                Công Ty Điện Lực Gia Lai        NaN        NaN    2226606   73959560
+18                                               11                                                                    2023-01-13 11:26:01  T0123-33827                                                                      NỘP TIỀN VÒ TK                                     TMV        NaN   80000000        NaN  153959560
+19                                               12                                                                    2023-01-13 18:36:14  T0123-33903                                                              CTY BEL CHUYỂN HỔ TRỢ                                      TKD        NaN   67997867        NaN  221957427
+
+--- SAO KÊ VCB 2023 HHP.xlsx :: SAO KÊ VCB 2023 ---
+                                                                            SỔ TIỀN GỬI NGÂN HÀNG           Unnamed: 1           Unnamed: 2   Unnamed: 3               Unnamed: 4  Unnamed: 5 Unnamed: 6 Unnamed: 7 Unnamed: 8  Unnamed: 9  Unnamed: 10  Unnamed: 11
+0   Tài khoản: 1121; TK Ngân hàng: 0291000312911 - Ngân hàng TMCP Ngoại thương Việt Nam; Năm 2023                  NaN                  NaN          NaN                      NaN         NaN        NaN        NaN        NaN         NaN          NaN          NaN
+1                                                                                             NaN       Ngày hạch toán        Ngày chứng từ  Số chứng từ                Diễn giải  TK đối ứng        Thu        Chi        Tồn         NaN          NaN          NaN
+2              Tài khoản ngân hàng : 0291000312911 - Ngân hàng TMCP Ngoại thương Việt Nam (1398 )                  NaN                  NaN          NaN                      NaN         NaN        NaN        NaN        NaN         NaN          NaN          NaN
+3                                                                                             NaN                  NaN                  NaN          NaN             Số dư đầu kỳ         NaN          0          0   14952673         NaN          NaN          NaN
+4                                                                                             NaN            03/012023            03/012023    NTTK00011   Chi nộp tiền tài khoản        1111  315376000          0  330328673         NaN          NaN          NaN
+5                                                                                             NaN            03/012023            03/012023     UNC00016   Chi nộp tiền tài khoản        1111  159204000        NaN  489532673         NaN          NaN          NaN
+6                                                                                             NaN            03/012023            03/012023    NTTK00012   Chi nộp tiền tài khoản        1111   55642000        NaN  545174673         NaN          NaN          NaN
+7                                                                                             NaN            03/012023            03/012023    NTTK00013   Chi nộp tiền tài khoản        1111  153966000        NaN  699140673         NaN          NaN          NaN
+8                                                                                             NaN            03/012023            03/012023     UNC00017   Chi nộp tiền tài khoản        1111     688000        NaN  699828673         NaN          NaN          NaN
+9                                                                                             NaN            03/012023            03/012023     UNC00018         Trả mua hàng Bel         331        NaN  411213539  288615134         NaN          NaN          NaN
+10                                                                                            NaN            03/012023            03/012023     UNC00067        Trả các khoản vay        3411        NaN  280000000    8615134         NaN          NaN          NaN
+11                                                                                            NaN  2023-01-04 00:00:00  2023-01-04 00:00:00    NTTK00014  Chi nộp tiền tài  khoản        1111   99540000        NaN  108155134         NaN          NaN          NaN
+12                                                                                            NaN  2023-01-04 00:00:00  2023-01-04 00:00:00    NTTK00015   Chi nộp tiền tài khoản        1111  328120000        NaN  436275134         NaN          NaN          NaN
+13                                                                                            NaN  2023-01-04 00:00:00  2023-01-04 00:00:00    NTTK00016   Chi nộp tiền tài khoản        1111   79703000        NaN  515978134         NaN          NaN          NaN
+14                                                                                            NaN  2023-01-04 00:00:00  2023-01-04 00:00:00    NTTK00017     Trả mua hàng Súc sản         331        NaN  475476358   40501776         NaN          NaN          NaN
+15                                                                                            NaN  2023-01-05 00:00:00  2023-01-05 00:00:00    NTTK00018  Chi nộp tiền tài  khoản        1111  219790000        NaN  260291776         NaN          NaN          NaN
+16                                                                                            NaN  2023-01-05 00:00:00  2023-01-05 00:00:00    NTTK00019   Chi nộp tiền tài khoản        1111   85214000        NaN  345505776         NaN          NaN          NaN
+17                                                                                            NaN  2023-01-05 00:00:00  2023-01-05 00:00:00     UNC00019   Chi nộp tiền tài khoản        1111  109251000        NaN  454756776         NaN          NaN          NaN
+18                                                                                            NaN  2023-01-05 00:00:00  2023-01-05 00:00:00    NTTK00018  Chi nộp tiền tài  khoản        1111   71000000        NaN  525756776         NaN          NaN          NaN
+19                                                                                            NaN  2023-01-05 00:00:00  2023-01-05 00:00:00    NTTK00019   Chi nộp tiền tài khoản        1111   64900000        NaN  590656776         NaN          NaN          NaN
+
+--- SAO VAY VCB  2023  HHP.xls :: SAO KÊ VAY VCB ---
+                Unnamed: 0           Unnamed: 1   Unnamed: 2                             Unnamed: 3  Unnamed: 4  Unnamed: 5   Unnamed: 6
+0   SAO KÊ VAY NH VCB 2023                  NaN          NaN                                    NaN         NaN         NaN          NaN
+1                      STT                 NGÀY     SỐ PHIẾU                              DIỄN GIẢI          NỢ          CÓ          TỒN
+2                      NaN                  NaN          NaN  Số dư đầu kỳ đến cuối ngày 31/12/2023         NaN         NaN  24820802231
+3                        1  2023-01-03 19:15:25  T0123-30206                            Trả gốc vay   280000000         NaN  24540802231
+4                        2  2023-01-05 11:14:57  C0123-00073     VCC - Vay VCB tt tiền hàng Cty CLM         NaN   844026851  24540802231
+5                        3  2023-01-05 20:15:23  T0123-31080                            Trả gốc vay   585000000         NaN  24799829082
+6                        4  2023-01-06 09:18:11  T0123-31087                            Trả gốc vay    90000000         NaN  24709829082
+7                        5  2023-01-09 21:06:02  T0123-32087                            Trả gốc vay  1140000000         NaN  23569829082
+8                        6  2023-01-09 21:07:33  C0123-00174      VCC -Vay VCB tt tiền hàng Cty Yến         NaN   622867500  23569829082
+9                        7  2023-01-10 19:30:19  T0123-32716                            Trả gốc vay   340000000         NaN  23852696582
+10                       8  2023-01-11 06:54:19  C0123-00227   VCC -Vay VCB tt tiền hàng Cty VS+NBT         NaN  1047059026  23852696582
+11                       9  2023-01-11 19:45:47  T0123-33151                            Trả gốc vay   410000000         NaN  24489755608
+12                      10  2023-01-12 20:03:52  T0123-33155                            Trả gốc vay   700000000         NaN  23789755608
+13                      11  2023-01-13 11:27:24  T0123-33829                            Trả gốc vay   300000000         NaN  23489755608
+14                      12  2023-01-13 11:27:58  C0123-00292  VCC - Vay VCB tt tiền hàng Cty Vissan         NaN   588005266  23489755608
+15                      13  2023-01-16 20:19:19  T0123-34638                            Trả gốc vay   590000000         NaN  23487760874
+16                      14  2023-01-16 20:19:59  C0123-00362     VCC - Vay VCB tt tiền hàng Cty Yến         NaN  1332035280  23487760874
+17                      15  2023-01-17 19:23:58  T0123-35462                            Trả gốc vay   490000000         NaN  24329796154
+18                      16  2023-01-19 14:00:54  T0123-36023                            Trả gốc vay   610000000         NaN  23719796154
+19                      17  2023-01-30 19:27:15  C0123-00515      VCC -Vay VCB tt tiền hàng Cty Nbt         NaN   500842964  23719796154
+
+--- sao kê VTB23.xls :: SAO KÊ VTB  ---
+   Unnamed: 0           Unnamed: 1   Unnamed: 2               Unnamed: 3 Unnamed: 4  Unnamed: 5  Unnamed: 6  Unnamed: 7
+0         NaN                  NaN          NaN                      NaN        NaN         NaN         NaN         NaN
+1         NaN                  NaN          NaN                      NaN        NaN         NaN         NaN         NaN
+2         NaN                  NaN          NaN                      NaN        NaN         NaN         NaN         NaN
+3         NaN                  NaN          NaN                      NaN        NaN         NaN         NaN         NaN
+4         NaN                  NaN          NaN                      NaN        NaN         NaN         NaN         NaN
+5         NaN                  NaN          NaN                      NaN        NaN         NaN         NaN         NaN
+6         NaN                  NaN          NaN                      NaN        NaN         NaN         NaN         NaN
+7         NaN                  NaN          NaN                      NaN        NaN         NaN         NaN         NaN
+8         NaN                  NaN          NaN                      NaN        NaN     SỐ TIỀN         NaN         NaN
+9         STT                 NGÀY     SỐ PHIẾU                DIỄN GIẢI        NaN         NaN         NaN         NaN
+10        NaN                  NaN          NaN                      NaN      DƯ ĐK       PS NỢ       PS CÓ       DƯ CK
+11          1                  NaN          NaN             SỐ DƯ ĐẦU KỲ        NaN         NaN         NaN           0
+12          2  2023-01-31 18:08:57  T0523-63026          NỘP TIỀN VÀO TK        NaN  1000000000         NaN  1000000000
+13          3  2023-01-31 18:09:33  T0523-63027          NỘP TIỀN VÀO TK        NaN     1000000         NaN  1001000000
+14          4  2023-01-31 18:10:09  C0123-00591  TT TIỀN HÀNG CTY NABATI        NaN         NaN  1000569970      430030
+15          5  2023-01-31 18:10:35  C0123-00592         PHÍ CHUYỂN KHOẢN        NaN         NaN      110063      319967
+16          6  2023-02-09 18:18:15  T0523-63031          NỘP TIỀN VÀO TK        NaN     3000000         NaN     3319967
+17          7  2023-02-18 18:16:06  C0223-00568     TIN - Phí duy trì tk        NaN         NaN       33000     3286967
+18          8  2023-02-28 10:48:12  T0523-63395             LÃI TIỀN GỬI        NaN         360         NaN     3287327
+19          9  2023-03-01 10:47:07  T0523-63394             VAY NGẮN HẠN        NaN  1030000000         NaN  1033287327

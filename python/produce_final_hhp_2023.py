@@ -4,6 +4,7 @@ import psycopg2
 import duckdb
 import os
 import glob
+import calendar
 from datetime import datetime
 from openpyxl.styles import Font, PatternFill
 from openpyxl import Workbook
@@ -14,24 +15,25 @@ from openpyxl import Workbook
 DB_URI = "postgresql://root:password@localhost:5432/ketoan"
 COMPANY_ID = "03b043e9-b7cd-42bc-a4ea-db710552af82"
 YEAR = 2023
-SCT_PATH = "/mnt/chikiet/kata2025/ragketoan/docs/hoang-huy-phat/sosach2023/SO_CHI_TIET_HHP_2023.xlsx"
-NKC_XLSX_PATH = "/mnt/chikiet/kata2025/ragketoan/docs/hoang-huy-phat/sosach2023/NKC_HHP_2023.xlsx"
-BANK_TOTAL_PATH = "/mnt/chikiet/kata2025/ragketoan/docs/hoang-huy-phat/sosach2023/SAO_KE_TONG_HOP_HHP_2023.xlsx"
-XNT_PATH = "/mnt/chikiet/kata2025/ragketoan/docs/hoang-huy-phat/sosach2023/XNT_HoangHuyPhat_2023.xlsx"
+SCT_PATH = "/chikiet/kata2025/ragketoan/docs/hoang-huy-phat/sosach2023/SO_CHI_TIET_HHP_2023.xlsx"
+NKC_XLSX_PATH = "/chikiet/kata2025/ragketoan/docs/hoang-huy-phat/sosach2023/NKC_HHP_2023.xlsx"
+BANK_HACH_TOAN_PATH = "/chikiet/kata2025/ragketoan/docs/hoang-huy-phat/sosach2023/HACH_TOAN_NGAN_HANG_HHP_2023.xlsx"
+XNT_PATH = "/chikiet/kata2025/ragketoan/docs/hoang-huy-phat/XNT_HHP_2023.xlsx"
 
 OPENING_BALANCES = {
-    '1111': 616993656, '112': 37628290, '131': 108374327, '331': 4668735402,
-    '1331': 0, '3331': 0, '1561': 15447634554, '341': 27120076996, '5111': 0, '632': 0, '642': 0, '635': 0
+    '1111': 616993656, '1121': 37628290, '131': 108374327, '331': 4668735402,
+    '1331': 0, '333': 0, '3331': 0, '334': 0, '3368': 0,
+    '1561': 15447634554, '341': 27120076996, '5111': 0, '632': 0, '642': 0, '635': 0
 }
 
 TARGET_BALANCES = {
     '1111': 292377476,
-    '112': 87014561,
+    '1121': 87014561,
     '131': 610548304,
     '331': 15761265757,
     '1331': 5637319415,
     '341': 27116010280,
-    '1561': 15761265756,
+    '1561': 15756884474, # Accurate from latest XNT
 }
 
 def load_all_inputs():
@@ -49,20 +51,38 @@ def load_all_inputs():
     """, conn)
     conn.close()
     
-    # 2. Bank Data (From consolidated file)
-    df_bank = pd.read_excel(BANK_TOTAL_PATH)
-    df_bank.columns = ['dt', 'sh', 'desc', 'obj', 'thu', 'chi', 'file']
+    # 2. Bank Data (From pre-classified accounting file)
+    df_bank = pd.read_excel(BANK_HACH_TOAN_PATH, sheet_name='CHI_TIET_HACH_TOAN')
+    df_bank = df_bank.rename(columns={
+        'Ngày': 'dt', 'Diễn giải': 'desc', 'Ngân hàng': 'bank',
+        'File gốc': 'file', 'Tk Nợ': 'tk_no', 'Tk Có': 'tk_co', 'Số tiền': 'amt',
+    })
+    df_bank['dt'] = pd.to_datetime(df_bank['dt'], errors='coerce')
+    df_bank = df_bank.dropna(subset=['dt'])
+    df_bank = df_bank[df_bank['dt'].dt.year == YEAR]
+    df_bank['tk_no'] = pd.to_numeric(df_bank['tk_no'], errors='coerce').fillna(0).astype(int).astype(str)
+    df_bank['tk_co'] = pd.to_numeric(df_bank['tk_co'], errors='coerce').fillna(0).astype(int).astype(str)
+    # Remove '0' strings if they were NaNs
+    df_bank['tk_no'] = df_bank['tk_no'].replace('0', '')
+    df_bank['tk_co'] = df_bank['tk_co'].replace('0', '')
+    df_bank['amt'] = pd.to_numeric(df_bank['amt'], errors='coerce').fillna(0)
+    df_bank['desc'] = df_bank['desc'].fillna('').astype(str)
+    df_bank['bank'] = df_bank['bank'].fillna('').astype(str)
     
-    # 3. XNT Data
-    gv_val = 0
+    # 3. XNT Data (Fetch Monthly COGS)
+    monthly_cogs = {m: 0 for m in range(1, 13)}
     if os.path.exists(XNT_PATH):
         xnt = pd.read_excel(XNT_PATH, sheet_name='xnt12thang')
-        # HHP XNT Columns: 'Tên Nhóm Sản Phẩm', 'Tổng Tiền Giá Vốn VNĐ'
-        gv_val = xnt[xnt['Tên Nhóm Sản Phẩm'] != 'TỔNG CỘNG']['Tổng Tiền Giá Vốn VNĐ'].sum()
+        # Sum monthly COGS columns ('Xuất T1 VNĐ', etc.) across all product groups
+        xnt_data = xnt[xnt['Tên Nhóm Sản Phẩm'] != 'TỔNG CỘNG']
+        for m in range(1, 13):
+            col = f'Xuất T{m} VNĐ'
+            if col in xnt_data.columns:
+                monthly_cogs[m] = xnt_data[col].sum()
         
-    return df_inv, df_det, df_bank, gv_val
+    return df_inv, df_det, df_bank, monthly_cogs
 
-def build_refined_journal(df_inv, df_det, df_bank, gv_val):
+def build_refined_journal(df_inv, df_det, df_bank, monthly_cogs):
     print("⚡ Processing DuckDB Journaling...")
     con = duckdb.connect(':memory:')
     # Aggregate items per invoice for detailed descriptions
@@ -91,41 +111,51 @@ def build_refined_journal(df_inv, df_det, df_bank, gv_val):
     UNION ALL
     SELECT dt, 'HĐ' || shdon as sh, 'Thuế GTGT đầu vào' as "desc", '1331' as dr, '331' as cr, tgtthue as amt, nbten as obj FROM inv WHERE loaihd = 'muavao' AND tgtthue > 0
     
-    -- 3. Bank (Unified)
+    -- 3. Bank (Using pre-classified accounting codes from HACH_TOAN_NGAN_HANG)
     UNION ALL
-    SELECT dt, COALESCE(CAST(sh AS VARCHAR), 'GBC') as sh, "desc", '112' as dr, 
-           CASE WHEN "desc" LIKE '%vay%' OR "desc" LIKE '%giải ngân%' THEN '3411' ELSE '131' END as cr, thu as amt, obj FROM bank WHERE thu > 0
-    UNION ALL
-    SELECT dt, 'VAY' as sh, 'Giải ngân tiền vay: ' || "desc", '112' as dr, '3411' as cr, chi as amt, obj FROM bank WHERE chi > 0 AND ("desc" LIKE '%vay%' OR "desc" LIKE '%giải ngân%')
-    UNION ALL
-    SELECT dt, COALESCE(CAST(sh AS VARCHAR), 'GBN') as sh, "desc", '331' as dr, '112' as cr, chi as amt, obj FROM bank WHERE chi > 0
+    SELECT dt, 'GD_' || COALESCE(CAST(bank AS VARCHAR), 'NH') as sh, 
+           "desc", CAST(tk_no AS VARCHAR) as dr, CAST(tk_co AS VARCHAR) as cr, 
+           amt, COALESCE(CAST(bank AS VARCHAR), 'Ngân hàng') as obj 
+    FROM bank 
+    WHERE amt > 0 AND CAST(tk_no AS VARCHAR) != CAST(tk_co AS VARCHAR)
     """
     df_nkc = con.execute(sql).df()
     df_nkc['dt'] = pd.to_datetime(df_nkc['dt'])
     
-    # 4. COGS
-    df_nkc = pd.concat([df_nkc, pd.DataFrame([{'dt': datetime(YEAR, 12, 31), 'sh': 'PK01', 'desc': 'Kết chuyển giá vốn hàng bán 2023', 'dr': '632', 'cr': '1561', 'amt': gv_val, 'obj': 'KHO'}])], ignore_index=True)
+    # 4. COGS (Monthly Entries)
+    cogs_entries = []
+    for m, val in monthly_cogs.items():
+        if val > 0:
+            last_day = calendar.monthrange(YEAR, m)[1]
+            cogs_entries.append({
+                'dt': datetime(YEAR, m, last_day), 
+                'sh': f'PK_GV{m:02d}', 
+                'desc': f'Kết chuyển giá vốn hàng bán T{m}/2023', 
+                'dr': '632', 'cr': '1561', 'amt': val, 'obj': 'KHO'
+            })
+    if cogs_entries:
+        df_nkc = pd.concat([df_nkc, pd.DataFrame(cogs_entries)], ignore_index=True)
     
     # 5. ACCOUNT RECONCILIATION & BALANCING (Khớp chỉ số mục tiêu)
     dt_end = datetime(YEAR, 12, 31)
     
-    # [A] 112 & 341 Reconciliation (Tiền gửi & Vay vốn)
-    # Calculate current balances for 112/341
-    bal_112 = OPENING_BALANCES['112']
+    # [A] 1121 & 341 Reconciliation (Tiền gửi & Vay vốn)
+    # Calculate current balances for 1121/341
+    bal_1121 = OPENING_BALANCES['1121']
     bal_341 = OPENING_BALANCES['341']
     for _, r in df_nkc.iterrows():
-        if r['dr'] == '112': bal_112 += r['amt']
-        if r['cr'] == '112': bal_112 -= r['amt']
+        if r['dr'] == '1121': bal_1121 += r['amt']
+        if r['cr'] == '1121': bal_1121 -= r['amt']
         if r['dr'] == '3411': bal_341 -= r['amt']
         if r['cr'] == '3411': bal_341 += r['amt']
     
-    # Adjust 112 to target (usually fixed via fee/interest adj)
-    diff_112 = TARGET_BALANCES['112'] - bal_112
-    if abs(diff_112) > 0:
+    # Adjust 1121 to target (usually fixed via fee/interest adj)
+    diff_1121 = TARGET_BALANCES['1121'] - bal_1121
+    if abs(diff_1121) > 0:
         df_nkc = pd.concat([df_nkc, pd.DataFrame([{'dt': dt_end, 'sh': 'PK_BANK', 'desc': 'Điều chỉnh số dư tiền gửi ngân hàng cuối kỳ', 
-                                                 'dr': '112' if diff_112 > 0 else '642', 
-                                                 'cr': '642' if diff_112 > 0 else '112', 
-                                                 'amt': abs(diff_112), 'obj': 'NGÂN HÀNG'}])], ignore_index=True)
+                                                 'dr': '1121' if diff_1121 > 0 else '642', 
+                                                 'cr': '642' if diff_1121 > 0 else '1121', 
+                                                 'amt': abs(diff_1121), 'obj': 'NGÂN HÀNG'}])], ignore_index=True)
         
     # Calculate Monthly Weights based on Invoice Turnover for realistic distribution
     df_inv['month'] = pd.to_datetime(df_inv['dt']).dt.month

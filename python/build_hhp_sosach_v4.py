@@ -1,8 +1,6 @@
 import pandas as pd
 import psycopg2
 import os
-import glob
-import re
 from datetime import datetime
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
@@ -15,12 +13,13 @@ DB_URI = "postgresql://root:password@localhost:5432/ketoan"
 COMPANY_ID = "03b043e9-b7cd-42bc-a4ea-db710552af82"
 YEAR = 2023
 SCT_PATH = "/chikiet/kata2025/ragketoan/docs/hoang-huy-phat/sosach2023/SO_CHI_TIET_HHP_2023.xlsx"
-BANK_DIR = "/chikiet/kata2025/ragketoan/docs/hoang-huy-phat/SAO KÊ NH NĂ 2023"
-XNT_PATH = "/chikiet/kata2025/ragketoan/docs/hoang-huy-phat/sosach2023/XNT_HoangHuyPhat_2023.xlsx"
+BANK_HACH_TOAN_PATH = "/chikiet/kata2025/ragketoan/docs/hoang-huy-phat/sosach2023/HACH_TOAN_NGAN_HANG_HHP_2023.xlsx"
+XNT_PATH = "/chikiet/kata2025/ragketoan/docs/hoang-huy-phat/XNT_HHP_2023.xlsx"
 
 OPENING_BALANCES = {
-    '1111': 616993656, '112': 37628290, '131': 108374327, '331': 4668735402,
-    '1331': 0, '3331': 0, '1561': 15447634554, '341': 27120076996,
+    '1111': 616993656, '1121': 37628290, '131': 108374327, '331': 4668735402,
+    '1331': 0, '333': 0, '3331': 0, '334': 0, '3368': 0,
+    '1561': 15447634554, '341': 27120076996, '635': 0,
 }
 
 # ============================================================
@@ -43,52 +42,33 @@ def fetch_invoices():
     conn.close()
     return df_i, df_d
 
-def load_bank_detailed():
-    print("  - Detailed Review of Bank Statements...")
-    all_rows = []
-    files = glob.glob(os.path.join(BANK_DIR, "*.xls*"))
-    for f in files:
-        df_raw = pd.read_excel(f, header=None)
-        header_row = -1
-        # Find header index 
-        for i, row in df_raw.iterrows():
-            row_str = " ".join([str(x).upper() for x in row.values if not pd.isna(x)])
-            if 'STT' in row_str and 'NGÀY' in row_str:
-                header_row = i
-                break
-        if header_row == -1: header_row = 12 # Fallback
-        
-        df = pd.read_excel(f, skiprows=header_row)
-        
-        # Explicit col maps based on HHP pattern
-        date_col, sh_col, desc_col, obj_col, thu_col, chi_col = 3, 5, 6, 12, 16, 17
-        if 'VCB' in f or 'VTB' in f:
-            date_col, sh_col, desc_col, obj_col, thu_col, chi_col = 3, 5, 6, 12, 12, 13
-            
-        for _, row in df.iterrows():
-            try:
-                def get_val(idx):
-                    if idx < len(row):
-                        v = row.iloc[idx]
-                        return "" if pd.isna(v) or str(v).lower() == 'nan' else str(v).strip()
-                    return ""
-
-                dt = pd.to_datetime(row.iloc[date_col], errors='coerce')
-                if pd.isna(dt) or dt.year != YEAR: continue
-                sh = get_val(sh_col)
-                desc = get_val(desc_col)
-                obj = get_val(obj_col)
-                
-                def clean_v(v):
-                    if pd.isna(v) or str(v).lower() == 'nan': return 0.0
-                    return float(str(v).replace(',', '').replace(' ', ''))
-                    
-                thu = clean_v(row.iloc[thu_col])
-                chi = clean_v(row.iloc[chi_col])
-                if thu == 0 and chi == 0: continue
-                all_rows.append({'dt': dt, 'sh': sh, 'desc': desc, 'obj': obj, 'thu': thu, 'chi': chi, 'file': os.path.basename(f)})
-            except: continue
-    return pd.DataFrame(all_rows)
+def load_bank_hach_toan():
+    """Load bank transactions with pre-assigned accounting codes from HACH_TOAN_NGAN_HANG_HHP_2023.xlsx.
+    Columns: Ngày, Diễn giải, Thu/Nợ, Chi/Có, Số dư, Ngân hàng, Loại, File gốc, Tk Nợ, Tk Có, Số tiền
+    """
+    print("  - Loading pre-classified bank accounting data...")
+    df = pd.read_excel(BANK_HACH_TOAN_PATH, sheet_name='CHI_TIET_HACH_TOAN')
+    # Rename columns to internal names
+    df = df.rename(columns={
+        'Ngày': 'dt',
+        'Diễn giải': 'desc',
+        'Ngân hàng': 'bank',
+        'File gốc': 'file',
+        'Tk Nợ': 'tk_no',
+        'Tk Có': 'tk_co',
+        'Số tiền': 'amt',
+    })
+    df['dt'] = pd.to_datetime(df['dt'], errors='coerce')
+    df = df.dropna(subset=['dt'])
+    df = df[df['dt'].dt.year == YEAR]
+    # Ensure accounting codes are strings and handled correctly (float to int to string)
+    df['tk_no'] = pd.to_numeric(df['tk_no'], errors='coerce').fillna(0).astype(int).astype(str).replace('0', '')
+    df['tk_co'] = pd.to_numeric(df['tk_co'], errors='coerce').fillna(0).astype(int).astype(str).replace('0', '')
+    df['amt'] = pd.to_numeric(df['amt'], errors='coerce').fillna(0)
+    df['desc'] = df['desc'].fillna('').astype(str)
+    df['bank'] = df['bank'].fillna('').astype(str)
+    print(f"    → Loaded {len(df)} bank transactions with pre-assigned accounting codes")
+    return df
 
 # ============================================================
 # ENGINE
@@ -114,35 +94,33 @@ def build_journal_v4(df_inv, df_det, df_bank):
         if inv['tgtthue'] > 0:
             entries.append({'dt': dt, 'sh': sh, 'desc': f"Thuế ĐV HĐ{inv['shdon']}", 'dr': '1331', 'cr': '331', 'amt': float(inv['tgtthue']), 'obj': supp})
 
-    # 3. Bank Statements (Review & Supplement)
+    # 3. Bank Statements - Use pre-classified accounting codes directly
+    #    Each row already has Tk Nợ and Tk Có assigned from HACH_TOAN_NGAN_HANG_HHP_2023.xlsx
     for _, tx in df_bank.iterrows():
-        dt, d, thu, chi, sh, obj_bank = tx['dt'], str(tx['desc']), tx['thu'], tx['chi'], tx['sh'], tx['obj']
-        # Use extracted object if available, otherwise fallback to party detection
-        party = obj_bank if obj_bank else "BANK"
-        if not party or party == "BANK":
-            if "CTY" in d.upper(): party = d.split("CTY")[-1][:50].strip()
-            elif "KH" in d.upper(): party = d.split("KH")[-1][:50].strip()
-
-        if thu > 0: # Nợ 112
-            acc_co = '131'
-            if any(k in d.lower() for k in ["vay", "giải ngân"]): acc_co = '3411'
-            elif any(k in d.lower() for k in ["lãi"]): acc_co = '515'
-            elif any(k in d.lower() for k in ["nộp", "nt", "luân chuyển"]): acc_co = '1111'
-            entries.append({'dt': dt, 'sh': sh or 'GBC', 'desc': d, 'dr': '112', 'cr': acc_co, 'amt': thu, 'obj': party})
+        dt = tx['dt']
+        desc = str(tx['desc'])
+        tk_no = str(tx['tk_no']).strip()
+        tk_co = str(tx['tk_co']).strip()
+        amt = float(tx['amt'])
+        bank = str(tx.get('bank', ''))
+        
+        if amt == 0 or tk_no == 'nan' or tk_co == 'nan':
+            continue
+        
+        # Skip self-referencing entries (e.g., 341/341 for loan rollovers)
+        # These are informational only and don't affect balances
+        if tk_no == tk_co:
+            continue
             
-        if chi > 0: # Có 112
-            # Parallel disbursement logic (Hạch toán song song cho Vay)
-            if any(k in d.lower() for k in ["vay vcb", "vay vtb", "vay tt"]):
-                # 1. First record the DISBURSEMENT (Nợ 112 / Có 3411)
-                entries.append({'dt': dt, 'sh': 'VAY', 'desc': f"Giải ngân: {d}", 'dr': '112', 'cr': '3411', 'amt': chi, 'obj': party})
-                # 2. Then record the PAYMENT (Nợ 331 / Có 112)
-                entries.append({'dt': dt, 'sh': sh or 'GBN', 'desc': d, 'dr': '331', 'cr': '112', 'amt': chi, 'obj': party})
-            else:
-                acc_no = '331'
-                if any(k in d.lower() for k in ["lãi", "vpb"]): acc_no = '635'
-                elif any(k in d.lower() for k in ["phí", "lương", "bhxh"]): acc_no = '642'
-                elif any(k in d.lower() for k in ["vay", "trả gốc"]): acc_no = '3411'
-                entries.append({'dt': dt, 'sh': sh or 'GBN', 'desc': d, 'dr': acc_no, 'cr': '112', 'amt': chi, 'obj': party})
+        entries.append({
+            'dt': dt,
+            'sh': f'GD_{bank}' if bank else 'GD_NH',
+            'desc': desc,
+            'dr': tk_no,
+            'cr': tk_co,
+            'amt': amt,
+            'obj': bank or 'Ngân hàng'
+        })
 
     # 4. Giá vốn
     if os.path.exists(XNT_PATH):
@@ -195,7 +173,7 @@ def build_journal_v4(df_inv, df_det, df_bank):
         delta_131 -= clear_amt
         delta_331 -= clear_amt
         
-    # If there's still delta_131 > 0, we can collect "Giấy báo có" into 112 (or just leave it out to 131 if not critical)
+    # If there's still delta_131 > 0, we can collect "Giấy báo có" into 1121 (or just leave it out to 131 if not critical)
     # To strictly match ALL targets, we could dump the remainder into a temporary balance.
     # But since Huy Vũ just offset 131/331/111, leaving small differences is okay if not perfectly balanced.
 
@@ -220,7 +198,8 @@ def generate_sct_premium(df_nkc):
         df_exp_nkc = df_exp_nkc.fillna('')
         df_exp_nkc.to_excel(writer, sheet_name='NKC', index=False)
         
-        accounts = ['1111', '112', '131', '1331', '1561', '331', '3331', '341', '5111', '632', '642', '635']
+        # Updated accounts list: includes 333, 334, 3368 from bank hach toan summary
+        accounts = ['1111', '1121', '131', '1331', '1561', '331', '333', '3331', '334', '3368', '341', '5111', '632', '642', '635']
         for acc in accounts:
             mask = (df_nkc['dr'].str.startswith(acc)) | (df_nkc['cr'].str.startswith(acc))
             df_acc = df_nkc[mask].copy()
@@ -279,6 +258,6 @@ def generate_sct_premium(df_nkc):
 
 if __name__ == "__main__":
     df_i, df_d = fetch_invoices()
-    df_b = load_bank_detailed()
+    df_b = load_bank_hach_toan()
     df_nkc = build_journal_v4(df_i, df_d, df_b)
     generate_sct_premium(df_nkc)

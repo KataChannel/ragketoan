@@ -76,88 +76,28 @@ def fetch_database_data():
 # BANK STATEMENT LOADING
 # ============================================================
 def load_bank_statements():
-    bank_files = [
-        ('Bidv', 'sao kê Bidv 23.xls'),
-        ('VTB', 'sao kê VTB23.xls'),
-        ('VCB_Vay', 'sao kê VCB_Vay 23.xls'),
-        ('VTB_Vay', 'sao kê VTB_Vay 23.xls')
-    ]
+    path = os.path.join(OUTPUT_DIR, "TONG_HOP_SAO_KE_HHP_2023.xlsx")
+    if not os.path.exists(path):
+        print(f"Warning: Consolidated bank file not found {path}")
+        return pd.DataFrame(columns=['Bank', 'Date', 'Description', 'Debit', 'Credit'])
     
-    all_trans = []
-    for bank_name, filename in bank_files:
-        path = os.path.join(BANK_DIR, filename)
-        if not os.path.exists(path):
-            print(f"Warning: File not found {path}")
-            continue
-            
-        try:
-            # First peek at the file to find the header row
-            raw_df = pd.read_excel(path, nrows=30, header=None)
-            date_col, thu_col, chi_col = -1, -1, -1
-            desc_cols = []
-            
-            # Look for columns
-            for r in range(min(20, len(raw_df))):
-                for i in range(len(raw_df.columns)):
-                    val = str(raw_df.iloc[r, i]).strip().lower()
-                    if "ngày" in val and date_col == -1: date_col = i
-                    if ("nội dung" in val or "diễn giải" in val) and i not in desc_cols: desc_cols.append(i)
-                    if ("số tiền nhận" in val or "ghi có" in val or "thu" in val) and thu_col == -1: thu_col = i
-                    if ("số tiền chuyển" in val or "ghi nợ" in val or "chi" in val or "rút tiền" in val) and chi_col == -1: chi_col = i
-            
-            # Specific for HHP 2023 Excel formats
-            date_col = 3
-            if 7 not in desc_cols: desc_cols.append(7)
-            if thu_col == -1: thu_col = 16
-            if chi_col == -1: chi_col = 17
-            
-            # Additional logic to find THU/CHI based on common positions if not found by keywords
-            if thu_col == -1 or chi_col == -1:
-                # Try to find columns with numeric headers or THU/CHI labels
-                for i in range(raw_df.shape[1]):
-                    for r in range(min(raw_df.shape[0], 25)):
-                        v = str(raw_df.iloc[r, i]).strip()
-                        if v == "THU": thu_col = i
-                        if v == "CHI": chi_col = i
-            
-            # Specific Bank Fallbacks if detection still feels wrong
-            if 'Bidv' in bank_name:
-                if thu_col == -1: thu_col = 16
-                if chi_col == -1: chi_col = 17
-            elif 'VTB' in bank_name or 'VCB' in bank_name:
-                if thu_col == -1: thu_col = 12
-                if chi_col == -1: chi_col = 13
-            
-            if date_col == -1: date_col = 3
-            if not desc_cols: desc_cols = [6, 8]
-            
-            print(f"Bank {bank_name}: DateCol={date_col}, ThuCol={thu_col}, ChiCol={chi_col}")
-            
-            df = pd.read_excel(path, header=None, skiprows=12)
-            for _, row in df.iterrows():
-                try:
-                    if len(row) <= max(date_col, thu_col, chi_col): continue
-                    date_val = row.iloc[date_col]
-                    if pd.isna(date_val): continue
-                    if not isinstance(date_val, (datetime, pd.Timestamp)):
-                        date_val = pd.to_datetime(date_val, errors='coerce')
-                    if pd.isna(date_val) or date_val.year != YEAR: continue
-                    
-                    def clean_money(v):
-                        if pd.isna(v) or v == '': return 0.0
-                        return float(str(v).replace(',', '').replace(' ', ''))
-                    
-                    thu = clean_money(row.iloc[thu_col])
-                    chi = clean_money(row.iloc[chi_col])
-                    if thu == 0 and chi == 0: continue
-                    
-                    desc = " ".join([str(row.iloc[c]) for c in desc_cols if c < len(row) and not pd.isna(row.iloc[c])])
-                    all_trans.append({'Bank': bank_name, 'Date': date_val, 'Description': desc, 'Debit': chi, 'Credit': thu})
-                except: continue
-        except Exception as e:
-            print(f"Error reading {filename}: {e}")
-            
-    return pd.DataFrame(all_trans)
+    print(f"Loading bank data from: {path}")
+    df = pd.read_excel(path)
+    # Expected internal columns: Bank, Date, Description, Debit, Credit
+    # Actual columns in TONG_HOP_SAO_KE_HHP_2023.xlsx: 
+    # ['Ngày', 'Diễn giải', 'Thu/Nợ', 'Chi/Có', 'Số dư', 'Ngân hàng', 'Loại', 'File gốc']
+    
+    df_mapped = pd.DataFrame()
+    df_mapped['Bank'] = df['Ngân hàng']
+    df_mapped['Date'] = pd.to_datetime(df['Ngày'], errors='coerce')
+    df_mapped['Description'] = df['Diễn giải']
+    df_mapped['Debit'] = df['Chi/Có'].fillna(0).astype(float)
+    df_mapped['Credit'] = df['Thu/Nợ'].fillna(0).astype(float)
+    
+    # Filter for the correct year
+    df_mapped = df_mapped[df_mapped['Date'].dt.year == YEAR]
+    
+    return df_mapped
 
 # ============================================================
 # ACCOUNT MAPPING
@@ -255,7 +195,7 @@ def map_bank_account(desc, is_credit, amount):
         return '635'
 
 def add_cogs_entries(nkc_rows, year):
-    path_xnt = f"/chikiet/kata2025/ragketoan/docs/hoang-huy-phat/sosach2023/XNT_HoangHuyPhat_{year}.xlsx"
+    path_xnt = f"/chikiet/kata2025/ragketoan/docs/hoang-huy-phat/XNT_HHP_{year}.xlsx"
     if not os.path.exists(path_xnt):
         return nkc_rows
     try:

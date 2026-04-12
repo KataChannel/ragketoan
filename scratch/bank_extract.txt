@@ -1,0 +1,40 @@
+
+Processing SAO KÊ BIDV 2023 CHÍNH.xls...
+Columns: ['Unnamed: 0', 'Unnamed: 1', 'Unnamed: 2', 'Unnamed: 3', 'Unnamed: 4', 'Unnamed: 5', 'Unnamed: 6', 'Unnamed: 7', 'Unnamed: 8', 'Unnamed: 9', 'Unnamed: 10', 'Unnamed: 11', 'Unnamed: 12', 'Unnamed: 13', 'Unnamed: 14', 'Unnamed: 15', 'Unnamed: 16', 'Unnamed: 17', 'Unnamed: 18']
+Head 5:
+   Unnamed: 0 Unnamed: 1                                                                             Unnamed: 2 Unnamed: 3 Unnamed: 4 Unnamed: 5 Unnamed: 6  Unnamed: 7                                       Unnamed: 8                              Unnamed: 9  Unnamed: 10  Unnamed: 11 Unnamed: 12  Unnamed: 13  Unnamed: 14 Unnamed: 15 Unnamed: 16 Unnamed: 17 Unnamed: 18
+0         NaN        NaN  Quản lý 0983827174 - 0905228229\nTK - 62010002282229\nTrịnh Lê Hiệp\nNH - BIDV Gialai        NaN        NaN        NaN        NaN         NaN                                              NaN                                     NaN          NaN          NaN         NaN          NaN          NaN         NaN         NaN         NaN         NaN
+1         NaN        NaN                                                                                    NaN        NaN        NaN        NaN        NaN         NaN                                  SỔ QUỸ TIỀN GỬI                                     NaN          NaN          NaN         NaN          NaN          NaN         NaN         NaN         NaN         NaN
+2         NaN        NaN                                                                                    NaN        NaN        NaN        NaN        NaN         NaN                                              NaN                                     NaN          NaN          NaN         NaN          NaN          NaN         NaN         NaN         NaN         NaN
+3         NaN        NaN                                                                                    NaN        NaN        NaN        NaN        NaN         NaN                                              NaN  Từ ngày 01/01/2023 đến ngày 31/12/2023          NaN          NaN         NaN          NaN          NaN         NaN         NaN         NaN         NaN
+4         NaN        NaN                                                                                    NaN        NaN        NaN        NaN        NaN         NaN  Tên quỹ: BIDV - Công ty TNHH MTV Hoàng Huy Phát                                     NaN          NaN          NaN         NaN          NaN          NaN         NaN         NaN         NaN         NaN
+
+Processing SAO KÊ VCB 2023 HHP.xlsx...
+Columns: ['SỔ CHI TIẾT CÁC TÀI KHOẢN', 'Unnamed: 1', 'Unnamed: 2', 'Unnamed: 3', 'Unnamed: 4', 'Unnamed: 5', 'Unnamed: 6', 'Unnamed: 7', 'Unnamed: 8', 'Unnamed: 9']
+Head 5:
+  SỔ CHI TIẾT CÁC TÀI KHOẢN           Unnamed: 1   Unnamed: 2          Unnamed: 3 Unnamed: 4  Unnamed: 5    Unnamed: 6    Unnamed: 7  Unnamed: 8 Unnamed: 9
+0  Tài khoản: 911; Năm 2022                  NaN          NaN                 NaN        NaN         NaN           NaN           NaN         NaN        NaN
+1            Ngày hạch toán        Ngày chứng từ  Số chứng từ           Diễn giải  Tài khoản  TK đối ứng  Phát sinh Nợ  Phát sinh Có       Dư Nợ      Dư Có
+2       2022-12-31 00:00:00  2022-12-31 00:00:00     NVK00495  Kết chuyển 635(01)        911    635 (01)    1453969885             0  1453969885          0
+3       2022-12-31 00:00:00  2022-12-31 00:00:00     NVK00496  Kết chuyển 635(02)        911    635 (02)      58979505             0  1512949390          0
+4       2022-12-31 00:00:00  2022-12-31 00:00:00     NVK00497    Kết chuyển TK515        911         515             0      41015651  1471933739          0
+
+Processing SAO VAY VCB  2023  HHP.xls...
+Columns: ['Unnamed: 0', 'Unnamed: 1', 'Unnamed: 2', 'Unnamed: 3', 'Unnamed: 4', 'Unnamed: 5', 'Unnamed: 6']
+Head 5:
+               Unnamed: 0           Unnamed: 1   Unnamed: 2                             Unnamed: 3 Unnamed: 4 Unnamed: 5   Unnamed: 6
+0  SAO KÊ VAY NH VCB 2023                  NaN          NaN                                    NaN        NaN        NaN          NaN
+1                     STT                 NGÀY     SỐ PHIẾU                              DIỄN GIẢI         NỢ         CÓ          TỒN
+2                     NaN                  NaN          NaN  Số dư đầu kỳ đến cuối ngày 31/12/2023        NaN        NaN  24820802231
+3                       1  2023-01-03 19:15:25  T0123-30206                            Trả gốc vay  280000000        NaN  24540802231
+4                       2  2023-01-05 11:14:57  C0123-00073     VCC - Vay VCB tt tiền hàng Cty CLM        NaN  844026851  24540802231
+
+Processing sao kê VTB23.xls...
+Columns: ['Unnamed: 0', 'Unnamed: 1', 'Unnamed: 2', 'Unnamed: 3', 'Unnamed: 4', 'Unnamed: 5', 'Unnamed: 6', 'Unnamed: 7', 'Unnamed: 8', 'Unnamed: 9', 'Unnamed: 10', 'Unnamed: 11', 'Unnamed: 12', 'Unnamed: 13', 'Unnamed: 14', 'Unnamed: 15', 'Unnamed: 16', 'Unnamed: 17', 'Unnamed: 18']
+Head 5:
+   Unnamed: 0 Unnamed: 1                                                                             Unnamed: 2 Unnamed: 3 Unnamed: 4 Unnamed: 5 Unnamed: 6  Unnamed: 7                            Unnamed: 8                              Unnamed: 9  Unnamed: 10  Unnamed: 11 Unnamed: 12  Unnamed: 13  Unnamed: 14 Unnamed: 15 Unnamed: 16 Unnamed: 17 Unnamed: 18
+0         NaN        NaN  Quản lý 0983827174 - 0905228229\nTK - 62010002282229\nTrịnh Lê Hiệp\nNH - BIDV Gialai        NaN        NaN        NaN        NaN         NaN                                   NaN                                     NaN          NaN          NaN         NaN          NaN          NaN         NaN         NaN         NaN         NaN
+1         NaN        NaN                                                                                    NaN        NaN        NaN        NaN        NaN         NaN                       SỔ QUỸ TIỀN MẶT                                     NaN          NaN          NaN         NaN          NaN          NaN         NaN         NaN         NaN         NaN
+2         NaN        NaN                                                                                    NaN        NaN        NaN        NaN        NaN         NaN                                   NaN                                     NaN          NaN          NaN         NaN          NaN          NaN         NaN         NaN         NaN         NaN
+3         NaN        NaN                                                                                    NaN        NaN        NaN        NaN        NaN         NaN                                   NaN  Từ ngày 01/01/2023 đến ngày 28/02/2026          NaN          NaN         NaN          NaN          NaN         NaN         NaN         NaN         NaN
+4         NaN        NaN                                                                                    NaN        NaN        NaN        NaN        NaN         NaN  Tên quỹ: VTB- VIETTIN BANK - CTY HHP                                     NaN          NaN          NaN         NaN          NaN          NaN         NaN         NaN         NaN         NaN
