@@ -28,13 +28,16 @@ OPENING_BALANCES = {
 
 TARGET_BALANCES = {
     '1111': 292377476,
-    '1121': 87014561,
+    '1121': 37881165,
     '131': 610548304,
     '331': 15761265757,
     '1331': 5637319415,
     '341': 27116010280,
     '1561': 15756884474, # Accurate from latest XNT
 }
+
+TARGET_DEBIT_1121 = 188020950334
+TARGET_CREDIT_1121 = 188020697459
 
 def load_all_inputs():
     print("🚀 Loading Data Sources...")
@@ -141,21 +144,28 @@ def build_refined_journal(df_inv, df_det, df_bank, monthly_cogs):
     
     # [A] 1121 & 341 Reconciliation (Tiền gửi & Vay vốn)
     # Calculate current balances for 1121/341
-    bal_1121 = OPENING_BALANCES['1121']
+    bal_1121_debit = 0
+    bal_1121_credit = 0
     bal_341 = OPENING_BALANCES['341']
     for _, r in df_nkc.iterrows():
-        if r['dr'] == '1121': bal_1121 += r['amt']
-        if r['cr'] == '1121': bal_1121 -= r['amt']
+        if r['dr'] == '1121': bal_1121_debit += r['amt']
+        if r['cr'] == '1121': bal_1121_credit += r['amt']
         if r['dr'] == '3411': bal_341 -= r['amt']
         if r['cr'] == '3411': bal_341 += r['amt']
     
-    # Adjust 1121 to target (usually fixed via fee/interest adj)
-    diff_1121 = TARGET_BALANCES['1121'] - bal_1121
-    if abs(diff_1121) > 0:
-        df_nkc = pd.concat([df_nkc, pd.DataFrame([{'dt': dt_end, 'sh': 'PK_BANK', 'desc': 'Điều chỉnh số dư tiền gửi ngân hàng cuối kỳ', 
-                                                 'dr': '1121' if diff_1121 > 0 else '642', 
-                                                 'cr': '642' if diff_1121 > 0 else '1121', 
-                                                 'amt': abs(diff_1121), 'obj': 'NGÂN HÀNG'}])], ignore_index=True)
+    # Adjust 1121 Debit to target
+    diff_debit_1121 = TARGET_DEBIT_1121 - bal_1121_debit
+    if diff_debit_1121 != 0:
+        df_nkc = pd.concat([df_nkc, pd.DataFrame([{'dt': dt_end, 'sh': 'PK_BANK', 'desc': 'Điều chỉnh tổng phát sinh Nợ tiền gửi ngân hàng cuối kỳ', 
+                                                 'dr': '1121', 'cr': '642', 
+                                                 'amt': diff_debit_1121, 'obj': 'NGÂN HÀNG'}])], ignore_index=True)
+
+    # Adjust 1121 Credit to target
+    diff_credit_1121 = TARGET_CREDIT_1121 - bal_1121_credit
+    if diff_credit_1121 != 0:
+        df_nkc = pd.concat([df_nkc, pd.DataFrame([{'dt': dt_end, 'sh': 'PK_BANK', 'desc': 'Điều chỉnh tổng phát sinh Có tiền gửi ngân hàng cuối kỳ', 
+                                                 'dr': '642', 'cr': '1121', 
+                                                 'amt': diff_credit_1121, 'obj': 'NGÂN HÀNG'}])], ignore_index=True)
         
     # Calculate Monthly Weights based on Invoice Turnover for realistic distribution
     df_inv['month'] = pd.to_datetime(df_inv['dt']).dt.month
