@@ -470,22 +470,30 @@ def save_excel(year_results, output_path):
     ws_rep.cell(16, 3, f"=SUM(C4:C15)").number_format = '#,##0'; ws_rep.cell(16, 3).font = total_font
 
     ws_all = wb.create_sheet("xnt12thang")
-    sum_headers = ['STT', 'Mã Nhóm', 'Tên Nhóm', 'Tồn Đầu Năm', 'Tổng Nhập', 'Tổng Xuất (Bán)', 'Giá Vốn', 'Tồn Cuối Năm']
+    sum_headers = ['STT', 'Mã Nhóm', 'Tên Nhóm', 'Tồn Đầu (SL)', 'Tồn Đầu (VNĐ)', 'Tổng Nhập', 'Tổng Xuất (Bán)', 'Giá Vốn', 'Tồn Cuối (SL)', 'Tồn Cuối (VNĐ)']
     for m in range(1, 13): sum_headers.extend([f"Nhập T{m}", f"Xuất T{m}"])
     for c, h in enumerate(sum_headers, 1): cell = ws_all.cell(1, c, h); cell.font = header_font; cell.fill = header_fill; cell.border = border
     row_idx = 2
     for idx, g in enumerate(year_results['all_groups'], 1):
-        d12 = year_results['monthly_data'][12][g]
-        ton_dau = year_results['monthly_data'][1][g]['ton_dau_val']
+        m1 = year_results['monthly_data'][1][g]
+        m12 = year_results['monthly_data'][12][g]
         t_nhap = sum(year_results['monthly_data'][m][g]['nhap_val'] for m in range(1, 13))
         t_xuat = sum(year_results['monthly_data'][m][g]['xuat_val_ban'] for m in range(1, 13))
         t_cogs = sum(year_results['monthly_data'][m][g]['xuat_val_cogs'] for m in range(1, 13))
-        row = [idx, g, category_names.get(g, g), ton_dau, t_nhap, t_xuat, t_cogs, d12['ton_cuoi_val']]
+        
+        row = [idx, g, category_names.get(g, g), m1['ton_dau_sl'], m1['ton_dau_val'], t_nhap, t_xuat, t_cogs, m12['ton_cuoi_sl'], m12['ton_cuoi_val']]
         for m in range(1, 13): row.extend([year_results['monthly_data'][m][g]['nhap_val'], year_results['monthly_data'][m][g]['xuat_val_ban']])
         for c, v in enumerate(row, 1):
             cell = ws_all.cell(row_idx, c, v); cell.border = border
             cell.number_format = '#,##0' if c >= 4 else 'General'
         row_idx += 1
+    
+    # Add Total row for xnt12thang
+    ws_all.cell(row_idx, 3, "TỔNG CỘNG").font = total_font; ws_all.cell(row_idx, 3).border = border
+    for c in range(4, len(sum_headers) + 1):
+        col_letter = get_column_letter(c)
+        ws_all.cell(row_idx, c, f"=SUM({col_letter}2:{col_letter}{row_idx-1})").font = total_font
+        ws_all.cell(row_idx, c).number_format = '#,##0'; ws_all.cell(row_idx, c).border = border
 
     for m in range(1, 13):
         ws = wb.create_sheet(f"Tháng {m}")
@@ -499,6 +507,13 @@ def save_excel(year_results, output_path):
                 cell = ws.cell(r_idx, c, v); cell.border = border
                 cell.number_format = '#,##0' if c >= 4 else 'General'
             r_idx += 1
+        
+        # Add Total row for Monthly sheet
+        ws.cell(r_idx, 3, "TỔNG CỘNG").font = total_font; ws.cell(r_idx, 3).border = border
+        for c in range(4, len(headers) + 1):
+            col_letter = get_column_letter(c)
+            ws.cell(r_idx, c, f"=SUM({col_letter}2:{col_letter}{r_idx-1})").font = total_font
+            ws.cell(r_idx, c).number_format = '#,##0'; ws.cell(r_idx, c).border = border
 
     ws_hd = wb.create_sheet("Hoadon")
     hd_headers = ['Tháng', 'Ngày', 'Số HĐ', 'Loại', 'Đối tác', 'Nội dung', 'Nhóm', 'SL', 'Đơn giá', 'Thành tiền']
@@ -507,6 +522,12 @@ def save_excel(year_results, output_path):
         for c, h in enumerate(hd_headers, 1):
             cell = ws_hd.cell(r, c, rec.get(h, "")); cell.border = border
             cell.number_format = '#,##0' if c >= 9 else 'General'
+    
+    # Add Total for Hoadon
+    hd_total_row = len(year_results['hoadon_records']) + 2
+    ws_hd.cell(hd_total_row, 9, "TỔNG CỘNG").font = total_font; ws_hd.cell(hd_total_row, 9).border = border
+    ws_hd.cell(hd_total_row, 10, f"=SUM(J2:J{hd_total_row-1})").font = total_font
+    ws_hd.cell(hd_total_row, 10).number_format = '#,##0'; ws_hd.cell(hd_total_row, 10).border = border
 
     wb.save(output_path)
     print(f"Excel saved: {output_path}", flush=True)
